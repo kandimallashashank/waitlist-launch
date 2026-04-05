@@ -94,7 +94,7 @@ function BrandMarqueeStrip({
 
 export interface BrandLogosSectionProps {
   /**
-   * `section` — full-width strip (homepage). `inline` — compact block for embedding (e.g. waitlist hero).
+   * `section`: full-width strip (homepage). `inline`: compact block for embedding (e.g. waitlist hero).
    */
   variant?: 'section' | 'inline';
   /** When false, hides the “Choose From Over 500 Scents!” line (section variant only). */

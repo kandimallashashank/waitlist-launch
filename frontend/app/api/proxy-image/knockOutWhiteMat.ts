@@ -16,7 +16,7 @@ const MAX_EDGE = 480;
 /** Minimum R/G/B for a channel to count as "mat" (tune if halos remain). */
 const MIN_CHANNEL = 228;
 
-/** Max spread between min and max RGB — rejects saturated pixels. */
+/** Max spread between min and max RGB; rejects saturated pixels. */
 const MAX_RGB_SPREAD = 20;
 
 /**

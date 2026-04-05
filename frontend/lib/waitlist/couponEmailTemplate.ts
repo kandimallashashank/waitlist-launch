@@ -82,7 +82,7 @@ export function buildWaitlistCouponEmailHtml(
 ): string {
   const safeName = escapeHtml(displayName);
   const safeCode = escapeHtml(couponCode);
-  const preheader = `Your ${discountPercent}% launch code is inside. Micro samples, Blind Buy Score, shipped in India.`;
+  const preheader = `Your ${discountPercent}% launch code is inside. Micro samples, Blind Buy Score 0-5, shipped in India.`;
 
   const fontSans =
     "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
@@ -313,7 +313,7 @@ export function buildWaitlistCouponEmailHtml(
                               </td>
                               <td valign="top" style="padding:0 0 14px 6px;">
                                 <p class="mvp-copy" style="margin:0;font-family:${fontSans};font-size:15px;line-height:23px;color:#14120F;">
-                                  <strong style="font-weight:600;">Micro vials, India-first.</strong> 3ml to 12ml, shipped here. A small rupee decision beats a big bottle regret.
+                                  <strong style="font-weight:600;">Micro vials, India-first.</strong> 2ml to 12ml, shipped here. A small rupee decision beats a big bottle regret.
                                 </p>
                               </td>
                             </tr>
@@ -330,7 +330,7 @@ export function buildWaitlistCouponEmailHtml(
                                 </td>
                                 <td valign="top" style="padding:12px 12px 12px 6px;">
                                   <p class="mvp-copy" style="margin:0;font-family:${fontSans};font-size:15px;line-height:23px;color:#14120F;">
-                                    <strong style="font-weight:600;">Blind Buy Score + real data.</strong> Signals from people who wear the juice, not shelf hype alone.
+                                    <strong style="font-weight:600;">Blind Buy Score (0-5).</strong> Chatter from Reddit, Facebook, and the open web, fused with perfume metrics in one weighted pipeline: 0 is a weak blind buy, 5 is a strong one, so you spend less time searching.
                                   </p>
                                 </td>
                               </tr></table></td>
@@ -364,8 +364,9 @@ export function buildWaitlistCouponEmailHtml(
                                 </td>
                                 <td valign="top" style="padding:12px 12px 12px 6px;">
                                   <p class="mvp-copy" style="margin:0;font-family:${fontSans};font-size:15px;line-height:23px;color:#14120F;">
-                                    <strong style="font-weight:600;">Quiz, layering, rhythm.</strong>
-                                    <a href="${storeHref("/layering-lab")}" target="_blank" rel="noopener noreferrer" style="color:#B85A3A;text-decoration:underline;font-weight:600;">Layering Lab</a> combos on real skin, plus a monthly try-before-you-buy flow.
+                                    <strong style="font-weight:600;">Quiz, Layering Lab, Club.</strong>
+                                    <a href="${storeHref("/layering-lab")}" target="_blank" rel="noopener noreferrer" style="color:#B85A3A;text-decoration:underline;font-weight:600;">Layering Lab</a> ranks combos with AI/ML on real-world data and metrics you can use to decide. 
+                                    <a href="${storeHref("/subscription")}" target="_blank" rel="noopener noreferrer" style="color:#B85A3A;text-decoration:underline;font-weight:600;">Club</a> subscriptions (Essential, Signature, Prestige) send one 8ml fragrance each month: you choose the scent or enable auto-select and we match from your quiz profile.
                                   </p>
                                 </td>
                               </tr></table></td>
@@ -540,10 +541,12 @@ Early access + launch discount.
 Trust signals: 450+ fragrances · From ₹199 micro samples · India-first (heat & humidity).
 
 WHAT WE'RE BUILDING (MVP)
-• Micro vials (3ml–12ml), India-first.
-• Blind Buy Score + real data from wearers.
+• Micro vials (2ml–12ml), India-first.
+• Blind Buy Score 0-5: Reddit, Facebook, web + perfume metrics (weighted pipeline; 0 weak, 5 strong blind buy).
 • Climate-aware picks.
-• Quiz + Layering Lab + monthly rhythm: ${storeUrl}/layering-lab
+• Quiz: your taste profile; Club auto-select uses it only when you enable it.
+• Layering Lab (AI/ML-ranked combos): ${storeUrl}/layering-lab
+• Club (Essential / Signature / Prestige): one 8ml/mo, your pick or quiz-based auto-select: ${storeUrl}/subscription
 • Launch updates only from this signup.
 
 YOUR CODE

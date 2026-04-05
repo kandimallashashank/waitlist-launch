@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Blind Buy Score: short mention + signal-flow (sources → scentrev). No separate “score” card.
+ * Blind Buy Score: 0-5 rating, sources (Reddit, Facebook Marketplace, web) → ScentRev pipeline.
  * Reddit & Facebook marks live under /public/images/waitlist-pipeline/.
  */
 
@@ -58,7 +58,7 @@ export default function WaitlistBlindBuyPipeline(): React.ReactElement {
       aria-labelledby="blind-buy-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-6">
-        <div className="mx-auto max-w-xl text-center">
+        <div className="mx-auto max-w-2xl text-center">
           <span className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#B85A3A] sm:text-xs">
             Behind the score
           </span>
@@ -69,9 +69,20 @@ export default function WaitlistBlindBuyPipeline(): React.ReactElement {
             Blind Buy Score
           </h2>
           <p className="mt-3 text-sm leading-snug text-[#4A4540] sm:text-[0.9375rem] sm:leading-relaxed">
-            We also surface a <span className="font-semibold text-[#14120F]">Blind Buy Score</span> from real chatter
-            (Reddit, Facebook Marketplace, open web), normalized for India&apos;s heat and humidity, so samples and
-            full bottles sit in the same honest picture.
+            We collect what people actually say about each perfume across{' '}
+            <span className="font-medium text-[#14120F]">Reddit</span>,{' '}
+            <span className="font-medium text-[#14120F]">Facebook</span> (including Marketplace), and the{' '}
+            <span className="font-medium text-[#14120F]">open web</span>, then feed it through an integrated pipeline
+            alongside hard metrics on the fragrance itself.
+          </p>
+          <p className="mt-3 text-sm leading-snug text-[#4A4540] sm:text-[0.9375rem] sm:leading-relaxed">
+            <span className="font-semibold text-[#14120F]">Blind Buy Score</span> is a single number from{' '}
+            <span className="font-semibold tabular-nums text-[#14120F]">0</span> to{' '}
+            <span className="font-semibold tabular-nums text-[#14120F]">5</span>:{' '}
+            <span className="font-medium text-[#14120F]">0</span> means a weak blind buy (high regret risk),{' '}
+            <span className="font-medium text-[#14120F]">5</span> means the crowd signal and the juice&apos;s profile
+            line up for buying unsniffed. It&apos;s a weighted blend so you spend less time hunting threads and more
+            time on scents worth trying, with India&apos;s heat and humidity in the mix.
           </p>
         </div>
 
@@ -121,9 +132,15 @@ export default function WaitlistBlindBuyPipeline(): React.ReactElement {
               </div>
             </div>
 
-            <p className="relative z-[2] pt-2 text-center font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B85A3A] sm:text-[11px] sm:tracking-[0.22em]">
-              Blind Buy Score
-            </p>
+            <div className="relative z-[2] pt-2 text-center">
+              <p className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B85A3A] sm:text-[11px] sm:tracking-[0.22em]">
+                Blind Buy Score
+              </p>
+              <p className="mt-1 text-[10px] leading-snug text-[#6B645C] sm:text-[11px]">
+                <span className="tabular-nums font-medium text-[#14120F]">0</span> weak blind buy ·{' '}
+                <span className="tabular-nums font-medium text-[#14120F]">5</span> strong blind buy
+              </p>
+            </div>
 
             <AnimatedBeam
               containerRef={containerRef}

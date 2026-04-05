@@ -1,5 +1,5 @@
 /**
- * Minimal API surface used by ``useWaitlistPerfumes`` — mirrors ``base44.entities.Fragrance.list``.
+ * Minimal API surface used by ``useWaitlistPerfumes``; mirrors ``base44.entities.Fragrance.list``.
  */
 
 export interface FragranceListItem {

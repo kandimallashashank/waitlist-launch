@@ -67,7 +67,7 @@ module.exports = {
           cream: '#F8E8E0',  // terracotta-100
         },
         
-        // Legacy neutral (for backward compatibility) — darker for readability
+        // Legacy neutral (for backward compatibility): darker for readability
         neutral: {
           900: '#1A1A1A',
           800: '#2A2A2A',
@@ -104,7 +104,7 @@ module.exports = {
           700: '#B45309',
         },
 
-        /* shadcn Sidebar — used by components/ui/sidebar.tsx */
+        /* shadcn Sidebar: used by components/ui/sidebar.tsx */
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar))',
           foreground: 'hsl(var(--sidebar-foreground))',

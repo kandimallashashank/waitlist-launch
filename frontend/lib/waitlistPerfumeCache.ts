@@ -90,6 +90,6 @@ export function writeWaitlistCatalogCache(
     };
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch {
-    // Quota or private mode — memory cache still helps this session.
+    // Quota or private mode: memory cache still helps this session.
   }
 }

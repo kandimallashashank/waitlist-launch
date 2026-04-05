@@ -7,7 +7,7 @@
 export const WAITLIST_EMAIL_MAX_LENGTH = 254;
 
 /**
- * Local @ domain.tld — no whitespace; at least one dot after @.
+ * Local @ domain.tld: no whitespace; at least one dot after @.
  */
 const WAITLIST_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

@@ -31,8 +31,8 @@ import { toast } from 'sonner';
 
 const sizes = [
   {
-    label: '3ml Micro',
-    detail: 'Perfect for 5-7 wears',
+    label: '2ml Micro',
+    detail: 'Enough wears to know',
     icon: TestTube2,
     gradient: 'from-[#E9F0EC] via-[#F6FAF8] to-white',
     iconColor: 'text-[#6D7D63]',
@@ -65,6 +65,8 @@ export default function WaitlistPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [alreadyJoined, setAlreadyJoined] = useState(false);
+  const [couponEmailSent, setCouponEmailSent] = useState(false);
   const [couponCode, setCouponCode] = useState<string | null>(null);
   const [discountPercent, setDiscountPercent] = useState<number | null>(null);
   const [botTrap, setBotTrap] = useState('');
@@ -117,10 +119,22 @@ export default function WaitlistPage() {
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.error || 'Failed to join waitlist');
       }
-      const data = await res.json();
+      const data = (await res.json()) as {
+        couponCode?: string;
+        discountPercent?: number;
+        already?: boolean;
+        emailSent?: boolean;
+      };
       if (data.couponCode) setCouponCode(data.couponCode);
-      if (data.discountPercent) setDiscountPercent(data.discountPercent);
+      if (data.discountPercent != null) setDiscountPercent(data.discountPercent);
+      setAlreadyJoined(Boolean(data.already));
+      setCouponEmailSent(Boolean(data.emailSent));
       setSubmitted(true);
+      if (data.already) {
+        toast.message('Already on the waitlist', {
+          description: 'This email is already signed up. Your code is below if you need it.',
+        });
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to join waitlist';
       toast.error(message);
@@ -348,10 +362,12 @@ export default function WaitlistPage() {
               </div>
 
               <p data-hero className="max-w-xl text-base leading-relaxed text-[#4A4540] md:text-[1.0625rem]">
-                We sell <span className="font-medium text-[#14120F]">micro fragrance samples</span> in India (3ml to 12ml)
+                We sell <span className="font-medium text-[#14120F]">micro fragrance samples</span> in India (2ml to 12ml)
                 so you can wear on real skin before a full bottle. Join for launch timing and your discount, then keep
                 scrolling for sizes, how we compare to full bottles, and{' '}
-                <span className="font-medium text-[#14120F]">Blind Buy Score</span>.
+                <span className="font-medium text-[#14120F]">Blind Buy Score</span>
+                : a 0-5 blind-buy rating from Reddit, Facebook, and web chatter fused with perfume metrics so you waste
+                less time searching.
               </p>
 
               <div data-hero className="flex flex-wrap gap-2 pt-1">
@@ -421,9 +437,15 @@ export default function WaitlistPage() {
                   <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFF3ED]">
                     <Sparkles className="h-7 w-7 text-[#B85A3A]" />
                   </div>
-                  <h2 className="font-display text-2xl font-semibold text-[#14120F]">You&apos;re on the list</h2>
+                  <h2 className="font-display text-2xl font-semibold text-[#14120F]">
+                    {alreadyJoined ? "You're already on the waitlist" : "You're on the list"}
+                  </h2>
                   <p className="mt-2 text-sm leading-relaxed text-[#5F5C57]">
-                    Check your inbox. We&apos;ve sent your exclusive discount code.
+                    {alreadyJoined
+                      ? couponEmailSent
+                        ? 'Check your inbox. We just sent your discount details again.'
+                        : "This email is already registered. Your launch discount is below; check past emails from us if you need the full welcome note."
+                      : "Check your inbox. We've sent your exclusive discount code."}
                   </p>
                   {couponCode && (
                     <div className="mt-6 rounded-2xl border-2 border-dashed border-[#D4A574]/80 bg-[#FDF6F3] p-5">
@@ -597,32 +619,47 @@ export default function WaitlistPage() {
                   data-scroll="lift"
                   className="overflow-hidden rounded-2xl border border-[#D4C9BB] bg-gradient-to-b from-[#FFFCF8] to-[#F6F1E9] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_18px_50px_-20px_rgba(20,18,15,0.12)]"
                 >
-                  <div className="flex items-center justify-between gap-2 border-b border-[#E8DFD6] bg-[#F0E9E0] px-3 py-2.5 sm:px-5 sm:py-3">
-                    <div className="flex min-w-0 items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-[#5F5C57] sm:text-[11px] sm:tracking-wider">
-                      <span className="hidden h-1.5 w-1.5 shrink-0 rounded-full bg-[#B85A3A] sm:inline" aria-hidden />
+                  <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,0.9fr)] items-center gap-4 border-b border-[#E8DFD6] bg-[#F0E9E0] px-5 py-3 sm:grid">
+                    <div className="flex min-w-0 items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-[#5F5C57]">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#B85A3A]" aria-hidden />
                       Comparison
                     </div>
-                    <div className="flex shrink-0 gap-4 text-[10px] font-bold uppercase tracking-wide text-[#14120F] sm:gap-8 sm:text-[11px]">
-                      <span className="text-[#B85A3A]">Micro</span>
-                      <span className="text-[#5F5C57]">Full bottle</span>
-                    </div>
+                    <span className="min-w-0 text-center text-[11px] font-bold uppercase tracking-wide text-[#B85A3A]">
+                      Micro
+                    </span>
+                    <span className="min-w-0 text-center text-[11px] font-bold uppercase tracking-wide text-[#5F5C57]">
+                      Full bottle
+                    </span>
                   </div>
                   <div data-stagger="rows" className="divide-y divide-[#E8DFD6]">
                     {comparison.map((row) => (
-                      <div
-                        key={row.label}
-                        data-row
-                        className="grid grid-cols-[minmax(0,1.15fr)_minmax(0,0.95fr)_minmax(0,0.95fr)] items-start gap-x-2 gap-y-1 px-3 py-3 text-sm transition-colors hover:bg-[#FFF9F3]/90 sm:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,0.9fr)] sm:items-center sm:gap-4 sm:px-5 sm:py-3.5"
-                      >
-                        <span className="min-w-0 pt-0.5 text-[13px] font-medium leading-snug text-[#14120F] sm:pt-0 sm:text-sm sm:leading-normal">
-                          {row.label}
-                        </span>
-                        <span className="min-w-0 text-center text-[12px] font-semibold leading-snug text-[#B85A3A] sm:text-sm sm:leading-normal">
-                          {row.micro}
-                        </span>
-                        <span className="min-w-0 text-center text-[12px] leading-snug text-[#5F5C57] sm:text-sm sm:leading-normal">
-                          {row.full}
-                        </span>
+                      <div key={row.label} data-row className="transition-colors hover:bg-[#FFF9F3]/90">
+                        <div className="px-3 py-3.5 sm:hidden">
+                          <p className="text-[13px] font-semibold leading-snug text-[#14120F]">{row.label}</p>
+                          <div className="mt-2.5 grid grid-cols-2 gap-0 overflow-hidden rounded-xl border border-[#E4D9CE] bg-white/90 shadow-[0_1px_0_rgba(255,255,255,0.85)_inset]">
+                            <div className="border-r border-[#EDE5DC] px-3 py-3">
+                              <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-[#B85A3A]">
+                                Micro
+                              </p>
+                              <p className="mt-1.5 text-[13px] font-semibold leading-snug text-[#2C2824]">
+                                {row.micro}
+                              </p>
+                            </div>
+                            <div className="px-3 py-3">
+                              <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-[#7A726A]">
+                                Full bottle
+                              </p>
+                              <p className="mt-1.5 text-[13px] leading-snug text-[#5F5C57]">{row.full}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,0.9fr)] items-center gap-4 px-5 py-3.5 text-sm sm:grid">
+                          <span className="min-w-0 font-medium leading-normal text-[#14120F]">{row.label}</span>
+                          <span className="min-w-0 text-center font-semibold leading-normal text-[#B85A3A]">
+                            {row.micro}
+                          </span>
+                          <span className="min-w-0 text-center leading-normal text-[#5F5C57]">{row.full}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -658,7 +695,8 @@ export default function WaitlistPage() {
               Western weather often falls flat in Indian heat and humidity; we surface{' '}
               <span className="font-medium text-[#14120F]">KPIs and fit metrics</span> so you can see what is more
               likely to work here, not just what is trending abroad. Same stack powers{' '}
-              <span className="font-medium text-[#14120F]">Blind Buy Score</span> and the quiz.
+              <span className="font-medium text-[#14120F]">Blind Buy Score</span> (0-5, weighted across community
+              signals and catalog metrics) and the quiz.
             </p>
           </div>
 
@@ -688,7 +726,7 @@ export default function WaitlistPage() {
                     <Database className="mt-0.5 h-4 w-4 shrink-0 text-[#8B9E7E]" aria-hidden />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-sm font-medium text-white">120k+ perfume graph</span>
+                        <span className="text-sm font-medium text-white">120k+ perfume dataset</span>
                         <span className="font-mono text-xs text-emerald-300/95">Rich analytics</span>
                       </div>
                       <p className="mt-1 text-xs text-white/50">

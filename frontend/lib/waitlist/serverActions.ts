@@ -1,6 +1,6 @@
 /**
  * Server-only waitlist helpers: Supabase (service role) + Resend.
- * Used by `app/api/waitlist/route.ts` — never import from client components.
+ * Used by `app/api/waitlist/route.ts`. Never import from client components.
  */
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";

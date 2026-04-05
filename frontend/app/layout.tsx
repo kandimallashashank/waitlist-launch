@@ -16,7 +16,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "ScentRev — Waitlist",
+  title: "ScentRev | Waitlist",
   description:
     "Join the ScentRev waitlist for early access and your launch discount.",
 };

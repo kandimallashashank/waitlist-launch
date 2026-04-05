@@ -50,9 +50,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const hadCouponBefore = Boolean(
-      priorRows?.[0] && (priorRows[0] as { coupon_code?: string }).coupon_code,
-    );
+    const existingRow = priorRows?.[0] as { coupon_code?: string } | undefined;
+    const hadCouponBefore = Boolean(existingRow?.coupon_code);
+    /** True if this email was on the waitlist before this request (for client messaging). */
+    const alreadyOnWaitlist = Boolean(existingRow);
 
     let result;
     try {
@@ -67,7 +68,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       ok: true,
-      already: result.already,
+      already: alreadyOnWaitlist,
       emailSent: result.emailSent,
       couponCode: result.couponCode,
       discountPercent: result.discountPercent,

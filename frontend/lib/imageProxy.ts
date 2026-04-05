@@ -16,7 +16,7 @@ const PROXY_HOSTS = [
   'cdn.fragrantica.com',
 ];
 
-/** Public Supabase Storage (any project) — same allowlist as `/api/proxy-image`. */
+/** Public Supabase Storage (any project): same allowlist as `/api/proxy-image`. */
 function isSupabasePublicStorageUrl(parsed: URL): boolean {
   if (!parsed.hostname.endsWith('.supabase.co')) return false;
   return parsed.pathname.includes('/storage/v1/object/public/');
