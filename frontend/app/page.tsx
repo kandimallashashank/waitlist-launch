@@ -526,7 +526,7 @@ export default function WaitlistPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div
             data-scroll="fade"
-            className="relative overflow-hidden rounded-[1.75rem] border border-[#D9D0C4] bg-[#FAF7F2] p-6 shadow-[0_32px_90px_-28px_rgba(20,18,15,0.2)] md:rounded-[2rem] md:p-10 lg:p-12"
+            className="relative overflow-hidden rounded-[1.5rem] border border-[#D9D0C4] bg-[#FAF7F2] p-5 shadow-[0_32px_90px_-28px_rgba(20,18,15,0.2)] sm:rounded-[1.75rem] sm:p-6 md:rounded-[2rem] md:p-10 lg:p-12"
           >
             <div
               className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(184,90,58,0.12),transparent_68%)]"
@@ -537,19 +537,23 @@ export default function WaitlistPage() {
               aria-hidden
             />
 
-            <div className="relative grid gap-10 lg:grid-cols-12 lg:gap-12 lg:items-start">
-              <div className="lg:col-span-5">
-                <span className="text-xs font-semibold uppercase tracking-[0.32em] text-[#B85A3A]">Who we are</span>
-                <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-[#14120F] md:text-[2.25rem] md:leading-tight">
-                  Sample first.
-                  <span className="mt-1 block text-[#5F5C57]">Buy smarter.</span>
+            <div className="relative grid gap-8 sm:gap-10 lg:grid-cols-12 lg:gap-12 lg:items-start">
+              <div className="min-w-0 lg:col-span-5">
+                <span className="inline-block max-w-full text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B85A3A] sm:text-xs sm:tracking-[0.28em] md:tracking-[0.32em]">
+                  Who we are
+                </span>
+                <h2 className="mt-2 font-display text-[1.625rem] font-semibold leading-[1.12] tracking-tight text-[#14120F] text-balance sm:mt-3 sm:text-3xl sm:leading-tight md:text-[2.25rem] md:leading-tight">
+                  <span className="block">Sample first.</span>
+                  <span className="mt-2 block text-[1.35rem] font-semibold leading-[1.15] text-[#5F5C57] sm:mt-1.5 sm:text-3xl sm:leading-tight">
+                    Buy smarter.
+                  </span>
                 </h2>
-                <p className="mt-5 max-w-md text-sm leading-relaxed text-[#4A4540] md:text-base md:leading-relaxed">
+                <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#4A4540] sm:mt-5 sm:text-sm md:text-base md:leading-relaxed">
                   ScentRev is built for India: affordable micro-sizes, honest wear in your climate, then a full bottle
                   only when your skin agrees. Everything on this page exists to make that decision easier.
                 </p>
 
-                <span className="mt-10 block text-[10px] font-semibold uppercase tracking-[0.28em] text-[#8A8279]">
+                <span className="mt-8 block text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8A8279] sm:mt-10 sm:tracking-[0.28em]">
                   Sizes we ship
                 </span>
                 <div
@@ -575,13 +579,17 @@ export default function WaitlistPage() {
                 </div>
               </div>
 
-              <div className="lg:col-span-7">
-                <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8A8279]">At a glance</p>
-                    <p className="mt-1 text-sm font-medium text-[#14120F]">Micro samples vs. jumping to a full bottle</p>
+              <div className="min-w-0 lg:col-span-7">
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8A8279] sm:tracking-[0.22em]">
+                      At a glance
+                    </p>
+                    <p className="mt-1 max-w-[22rem] text-[15px] font-medium leading-snug text-[#14120F] sm:max-w-none sm:text-sm sm:leading-normal">
+                      Micro samples vs. jumping to a full bottle
+                    </p>
                   </div>
-                  <span className="rounded-full border border-[#E0D6CC] bg-white/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#6B645C]">
+                  <span className="w-fit shrink-0 rounded-full border border-[#E0D6CC] bg-white/90 px-3 py-1.5 text-[9px] font-semibold uppercase leading-tight tracking-wide text-[#6B645C] sm:py-1 sm:text-[10px] sm:tracking-wider">
                     Same juice, different risk
                   </span>
                 </div>
@@ -589,12 +597,12 @@ export default function WaitlistPage() {
                   data-scroll="lift"
                   className="overflow-hidden rounded-2xl border border-[#D4C9BB] bg-gradient-to-b from-[#FFFCF8] to-[#F6F1E9] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_18px_50px_-20px_rgba(20,18,15,0.12)]"
                 >
-                  <div className="flex items-center justify-between gap-2 border-b border-[#E8DFD6] bg-[#F0E9E0] px-4 py-3 sm:px-5">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-[#5F5C57]">
-                      <span className="hidden h-1.5 w-1.5 rounded-full bg-[#B85A3A] sm:inline" aria-hidden />
+                  <div className="flex items-center justify-between gap-2 border-b border-[#E8DFD6] bg-[#F0E9E0] px-3 py-2.5 sm:px-5 sm:py-3">
+                    <div className="flex min-w-0 items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-[#5F5C57] sm:text-[11px] sm:tracking-wider">
+                      <span className="hidden h-1.5 w-1.5 shrink-0 rounded-full bg-[#B85A3A] sm:inline" aria-hidden />
                       Comparison
                     </div>
-                    <div className="flex gap-4 text-[11px] font-bold uppercase tracking-wide text-[#14120F] sm:gap-8">
+                    <div className="flex shrink-0 gap-4 text-[10px] font-bold uppercase tracking-wide text-[#14120F] sm:gap-8 sm:text-[11px]">
                       <span className="text-[#B85A3A]">Micro</span>
                       <span className="text-[#5F5C57]">Full bottle</span>
                     </div>
@@ -604,11 +612,17 @@ export default function WaitlistPage() {
                       <div
                         key={row.label}
                         data-row
-                        className="grid grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,0.9fr)] items-center gap-2 px-4 py-3.5 text-sm transition-colors hover:bg-[#FFF9F3]/90 sm:px-5 sm:gap-4"
+                        className="grid grid-cols-[minmax(0,1.15fr)_minmax(0,0.95fr)_minmax(0,0.95fr)] items-start gap-x-2 gap-y-1 px-3 py-3 text-sm transition-colors hover:bg-[#FFF9F3]/90 sm:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,0.9fr)] sm:items-center sm:gap-4 sm:px-5 sm:py-3.5"
                       >
-                        <span className="font-medium text-[#14120F]">{row.label}</span>
-                        <span className="text-center text-[13px] font-semibold text-[#B85A3A] sm:text-sm">{row.micro}</span>
-                        <span className="text-center text-[13px] text-[#5F5C57] sm:text-sm">{row.full}</span>
+                        <span className="min-w-0 pt-0.5 text-[13px] font-medium leading-snug text-[#14120F] sm:pt-0 sm:text-sm sm:leading-normal">
+                          {row.label}
+                        </span>
+                        <span className="min-w-0 text-center text-[12px] font-semibold leading-snug text-[#B85A3A] sm:text-sm sm:leading-normal">
+                          {row.micro}
+                        </span>
+                        <span className="min-w-0 text-center text-[12px] leading-snug text-[#5F5C57] sm:text-sm sm:leading-normal">
+                          {row.full}
+                        </span>
                       </div>
                     ))}
                   </div>

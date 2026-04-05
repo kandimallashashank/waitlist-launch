@@ -1,16 +1,13 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
-
-import { storeUrl } from "@/lib/storeUrl";
 
 /**
  * Waitlist: three MVP pillar cards (quiz, layering, micro-samples).
  * Blind Buy Score story lives in `WaitlistBlindBuyPipeline` on the same page.
  *
  * Returns:
- *   Section with pillar CTAs.
+ *   Section with pillar copy (no outbound store links).
  */
 export default function WaitlistWhatWeOffer(): React.ReactElement {
   return (
@@ -48,12 +45,6 @@ export default function WaitlistWhatWeOffer(): React.ReactElement {
               a fragrance that belongs on you, not just on a shelf. No influencer. No guesswork. Just
               data from people who actually wear it.
             </p>
-            <Link
-              href={storeUrl("/quiz")}
-              className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-[#B85A3A] transition-colors hover:text-[#A04D2F]"
-            >
-              Take the quiz <span aria-hidden>↗</span>
-            </Link>
           </article>
 
           <article className="flex flex-col rounded-2xl border border-[#E8E0D8] bg-white p-6 shadow-[0_12px_40px_rgba(26,26,26,0.06)] transition-shadow duration-300 hover:shadow-[0_16px_48px_rgba(26,26,26,0.09)]">
@@ -70,12 +61,6 @@ export default function WaitlistWhatWeOffer(): React.ReactElement {
               meant to meet: base with base, skin with season, mood with moment. Every combo here has
               been worn, tested, and verified on real skin, not imagined in a lab.
             </p>
-            <Link
-              href={storeUrl("/layering-lab")}
-              className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-[#B85A3A] transition-colors hover:text-[#A04D2F]"
-            >
-              Explore combos <span aria-hidden>↗</span>
-            </Link>
           </article>
 
           <article className="flex flex-col rounded-2xl border border-[#E8E0D8] bg-white p-6 shadow-[0_12px_40px_rgba(26,26,26,0.06)] transition-shadow duration-300 hover:shadow-[0_16px_48px_rgba(26,26,26,0.09)]">
@@ -92,12 +77,6 @@ export default function WaitlistWhatWeOffer(): React.ReactElement {
               dry-down, sleep, and sunlight. Only then do you know. We send you the truth in 2ml. You
               commit when your skin says yes.
             </p>
-            <Link
-              href={storeUrl("/#how-it-works")}
-              className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-[#B85A3A] transition-colors hover:text-[#A04D2F]"
-            >
-              See how it works <span aria-hidden>↗</span>
-            </Link>
           </article>
         </div>
       </div>
