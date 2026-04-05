@@ -1,0 +1,79 @@
+import { NextResponse } from "next/server";
+
+import {
+  getWaitlistEmailValidationError,
+  normalizeWaitlistEmail,
+} from "@/lib/waitlist/emailValidation";
+import { completeWaitlistSignup, getSupabaseAdmin } from "@/lib/waitlist/serverActions";
+
+interface WaitlistPayload {
+  email?: string;
+  full_name?: string;
+}
+
+/**
+ * Waitlist signup: Supabase persistence + Resend coupon email (server-only).
+ */
+export async function POST(req: Request) {
+  try {
+    const body = (await req.json().catch(() => ({}))) as WaitlistPayload;
+    const fullName = String(body.full_name ?? "").trim() || undefined;
+
+    const emailErr = getWaitlistEmailValidationError(String(body.email ?? ""));
+    if (emailErr) {
+      return NextResponse.json({ error: emailErr }, { status: 400 });
+    }
+    const rawEmail = normalizeWaitlistEmail(String(body.email ?? ""));
+
+    let supabase;
+    try {
+      supabase = getSupabaseAdmin();
+    } catch (e) {
+      console.error("Waitlist Supabase config:", e);
+      return NextResponse.json(
+        { error: "Waitlist is not configured." },
+        { status: 500 },
+      );
+    }
+
+    const { data: priorRows, error: priorErr } = await supabase
+      .from("waitlist")
+      .select("coupon_code")
+      .eq("email", rawEmail)
+      .limit(1);
+
+    if (priorErr) {
+      console.error("Waitlist prior lookup:", priorErr.message);
+      return NextResponse.json(
+        { error: "Could not complete signup. Please try again later." },
+        { status: 500 },
+      );
+    }
+
+    const hadCouponBefore = Boolean(
+      priorRows?.[0] && (priorRows[0] as { coupon_code?: string }).coupon_code,
+    );
+
+    let result;
+    try {
+      result = await completeWaitlistSignup(rawEmail, fullName, hadCouponBefore);
+    } catch (err) {
+      console.error("Waitlist signup error:", err);
+      return NextResponse.json(
+        { error: "Could not save your signup. Please try again later." },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json({
+      ok: true,
+      already: result.already,
+      emailSent: result.emailSent,
+      couponCode: result.couponCode,
+      discountPercent: result.discountPercent,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unexpected error.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
