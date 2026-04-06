@@ -82,7 +82,7 @@ export function buildWaitlistCouponEmailHtml(
 ): string {
   const safeName = escapeHtml(displayName);
   const safeCode = escapeHtml(couponCode);
-  const preheader = `Your ${discountPercent}% launch code is inside. Micro samples, Blind Buy Score 0-5, shipped in India.`;
+  const preheader = `Your ${discountPercent}% launch code is inside. Micro samples, full bottles, Blind Buy Score 0-5, shipped in India.`;
 
   const fontSans =
     "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
@@ -202,7 +202,7 @@ export function buildWaitlistCouponEmailHtml(
                         <td valign="top" style="padding-top:2px;">
                           <a href="${storeHref("/")}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
                             <p class="brand-name" style="margin:0;font-family:${fontSans};font-size:14px;font-weight:600;letter-spacing:-0.02em;color:#14120F;">ScentRev</p>
-                            <p class="tagline" style="margin:4px 0 0;font-family:${fontSans};font-size:12px;font-weight:400;line-height:16px;color:#6b645c;">Micro samples &middot; shipped in India</p>
+                            <p class="tagline" style="margin:4px 0 0;font-family:${fontSans};font-size:12px;font-weight:400;line-height:16px;color:#6b645c;">Micro samples &middot; full bottles &middot; shipped in India</p>
                           </a>
                           <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:12px;">
                             <tr>
@@ -240,7 +240,7 @@ export function buildWaitlistCouponEmailHtml(
                 <tr>
                   <td align="left" style="padding-top:16px;">
                     <p class="lead" style="margin:0;font-family:${fontSans};font-size:16px;line-height:26px;font-weight:400;color:#4a4540;">
-                      Thanks for joining. ScentRev is <strong style="font-weight:600;color:#14120F;">micro fragrance discovery for India</strong>: wear on real skin before you commit to a full bottle. Data, not guesswork.
+                      Thanks for joining. ScentRev is <strong style="font-weight:600;color:#14120F;">fragrance discovery for India</strong>: micro sizes to wear on real skin first, plus full-size bottles when you are ready. Data, not guesswork.
                     </p>
                   </td>
                 </tr>
@@ -254,7 +254,7 @@ export function buildWaitlistCouponEmailHtml(
                             <tr>
                               <td style="padding:10px 16px;font-family:${fontSans};font-size:12px;color:#14120F;">
                                 <strong style="font-weight:600;letter-spacing:-0.02em;">450+ fragrances</strong>
-                                <span class="lbl" style="display:block;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.12em;color:#8a8279;margin-top:2px;">Catalog depth</span>
+                                <span class="lbl" style="display:block;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.12em;color:#8a8279;margin-top:2px;">Samples &amp; full bottles</span>
                               </td>
                             </tr>
                           </table>
@@ -313,7 +313,7 @@ export function buildWaitlistCouponEmailHtml(
                               </td>
                               <td valign="top" style="padding:0 0 14px 6px;">
                                 <p class="mvp-copy" style="margin:0;font-family:${fontSans};font-size:15px;line-height:23px;color:#14120F;">
-                                  <strong style="font-weight:600;">Micro vials, India-first.</strong> 2ml to 12ml, shipped here. A small rupee decision beats a big bottle regret.
+                                  <strong style="font-weight:600;">Micro vials, India-first.</strong> 3ml to 10ml, shipped here. A small rupee decision beats a big bottle regret.
                                 </p>
                               </td>
                             </tr>
@@ -538,10 +538,10 @@ export function buildWaitlistCouponEmailText(
 
 Early access + launch discount.
 
-Trust signals: 450+ fragrances · From ₹199 micro samples · India-first (heat & humidity).
+Trust signals: 450+ fragrances (samples & full bottles) · From ₹199 micro samples · India-first (heat & humidity).
 
 WHAT WE'RE BUILDING (MVP)
-• Micro vials (2ml–12ml), India-first.
+• Micro vials (3ml–10ml), India-first.
 • Blind Buy Score 0-5: Reddit, Facebook, web + perfume metrics (weighted pipeline; 0 weak, 5 strong blind buy).
 • Climate-aware picks.
 • Quiz: your taste profile; Club auto-select uses it only when you enable it.

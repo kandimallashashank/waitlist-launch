@@ -31,8 +31,8 @@ import { toast } from 'sonner';
 
 const sizes = [
   {
-    label: '2ml Micro',
-    detail: 'Enough wears to know',
+    label: '3ml Micro',
+    detail: 'Perfect for 5-7 wears',
     icon: TestTube2,
     gradient: 'from-[#E9F0EC] via-[#F6FAF8] to-white',
     iconColor: 'text-[#6D7D63]',
@@ -45,7 +45,7 @@ const sizes = [
     iconColor: 'text-[#B85A3A]',
   },
   {
-    label: '12ml Plus',
+    label: '10ml Plus',
     detail: 'Longer stays and gifting',
     icon: FlaskConical,
     gradient: 'from-[#F6EFE6] via-[#FFF7ED] to-white',
@@ -341,7 +341,7 @@ export default function WaitlistPage() {
                 </span>
                 <div className="min-w-0">
                   <p className="text-[13px] font-semibold tracking-tight text-[#14120F]">ScentRev</p>
-                  <p className="text-xs text-[#6B645C]">Micro samples · shipped in India</p>
+                  <p className="text-xs text-[#6B645C]">Micro samples · full bottles · shipped in India</p>
                 </div>
                 <span className="hidden h-8 w-px bg-[#D9D1C7] sm:block" aria-hidden />
                 <span className="rounded-full border border-[#D9D1C7] bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#6B645C] shadow-sm backdrop-blur-sm">
@@ -362,9 +362,10 @@ export default function WaitlistPage() {
               </div>
 
               <p data-hero className="max-w-xl text-base leading-relaxed text-[#4A4540] md:text-[1.0625rem]">
-                We sell <span className="font-medium text-[#14120F]">micro fragrance samples</span> in India (2ml to 12ml)
-                so you can wear on real skin before a full bottle. Join for launch timing and your discount, then keep
-                scrolling for sizes, how we compare to full bottles, and{' '}
+                We sell <span className="font-medium text-[#14120F]">micro fragrance samples</span> (3ml to 10ml) and{' '}
+                <span className="font-medium text-[#14120F]">full-size bottles</span> in India: try on real skin first,
+                then buy the bottle when your skin agrees. Join for launch timing and your discount, then keep
+                scrolling for sizes, how micro compares to full bottles, and{' '}
                 <span className="font-medium text-[#14120F]">Blind Buy Score</span>
                 : a 0-5 blind-buy rating from Reddit, Facebook, and web chatter fused with perfume metrics so you waste
                 less time searching.
@@ -372,7 +373,7 @@ export default function WaitlistPage() {
 
               <div data-hero className="flex flex-wrap gap-2 pt-1">
                 {[
-                  { t: '450+ fragrances', a: 'Catalog depth' },
+                  { t: '450+ fragrances', a: 'Samples & full bottles' },
                   { t: 'From ₹199', a: 'Micro samples' },
                   { t: 'India-first', a: 'Heat & humidity' },
                 ].map((chip) => (
@@ -571,8 +572,9 @@ export default function WaitlistPage() {
                   </span>
                 </h2>
                 <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#4A4540] sm:mt-5 sm:text-sm md:text-base md:leading-relaxed">
-                  ScentRev is built for India: affordable micro-sizes, honest wear in your climate, then a full bottle
-                  only when your skin agrees. Everything on this page exists to make that decision easier.
+                  ScentRev is built for India: affordable micro-sizes for honest wear in your climate, and full bottles
+                  when you are ready. We sell both so you can try first, then commit with confidence. Everything on this
+                  page exists to make that decision easier.
                 </p>
 
                 <span className="mt-8 block text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8A8279] sm:mt-10 sm:tracking-[0.28em]">

@@ -26,8 +26,8 @@ export default function WaitlistWhatWeOffer(): React.ReactElement {
           <p className="mt-4 text-sm leading-relaxed text-[#6B645C] md:text-base">
             After you start with micro-samples, these{" "}
             <span className="font-medium text-[#B85A3A]">MVP</span> pillars keep picks honest: quiz fit,
-            AI- and machine-learning-ranked layering combos you can judge on real metrics, honest try
-            sizes before a full bottle, and an optional monthly{" "}
+            AI- and machine-learning-ranked layering combos you can judge on real metrics, micro try-on
+            sizes and full bottles when you are ready, and an optional monthly{" "}
             <span className="font-medium text-[#4A4540]">Club</span> so you can keep discovering without
             full-bottle spend.
           </p>
@@ -79,7 +79,7 @@ export default function WaitlistWhatWeOffer(): React.ReactElement {
               A bottle is a commitment. Your skin is the final judge, not the bottle, not the review,
               not the person who called it &quot;nice.&quot; Wear it for two days. Let it move through
               dry-down, sleep, and sunlight. Only then do you know. We send you the truth in{' '}
-              <span className="font-medium text-[#4A4540]">2ml</span> so the answer lives on your skin.
+              <span className="font-medium text-[#4A4540]">3ml</span> so the answer lives on your skin.
               You commit when your skin says yes.
             </p>
           </article>

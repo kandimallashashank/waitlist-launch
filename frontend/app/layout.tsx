@@ -18,7 +18,7 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "ScentRev | Waitlist",
   description:
-    "Join the ScentRev waitlist for early access and your launch discount.",
+    "Join the ScentRev waitlist: micro samples, full bottles, and your launch discount.",
 };
 
 export const viewport: Viewport = {
