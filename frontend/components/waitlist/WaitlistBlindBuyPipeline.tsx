@@ -7,7 +7,6 @@
 
 import React, { forwardRef, useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { AnimatedBeam } from "@/registry/magicui/animated-beam";
 import { cn } from "@/lib/utils";
 
@@ -126,8 +125,8 @@ export default function WaitlistBlindBuyPipeline(): React.ReactElement {
                 ref={processorRef}
                 className="rounded-2xl border border-white/12 bg-[#14120F] px-6 py-3 text-center shadow-[0_12px_40px_-12px_rgba(0,0,0,0.55)] sm:px-8 sm:py-3.5"
               >
-                <span className="font-display text-sm font-semibold lowercase tracking-tight text-white sm:text-base">
-                  scentrev
+                <span className="font-display text-sm font-semibold tracking-tight text-white sm:text-base">
+                  SR
                 </span>
               </div>
             </div>
@@ -167,15 +166,6 @@ export default function WaitlistBlindBuyPipeline(): React.ReactElement {
               curvature={52}
             />
           </div>
-        </div>
-
-        <div className="mt-7 flex justify-center sm:mt-8">
-          <Link
-            href="#waitlist-form"
-            className="inline-flex h-11 items-center justify-center rounded-xl bg-[#B85A3A] px-7 text-sm font-semibold text-white shadow-md shadow-[#B85A3A]/22 transition-colors hover:bg-[#A04D2F] sm:h-12 sm:px-8"
-          >
-            Join the waitlist
-          </Link>
         </div>
       </div>
     </section>

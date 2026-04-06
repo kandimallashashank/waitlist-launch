@@ -336,8 +336,8 @@ export default function WaitlistPage() {
           <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:gap-10 xl:gap-14">
             <div className="min-w-0 flex-1 space-y-8 lg:max-w-[min(640px,58%)] lg:pt-2">
               <div data-hero className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[#14120F] text-sm font-semibold tracking-tight text-white shadow-lg shadow-[#14120F]/20 ring-1 ring-white/10">
-                  P
+                <span className="inline-flex h-11 min-w-[2.75rem] items-center justify-center rounded-2xl bg-[#14120F] px-2 text-xs font-semibold tracking-tight text-white shadow-lg shadow-[#14120F]/20 ring-1 ring-white/10 sm:text-sm">
+                  SR
                 </span>
                 <div className="min-w-0">
                   <p className="text-[13px] font-semibold tracking-tight text-[#14120F]">ScentRev</p>
