@@ -29,7 +29,14 @@ const MARQUEE_MASK =
 const brandLinkClass =
   'flex-shrink-0 opacity-[0.88] transition-opacity duration-300 hover:opacity-100';
 
-function BrandLogoLink({ brand }: { brand: (typeof brands)[0] }) {
+function BrandLogoLink({
+  brand,
+  priority = false,
+}: {
+  brand: (typeof brands)[0];
+  /** First visible logos in hero: preload for LCP. */
+  priority?: boolean;
+}) {
   return (
     <Link
       href={storeUrl(`/collections/${brand.slug}`)}
@@ -42,6 +49,8 @@ function BrandLogoLink({ brand }: { brand: (typeof brands)[0] }) {
         height={50}
         className="h-7 w-auto object-contain md:h-9"
         style={{ maxWidth: '112px' }}
+        priority={priority}
+        sizes="(max-width: 768px) 96px, 112px"
       />
     </Link>
   );
@@ -70,7 +79,7 @@ function BrandMarqueeStrip({
       >
         {brands.map((brand, index) => (
           <div key={`static-${brand.slug}-${index}`} className="snap-start shrink-0">
-            <BrandLogoLink brand={brand} />
+            <BrandLogoLink brand={brand} priority={index < 3} />
           </div>
         ))}
       </div>
@@ -83,7 +92,7 @@ function BrandMarqueeStrip({
       style={{ ['--waitlist-marquee-duration' as string]: `${durationSec}s` }}
     >
       {brands.map((brand, index) => (
-        <BrandLogoLink key={`a-${index}`} brand={brand} />
+        <BrandLogoLink key={`a-${index}`} brand={brand} priority={index < 3} />
       ))}
       {brands.map((brand, index) => (
         <BrandLogoLink key={`b-${index}`} brand={brand} />

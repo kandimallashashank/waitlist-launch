@@ -42,6 +42,25 @@ const MIN_LOADING_MS = 450;
 const SLOW_LOADING_MS = 6500;
 const TOTAL_STEPS = 11;
 
+/**
+ * Returns true when this waitlist session already completed or skipped the post-quiz survey.
+ */
+async function fetchWaitlistQuizSurveyCompleted(): Promise<boolean> {
+  if (typeof window === "undefined") return true;
+  try {
+    const res = await fetch("/api/waitlist-preview/quiz/survey", {
+      method: "GET",
+      credentials: "include",
+      headers: { ...getPreviewAuthHeaders() },
+    });
+    if (!res.ok) return false;
+    const data = (await res.json()) as { completed?: boolean };
+    return data.completed === true;
+  } catch {
+    return false;
+  }
+}
+
 type StepKey =
   | "gender"
   | "anchorPerfumes"
@@ -335,7 +354,7 @@ const AUTO_ADVANCE_STEPS = new Set<StepKey>([
   "intensity",
 ]);
 
-/** Delay before auto-advancing on single-select (was 220ms — felt instant / flashy). */
+/** Delay before auto-advancing on single-select (was 220ms; felt instant / flashy). */
 const AUTO_ADVANCE_SINGLE_MS = 560;
 /** Delay before goNext after multi-select hits max (stacked after chip/card delay in QuizQuestionTypes). */
 const AUTO_ADVANCE_MULTI_MS = 700;
@@ -498,10 +517,26 @@ export function ForYouWizard({
   const [loadingSlow, setLoadingSlow] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [pilotSurveyOpen, setPilotSurveyOpen] = useState(false);
-  const [postQuizHref, setPostQuizHref] = useState<string | null>(null);
+  /** After the pilot survey closes: optional waitlist results payload and/or client navigation. */
+  const pilotSurveyPendingRef = useRef<{
+    waitlist: WaitlistQuizSuccessPayload | null;
+    navigate: string | null;
+  }>({ waitlist: null, navigate: null });
   const [anchorCatalog, setAnchorCatalog] = useState<QuizCatalogPerfume[]>([]);
   const prevAnchorGenderRef = useRef<string | null>(null);
   const goNextRef = useRef<() => void>(() => {});
+
+  const finalizePilotSurvey = useCallback(() => {
+    const { waitlist, navigate } = pilotSurveyPendingRef.current;
+    pilotSurveyPendingRef.current = { waitlist: null, navigate: null };
+    setPilotSurveyOpen(false);
+    if (waitlist) {
+      onWaitlistSubmitSuccess?.(waitlist);
+    }
+    if (navigate) {
+      router.replace(navigate);
+    }
+  }, [onWaitlistSubmitSuccess, router]);
 
   const catalogById = useMemo(() => {
     const m = new Map<string, QuizCatalogPerfume>();
@@ -677,10 +712,16 @@ export function ForYouWizard({
         const result = (await response.json()) as QuizResultResponse;
         onComplete?.(result);
         if (pilotSurveyAfterSubmit && isWaitlist) {
-          setPostQuizHref(redirectHref);
-          setPilotSurveyOpen(true);
-          setQuickSubmitting(false);
-          return;
+          const surveyDone = await fetchWaitlistQuizSurveyCompleted();
+          if (!surveyDone) {
+            pilotSurveyPendingRef.current = {
+              waitlist: null,
+              navigate: redirectHref,
+            };
+            setPilotSurveyOpen(true);
+            setQuickSubmitting(false);
+            return;
+          }
         }
         router.replace(redirectHref);
       } catch (error) {
@@ -748,12 +789,26 @@ export function ForYouWizard({
           preference_analytics?: PreferenceAnalyticsData | null;
           scent_profile?: WaitlistQuizSuccessPayload["scent_profile"];
         };
-        onWaitlistSubmitSuccess({
+        const payload: WaitlistQuizSuccessPayload = {
           recommendations: raw.recommendations ?? [],
           answers: buildPayload(answers).answers,
           preference_analytics: raw.preference_analytics ?? null,
           scent_profile: raw.scent_profile ?? null,
-        });
+        };
+        if (pilotSurveyAfterSubmit) {
+          const surveyDone = await fetchWaitlistQuizSurveyCompleted();
+          if (!surveyDone) {
+            pilotSurveyPendingRef.current = {
+              waitlist: payload,
+              navigate: null,
+            };
+            setLoading(false);
+            setLoadingSlow(false);
+            setPilotSurveyOpen(true);
+            return;
+          }
+        }
+        onWaitlistSubmitSuccess(payload);
         setLoading(false);
         setLoadingSlow(false);
         return;
@@ -761,11 +816,17 @@ export function ForYouWizard({
 
       const nextHref = afterSubmitHref ?? "/for-you";
       if (pilotSurveyAfterSubmit && isWaitlist) {
-        setLoading(false);
-        setLoadingSlow(false);
-        setPostQuizHref(nextHref);
-        setPilotSurveyOpen(true);
-        return;
+        const surveyDone = await fetchWaitlistQuizSurveyCompleted();
+        if (!surveyDone) {
+          pilotSurveyPendingRef.current = {
+            waitlist: null,
+            navigate: nextHref,
+          };
+          setLoading(false);
+          setLoadingSlow(false);
+          setPilotSurveyOpen(true);
+          return;
+        }
       }
       window.setTimeout(() => {
         router.replace(nextHref);
@@ -845,19 +906,17 @@ export function ForYouWizard({
     );
   }
 
+  if (pilotSurveyOpen) {
+    return (
+      <div className="flex min-h-[100dvh] w-full items-center justify-center bg-gradient-to-b from-[#FAF7F4] via-[#F6F1EC] to-[#F0E9E2] p-4">
+        <QuizPilotSurveyModal onFinished={finalizePilotSurvey} />
+      </div>
+    );
+  }
+
   return (
     <div className="relative flex h-full min-h-0 flex-1 flex-col touch-manipulation bg-gradient-to-b from-[#FAF7F4] via-[#F6F1EC] to-[#F0E9E2]">
-      {pilotSurveyOpen && postQuizHref ? (
-        <QuizPilotSurveyModal
-          navigateHref={postQuizHref}
-          onClose={() => {
-            setPilotSurveyOpen(false);
-            setPostQuizHref(null);
-          }}
-          router={router}
-        />
-      ) : null}
-      {/* Ambient glows: omitted on small screens — large blurs are costly on mobile GPUs. */}
+      {/* Ambient glows: omitted on small screens (large blurs are costly on mobile GPUs). */}
       <div className="pointer-events-none fixed inset-0 hidden overflow-hidden md:block">
         <div className="absolute -top-40 right-0 h-[500px] w-[500px] rounded-full bg-[#B85A3A]/8 blur-[120px]" />
         <div className="absolute bottom-0 left-0 h-80 w-80 rounded-full bg-[#D4A574]/7 blur-[90px]" />
@@ -866,6 +925,7 @@ export function ForYouWizard({
       <div key={stepKey} className="flex h-full min-h-0 flex-1 flex-col">
           <QuizStepFrame
             bodyLayout={stepKey === "anchorPerfumes" ? "fill" : "default"}
+            denseHeader={stepKey === "anchorPerfumes"}
             canContinue={canContinue(stepKey, answers)}
             continueLabel={stepIndex === TOTAL_STEPS - 1 ? "SEE MY MATCHES" : "CONTINUE"}
             onBack={goBack}
@@ -1028,15 +1088,7 @@ export function ForYouWizard({
   );
 }
 
-function QuizPilotSurveyModal({
-  navigateHref,
-  onClose,
-  router,
-}: {
-  navigateHref: string;
-  onClose: () => void;
-  router: { replace: (href: string) => void };
-}) {
+function QuizPilotSurveyModal({ onFinished }: { onFinished: () => void }) {
   const [tooLong, setTooLong] = useState(3);
   const [tags, setTags] = useState<string[]>([]);
   const [freeText, setFreeText] = useState("");
@@ -1048,30 +1100,31 @@ function QuizPilotSurveyModal({
     );
   };
 
-  const finish = async (sendSurvey: boolean) => {
+  const finish = async (mode: "skip" | "submit") => {
     setSaving(true);
     try {
-      if (sendSurvey) {
-        await fetch("/api/waitlist-preview/quiz/survey", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            ...getPreviewAuthHeaders(),
-          },
-          body: JSON.stringify({
-            too_long_rating: tooLong,
-            irrelevant_tags: tags,
-            free_text: freeText.slice(0, 2000),
-          }),
-        });
-      }
+      await fetch("/api/waitlist-preview/quiz/survey", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...getPreviewAuthHeaders(),
+        },
+        body: JSON.stringify(
+          mode === "skip"
+            ? { skipped: true }
+            : {
+                too_long_rating: tooLong,
+                irrelevant_tags: tags,
+                free_text: freeText.slice(0, 2000),
+              },
+        ),
+      });
     } catch {
-      /* non-blocking */
+      /* non-blocking: still advance so the user is not stuck */
     } finally {
-      onClose();
-      router.replace(navigateHref);
       setSaving(false);
+      onFinished();
     }
   };
 
@@ -1082,10 +1135,10 @@ function QuizPilotSurveyModal({
           Quick pilot check-in
         </p>
         <h2 className="mt-2 font-display text-xl text-[#1A1A1A]">
-          How was the quiz?
+          How did the quiz feel?
         </h2>
         <p className="mt-2 text-sm text-[#5F5C57]">
-          This helps us trim noise before launch. Optional skip anytime.
+          About 10 seconds. We only ask this once per account; it helps us fix length and pacing before launch.
         </p>
 
         <p className="mt-5 text-xs font-semibold text-[#1A1A1A]">
@@ -1109,10 +1162,11 @@ function QuizPilotSurveyModal({
         </div>
 
         <p className="mt-5 text-xs font-semibold text-[#1A1A1A]">
-          Anything feel irrelevant?
+          Anything feel off?
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
           {[
+            { id: "too_many_questions", label: "Too many questions" },
             { id: "too_many_steps", label: "Too many steps" },
             { id: "irrelevant_questions", label: "Irrelevant questions" },
             { id: "unclear_options", label: "Unclear answer options" },
@@ -1137,9 +1191,9 @@ function QuizPilotSurveyModal({
           <textarea
             value={freeText}
             onChange={(e) => setFreeText(e.target.value)}
-            rows={3}
+            rows={2}
             className="mt-2 w-full resize-none rounded-xl border border-[#E5DED4] bg-white px-3 py-2 text-sm text-[#1A1A1A] outline-none ring-0 focus:border-[#B85A3A]"
-            placeholder="Short notes help us ship faster…"
+            placeholder="One line is enough…"
           />
         </label>
 
@@ -1147,7 +1201,7 @@ function QuizPilotSurveyModal({
           <button
             type="button"
             disabled={saving}
-            onClick={() => void finish(false)}
+            onClick={() => void finish("skip")}
             className="rounded-xl px-4 py-3 text-sm font-semibold text-[#8A7A72] hover:bg-white/80"
           >
             Skip
@@ -1155,7 +1209,7 @@ function QuizPilotSurveyModal({
           <button
             type="button"
             disabled={saving}
-            onClick={() => void finish(true)}
+            onClick={() => void finish("submit")}
             className="rounded-xl bg-[#1A1A1A] px-5 py-3 text-sm font-bold tracking-wide text-white hover:bg-[#B85A3A] disabled:opacity-60"
           >
             {saving ? "Saving…" : "Send feedback"}
@@ -1172,6 +1226,8 @@ interface QuizStepFrameProps {
    * ``default``: legacy layout with flex spacer before Continue.
    */
   bodyLayout?: "default" | "fill";
+  /** Tighter title block + smaller heading (e.g. anchor perfume grid step). */
+  denseHeader?: boolean;
   canContinue: boolean;
   children: ReactNode;
   continueLabel: string;
@@ -1188,6 +1244,7 @@ interface QuizStepFrameProps {
 
 function QuizStepFrame({
   bodyLayout = "default",
+  denseHeader = false,
   canContinue,
   children,
   continueLabel,
@@ -1201,6 +1258,7 @@ function QuizStepFrame({
   subtitle,
 }: QuizStepFrameProps) {
   const fill = bodyLayout === "fill";
+  const tightTop = fill && denseHeader;
   return (
     <section
       className={`relative mx-auto flex w-full max-w-6xl flex-col px-4 pt-5 sm:px-8 sm:pt-7 ${
@@ -1242,9 +1300,29 @@ function QuizStepFrame({
         className={`flex flex-col ${fill ? "min-h-0 flex-1 overflow-hidden" : "flex-1"}`}
       >
         {/* Title block */}
-        <div className={`shrink-0 ${fill ? "pb-3 pt-4 sm:pb-4 sm:pt-5" : "pb-5 pt-7 sm:pb-6 sm:pt-9"}`}>
-          <div className="mx-auto max-w-2xl space-y-3 text-center">
-            <h1 className="font-display text-[1.6rem] font-bold leading-[1.2] tracking-tight text-[#1A1A1A] sm:text-[2.1rem]">
+        <div
+          className={`shrink-0 ${
+            tightTop
+              ? "pb-1 pt-1 sm:pb-2 sm:pt-2.5"
+              : fill
+                ? "pb-2 pt-2.5 sm:pb-4 sm:pt-5"
+                : "pb-5 pt-7 sm:pb-6 sm:pt-9"
+          }`}
+        >
+          <div
+            className={`mx-auto max-w-2xl text-center ${
+              tightTop ? "space-y-1" : fill ? "space-y-1.5 sm:space-y-3" : "space-y-3"
+            }`}
+          >
+            <h1
+              className={`font-display font-bold leading-[1.15] tracking-tight text-[#1A1A1A] ${
+                tightTop
+                  ? "text-[1.15rem] sm:text-[1.65rem]"
+                  : fill
+                    ? "text-[1.35rem] sm:text-[2.1rem]"
+                    : "text-[1.6rem] sm:text-[2.1rem]"
+              }`}
+            >
               {title}
             </h1>
             {subtitle ? <div className="pt-1">{subtitle}</div> : null}

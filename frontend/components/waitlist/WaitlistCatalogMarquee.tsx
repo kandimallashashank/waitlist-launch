@@ -95,7 +95,7 @@ export default function WaitlistCatalogMarquee(
           </div>
         ) : reduceMotion ? (
           <div className="flex gap-4 overflow-x-auto pb-2">
-            {products.slice(0, 12).map((p) => {
+            {products.slice(0, 12).map((p, imgIndex) => {
               const card = (
                 <div className="w-[176px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white shadow-xl">
                   <div className={CATALOG_IMAGE_AREA_CLASS}>
@@ -103,7 +103,9 @@ export default function WaitlistCatalogMarquee(
                       <img
                         src={getProxiedImageUrl(p.primary_image_url) || p.primary_image_url}
                         alt={p.name}
-                        loading="lazy"
+                        loading={imgIndex < 4 ? 'eager' : 'lazy'}
+                        fetchPriority={imgIndex < 4 ? 'high' : undefined}
+                        decoding="async"
                         className={CATALOG_BOTTLE_IMG_CLASS}
                         style={{ mixBlendMode: 'multiply' }}
                       />
@@ -141,6 +143,7 @@ export default function WaitlistCatalogMarquee(
               style={{ ['--waitlist-marquee-duration' as string]: '52s' }}
             >
               {loop.map((p, index) => {
+                const eagerAboveFold = index < 4;
                 const inner = (
                   <div className="waitlist-catalog-card w-[176px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white shadow-xl">
                     <div className={CATALOG_IMAGE_AREA_CLASS}>
@@ -148,7 +151,9 @@ export default function WaitlistCatalogMarquee(
                         <img
                           src={getProxiedImageUrl(p.primary_image_url) || p.primary_image_url}
                           alt={p.name}
-                          loading="lazy"
+                          loading={eagerAboveFold ? 'eager' : 'lazy'}
+                          fetchPriority={eagerAboveFold ? 'high' : undefined}
+                          decoding="async"
                           className={CATALOG_BOTTLE_IMG_CLASS}
                           style={{ mixBlendMode: 'multiply' }}
                         />

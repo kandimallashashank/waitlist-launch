@@ -47,7 +47,7 @@ const FAQ = [
   { q: 'Can I pause or skip?', a: 'Yes pause stops future renewals until you resume. You can skip up to two months per calendar year from Manage Subscription.' },
   { q: 'How do I cancel?', a: 'Cancel anytime from Manage Subscription. You keep access through the end of the period you already paid for.' },
   { q: 'Is GST included? Is shipping free?', a: 'Prices are inclusive of GST. Shipping is free on all Scent Box orders.' },
-  { q: 'Can subscription prices change?', a: 'Yes. Plan prices may be updated before launch or over time—for example when we align with live billing, run offers, or adjust tiers. Your renewal always reflects the current plan price we show in your account, with notice where required.' },
+  { q: 'Can subscription prices change?', a: 'Yes. Plan prices may be updated before launch or over time, for example when we align with live billing, run offers, or adjust tiers. Your renewal always reflects the current plan price we show in your account, with notice where required.' },
 ];
 
 export function SubscribePilotPage(): React.ReactElement {
@@ -106,7 +106,7 @@ export function SubscribePilotPage(): React.ReactElement {
               <p className="mb-8 max-w-sm text-[15px] leading-relaxed text-white/75">
                 One 8ml atomizer (~100 sprays) delivered to your door.{' '}
                 Starting at <span className="font-semibold text-white">₹{startingMonthly}/mo</span>
-                {' '}(indicative—subscription prices can be dynamic; see plans below).
+                {' '}(indicative; subscription prices can be dynamic; see plans below).
                 No lock-in.
               </p>
 
@@ -305,8 +305,8 @@ export function SubscribePilotPage(): React.ReactElement {
           </div>
 
           <p className="mx-auto mt-6 max-w-xl text-center text-xs leading-relaxed text-white/50">
-            Subscription plan prices may be <span className="font-medium text-white/70">dynamic</span>
-            —they can change before launch, when we sync with live plans, or at renewal based on catalog
+            Subscription plan prices may be <span className="font-medium text-white/70">dynamic</span>.
+            They can change before launch, when we sync with live plans, or at renewal based on catalog
             and offers. Amounts on this page are indicative; the price you see at checkout (or on your
             renewal invoice) is what applies. Final launch pricing will be confirmed when we open
             subscriptions.

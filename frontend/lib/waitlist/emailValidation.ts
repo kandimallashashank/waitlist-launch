@@ -1,5 +1,5 @@
 /**
- * Waitlist email validation — practical RFC 5321 subset.
+ * Waitlist email validation: practical RFC 5321 subset.
  * Accepts real-world addresses including .co, .in, .io, subdomains, plus-addressing, etc.
  * Rejects obvious garbage: missing @, no TLD, consecutive dots, leading/trailing dots.
  */

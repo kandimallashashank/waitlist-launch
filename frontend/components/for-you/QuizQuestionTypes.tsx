@@ -61,9 +61,10 @@ export function TypeA({ options, selected, onSelect }: TypeAProps) {
 
   return (
     <div className={`grid ${cols} gap-3 sm:gap-4 w-full max-w-3xl mx-auto`}>
-      {options.map((opt) => {
+      {options.map((opt, optIndex) => {
         const active = selected === opt.value;
         const fallback = getFallback(opt.value);
+        const inFirstRow = optIndex < 3;
         return (
           <button
             key={opt.value}
@@ -80,6 +81,9 @@ export function TypeA({ options, selected, onSelect }: TypeAProps) {
                 src={opt.imageUrl}
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover object-top sm:object-center"
+                loading={inFirstRow ? "eager" : "lazy"}
+                decoding="async"
+                fetchPriority={optIndex === 0 ? "high" : inFirstRow ? "auto" : "low"}
               />
             ) : (
               <div className={`absolute inset-0 bg-gradient-to-br ${fallback.gradient}`}>

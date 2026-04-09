@@ -5,7 +5,7 @@ import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
-import { Filter, Search, X } from 'lucide-react';
+import { Filter, Info, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { type Fragrance } from '@/api/base44Client';
 import { createProductUrl } from '@/utils';
@@ -680,6 +680,13 @@ function ShopAllPageContent() {
                   '450+ fragrances · decants in 3, 5, 8 & 10 ml · from ₹199'
                 )}
               </p>
+              <p className="mt-3 flex max-w-2xl gap-2 text-xs leading-relaxed text-[#8A7A72]">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#B85A3A]/85" aria-hidden />
+                <span>
+                  Photos show the retail bottle for reference; you receive a decant in your chosen size, not the full bottle.
+                  We have not been able to add separate imagery for decant vials or case options yet due to catalog constraints.
+                </span>
+              </p>
             </div>
 
             {/* Quick stat pills */}
@@ -717,7 +724,7 @@ function ShopAllPageContent() {
           {/* ── Sticky toolbar: top-12 matches WaitlistPreviewNav h-12 (was 3.25rem → subtle gap/jump). ── */}
           <div className="sticky top-12 z-40 border-b border-[#E4D9D0] bg-[#F5F2EE]/95 px-3 py-2 backdrop-blur-sm sm:px-4">
             <div className="flex min-h-10 items-center gap-2">
-              {/* Mobile filter button — badge slot reserved so flex neighbors don’t shift width */}
+              {/* Mobile filter button: badge slot reserved so flex neighbors don’t shift width */}
               <button
                 type="button"
                 className="relative flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-[#E4D9D0] bg-white/90 px-2.5 text-xs font-semibold text-[#5C534C] shadow-sm transition-colors hover:border-[#B85A3A] hover:text-[#B85A3A] lg:hidden"
@@ -974,7 +981,7 @@ function ShopAllPageContent() {
         <div className="fixed inset-0 z-[100] lg:hidden" role="dialog" aria-modal="true" aria-labelledby="catalog-mobile-filters-title">
           <button
             type="button"
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50 lg:bg-black/40 lg:backdrop-blur-sm"
             aria-label="Close filters"
             onClick={() => setMobileFiltersOpen(false)}
           />
@@ -995,7 +1002,7 @@ function ShopAllPageContent() {
                 <X className="h-5 w-5" aria-hidden />
               </button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3">
+            <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain px-3 py-3 [-webkit-overflow-scrolling:touch]">
               <EnhancedSidebar
                 filters={filters}
                 onFilterChange={handleFilterChange}

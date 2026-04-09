@@ -3,7 +3,7 @@
  *
  * Lightweight name/brand ``ilike`` search on ``v_perfumes_card`` when FastAPI hybrid search is
  * unavailable. Uses ``limit`` + ``offset`` for paging (same page size as PLP). At very large
- * catalogue scale (100k+ rows), replace with a dedicated search index (e.g. Meilisearch) —
+ * catalogue scale (100k+ rows), replace with a dedicated search index (e.g. Meilisearch):
  * unindexed ``ilike`` does not scale.
  */
 

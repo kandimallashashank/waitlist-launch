@@ -11,7 +11,7 @@ const SIZE_CLASS = {
 } as const;
 
 /**
- * Quiz / waitlist pilot loading indicator — Lucide arc (clear at any DPI, no nested spin effects).
+ * Quiz / waitlist pilot loading indicator: Lucide arc (clear at any DPI, no nested spin effects).
  */
 export function QuizBrandSpinner({
   size = "md",

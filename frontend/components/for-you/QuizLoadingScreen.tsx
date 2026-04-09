@@ -173,7 +173,7 @@ export function QuizLoadingScreen({
                 {imageSrc ? (
                   isProductImage ? (
                     <div className="relative flex h-full w-full max-w-[280px] items-center justify-center sm:max-w-[300px]">
-                      {/* Ground shadow — pulses in sync with float */}
+                      {/* Ground shadow: pulses in sync with float */}
                       <motion.div
                         className="pointer-events-none absolute bottom-[14%] left-1/2 z-0 h-10 w-[min(85%,240px)] -translate-x-1/2"
                         animate={{ scaleX: [1, 0.88, 1], opacity: [0.7, 0.4, 0.7] }}

@@ -21,8 +21,10 @@ import {
 const MAX_PICK = 5;
 /** Desktop / tablet: match PLP page size. */
 const DESKTOP_BROWSE_PAGE_SIZE = PLP_CATALOG_PAGE_SIZE;
-/** Narrow screens: smaller JSON payloads + fewer images per request (3G-friendly). */
+/** Viewports under 640px: smaller JSON payloads + fewer images per request (3G-friendly). */
 const MOBILE_BROWSE_PAGE_SIZE = 16;
+/** Only use single-column list layout below this width (very small phones). Typical phones use 2-col grid. */
+const COMPACT_LIST_MAX_WIDTH = 400;
 const BASE_SEARCH_DEBOUNCE_MS = 280;
 
 function appendAnchorGenderParams(
@@ -43,8 +45,9 @@ function quizGenderScopeLabel(preferredGender: string): string {
 }
 
 /**
- * ``pageSize`` / ``includeNotesInFetch`` are fixed after first client read so browse offsets stay
- * valid; ``compactList`` updates on resize (list vs grid).
+ * ``pageSize`` is fixed after first client read so browse offsets stay valid; ``compactList`` updates
+ * on resize (list vs grid). ``include_notes`` is always requested: rows feed
+ * ``deriveQuizFromAnchorPerfumes`` (liked note slugs need top/heart/base text).
  */
 function useAnchorPickerPrefs(): {
   compactList: boolean;
@@ -62,9 +65,9 @@ function useAnchorPickerPrefs(): {
     const w = window.innerWidth;
     const narrow = w < 640;
     return {
-      compactList: narrow,
+      compactList: w < COMPACT_LIST_MAX_WIDTH,
       pageSize: narrow ? MOBILE_BROWSE_PAGE_SIZE : DESKTOP_BROWSE_PAGE_SIZE,
-      includeNotesInFetch: !narrow,
+      includeNotesInFetch: true,
     };
   });
 
@@ -73,7 +76,7 @@ function useAnchorPickerPrefs(): {
       const w = window.innerWidth;
       setPrefs((p) => ({
         ...p,
-        compactList: w < 640,
+        compactList: w < COMPACT_LIST_MAX_WIDTH,
       }));
     };
     window.addEventListener("resize", read, { passive: true });
@@ -137,9 +140,9 @@ function PerfumeTile({
       disabled={atCap}
       onClick={() => onToggle(id)}
       className={cn(
-        "flex h-auto w-full flex-col self-start overflow-hidden rounded-[18px] text-left transition-transform duration-150 md:[content-visibility:auto] md:[contain-intrinsic-size:160px_280px]",
+        "flex h-auto w-full flex-col self-start overflow-hidden rounded-xl text-left transition-transform duration-150 md:[content-visibility:auto] md:[contain-intrinsic-size:110px_200px]",
         selected
-          ? "ring-[3px] ring-[#B85A3A] shadow-[0_8px_24px_rgba(184,90,58,0.18)]"
+          ? "ring-2 ring-[#B85A3A] shadow-[0_4px_16px_rgba(184,90,58,0.16)]"
           : "touch-manipulation ring-1 ring-[#E8D4C4] bg-white shadow-sm active:scale-[0.98] sm:hover:shadow-md sm:hover:ring-[#D4B8A4] sm:enabled:hover:-translate-y-0.5",
         atCap && "cursor-not-allowed opacity-40",
       )}
@@ -148,7 +151,7 @@ function PerfumeTile({
         Taller than 5/6 so tall bottle assets are not visually cropped; flex + object-bottom
         keeps the base of the bottle in-frame (grid row stretch no longer squashes tiles).
       */}
-      <div className="relative flex aspect-[3/4] w-full shrink-0 items-end justify-center overflow-hidden bg-gradient-to-br from-[#FCF4EF] via-[#FAF4EF] to-[#F1E3DA] px-1 pb-2 pt-1 sm:px-1.5 sm:pb-2.5 sm:pt-1.5">
+      <div className="relative flex aspect-[5/6] w-full shrink-0 items-end justify-center overflow-hidden bg-gradient-to-br from-[#FCF4EF] via-[#FAF4EF] to-[#F1E3DA] px-0.5 pb-1 pt-0.5 sm:px-1 sm:pb-1.5 sm:pt-1">
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -175,16 +178,16 @@ function PerfumeTile({
           </div>
         )}
         {selected ? (
-          <span className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#B85A3A] text-xs font-bold text-white shadow-lg">
+          <span className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#B85A3A] text-[10px] font-bold text-white shadow-md sm:h-6 sm:w-6 sm:text-xs">
             {selectedIds.indexOf(id) + 1}
           </span>
         ) : null}
       </div>
-      <div className="border-t border-[#F0E8E2] bg-white px-2 py-2">
-        <p className="line-clamp-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-[#8A6A5D]">
+      <div className="border-t border-[#F0E8E2] bg-white px-1 py-1 sm:px-1.5 sm:py-1.5">
+        <p className="line-clamp-1 text-[8px] font-semibold uppercase tracking-[0.08em] text-[#8A6A5D] sm:text-[8px]">
           {p.brand_name || "-"}
         </p>
-        <p className="line-clamp-1 text-[10px] font-medium leading-snug text-[#1A1A1A]">
+        <p className="line-clamp-1 text-[9px] font-medium leading-tight text-[#1A1A1A] sm:text-[10px] sm:leading-snug">
           {p.name || "-"}
         </p>
       </div>
@@ -216,21 +219,21 @@ function PerfumeListRow({
       disabled={atCap}
       onClick={() => onToggle(id)}
       className={cn(
-        "flex w-full min-h-[4.75rem] touch-manipulation items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors duration-150",
+        "flex w-full min-h-[4.5rem] touch-manipulation items-center gap-2 rounded-xl border px-2.5 py-2 text-left transition-colors duration-150",
         selected
           ? "border-[#B85A3A] bg-[#FFF8F5] ring-2 ring-[#B85A3A]/35 shadow-sm"
           : "border-[#E8D4C4] bg-white shadow-sm active:bg-[#FAF7F4]",
         atCap && "cursor-not-allowed opacity-45",
       )}
     >
-      <div className="relative h-[3.25rem] w-[3.25rem] shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#FCF4EF] to-[#F1E3DA]">
+      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-[#FCF4EF] to-[#F1E3DA]">
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={img}
             alt=""
-            width={52}
-            height={52}
+            width={56}
+            height={56}
             loading="lazy"
             decoding="async"
             fetchPriority="low"
@@ -252,20 +255,20 @@ function PerfumeListRow({
           </div>
         )}
       </div>
-      <div className="min-w-0 flex-1 py-0.5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#8A6A5D]">
-          {p.brand_name || "—"}
+      <div className="min-w-0 flex-1 py-0">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[#8A6A5D]">
+          {p.brand_name || "-"}
         </p>
-        <p className="mt-0.5 line-clamp-2 text-[15px] font-medium leading-snug text-[#1A1A1A]">
-          {p.name || "—"}
+        <p className="mt-0.5 line-clamp-2 text-[13px] font-medium leading-tight text-[#1A1A1A]">
+          {p.name || "-"}
         </p>
       </div>
       {selected ? (
-        <span className="flex h-9 min-w-[2.25rem] shrink-0 items-center justify-center rounded-full bg-[#B85A3A] text-sm font-bold text-white">
+        <span className="flex h-8 min-w-[2rem] shrink-0 items-center justify-center rounded-full bg-[#B85A3A] text-xs font-bold text-white">
           {selectedIds.indexOf(id) + 1}
         </span>
       ) : (
-        <span className="h-9 w-9 shrink-0 rounded-full border border-dashed border-[#D4C4B8]" aria-hidden />
+        <span className="h-8 w-8 shrink-0 rounded-full border border-dashed border-[#D4C4B8]" aria-hidden />
       )}
     </button>
   );
@@ -303,7 +306,7 @@ export function QuizAnchorPerfumePicker({
   const [searchHasMore, setSearchHasMore] = useState(false);
   const searchPagingRef = useRef(false);
   const searchNextOffsetRef = useRef(0);
-  /** When false, browse/search match quiz step 1 gender (smaller count). When true, no gender filter — full catalogue. */
+  /** When false, browse/search match quiz step 1 gender (smaller count). When true, no gender filter (full catalogue). */
   const [showEntireCatalog, setShowEntireCatalog] = useState(false);
 
   const isSearchMode = debouncedSearch.length > 0;
@@ -498,15 +501,15 @@ export function QuizAnchorPerfumePicker({
   }, [fetchBrowsePage, fetchSearchPage, isSearchMode]);
 
   const gridClass =
-    "grid w-full grid-cols-2 items-start gap-3 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4";
+    "grid w-full grid-cols-3 items-start gap-1.5 sm:grid-cols-4 sm:gap-2 lg:grid-cols-5 lg:gap-2.5";
 
-  const listShellClass = "flex w-full flex-col gap-2.5 px-0.5";
+  const listShellClass = "flex w-full flex-col gap-2 px-0.5";
 
   const countLabel = isSearchMode
     ? searchLoading && searchItems.length === 0
       ? "Searching…"
       : searchHasMore
-        ? `${searchItems.length} matches loaded — scroll for more`
+        ? `${searchItems.length} matches loaded; scroll for more`
         : `${searchItems.length} match${searchItems.length === 1 ? "" : "es"}`
     : browseLoading && browseItems.length === 0
       ? "Loading…"
@@ -515,22 +518,18 @@ export function QuizAnchorPerfumePicker({
         : `${browseItems.length} of ${browseTotal} (${quizGenderScopeLabel(gender)})`;
 
   return (
-    <div className="mx-auto flex h-full min-h-0 w-full max-w-6xl flex-1 flex-col gap-3 sm:gap-4">
-      <p className="mx-auto max-w-2xl px-1 text-center text-[13px] leading-snug text-[#5C5A52] sm:text-sm sm:leading-relaxed">
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-6xl flex-1 flex-col gap-1 sm:gap-2">
+      <p className="mx-auto max-w-3xl px-0.5 text-center text-[10px] leading-tight text-[#5C5A52] sm:text-[11px] sm:leading-snug">
         <span className="sm:hidden">
-          Tap a row to pick up to {MAX_PICK} perfumes you know. By default we only list scents that
-          match your step 1 choice ({quizGenderScopeLabel(gender)}) — use &quot;Full catalog&quot;
-          below to see every perfume. Small pages help on slower networks.
+          Tap up to {MAX_PICK}. {quizGenderScopeLabel(gender)} · &quot;Full catalog&quot; = all genders.
         </span>
         <span className="hidden sm:inline">
-          Choose bottles you&apos;ve tried, own, or remember loving — we&apos;ll map notes and
-          families for you. By default the list matches your step 1 choice ({quizGenderScopeLabel(gender)}
-          ); use &quot;Show full catalog&quot; to list every gender. Pages load in batches; search is
-          paged too.
+          Pick bottles you know; we map notes &amp; families. Default: {quizGenderScopeLabel(gender)}.
+          &quot;Full catalog&quot; = all genders. Batched loads; search is paged.
         </span>
       </p>
 
-      <div className="flex justify-center px-2">
+      <div className="flex justify-center px-1">
         <button
           type="button"
           onClick={() => {
@@ -538,22 +537,22 @@ export function QuizAnchorPerfumePicker({
             setQuery("");
             setDebouncedSearch("");
           }}
-          className="text-center text-[12px] font-semibold leading-snug text-[#B85A3A] underline decoration-[#D4B8A4] underline-offset-2 touch-manipulation active:opacity-80"
+          className="text-center text-[10px] font-semibold leading-tight text-[#B85A3A] underline decoration-[#D4B8A4] underline-offset-2 touch-manipulation active:opacity-80 sm:text-[11px]"
         >
           {showEntireCatalog
-            ? "Show only scents matching step 1"
-            : "Show full catalog (all genders)"}
+            ? "Match step 1 only"
+            : "Full catalog (all genders)"}
         </button>
       </div>
 
-      <div className="relative mx-auto w-full max-w-2xl">
-        <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A09088]" />
+      <div className="relative mx-auto w-full max-w-5xl">
+        <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#A09088] sm:left-3.5 sm:h-4 sm:w-4" />
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by brand or name…"
-          className="w-full rounded-2xl border border-[#E8D4C4] bg-white py-3 pl-10 pr-4 text-base text-[#1A1A1A] outline-none ring-0 placeholder:text-[#A09088] focus:border-[#B85A3A] shadow-sm transition-all focus:shadow-md sm:text-sm"
+          placeholder="Search brand or name…"
+          className="w-full rounded-xl border border-[#E8D4C4] bg-white py-2 pl-9 pr-3 text-sm text-[#1A1A1A] outline-none ring-0 placeholder:text-[#A09088] focus:border-[#B85A3A] shadow-sm transition-all focus:shadow-md sm:rounded-2xl sm:py-2.5 sm:pl-10 sm:pr-4 sm:text-sm"
           aria-label="Search perfumes"
           enterKeyHint="search"
           autoComplete="off"
@@ -561,9 +560,9 @@ export function QuizAnchorPerfumePicker({
         />
       </div>
 
-      <div className="mx-auto flex w-full max-w-2xl items-center justify-between px-1">
-        <p className="text-xs text-[#8A6A5D]">{countLabel}</p>
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#B85A3A]">
+      <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-2 px-0.5">
+        <p className="min-w-0 truncate text-[10px] text-[#8A6A5D] sm:text-xs">{countLabel}</p>
+        <p className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#B85A3A] sm:text-xs sm:tracking-[0.14em]">
           {selectedIds.length}/{MAX_PICK} picked
         </p>
       </div>
@@ -571,9 +570,11 @@ export function QuizAnchorPerfumePicker({
       <div
         ref={scrollRef}
         className={cn(
-          "min-h-0 w-full flex-1 touch-pan-y overflow-y-auto overflow-x-hidden overscroll-contain pr-1 [-webkit-overflow-scrolling:touch] scrollbar-hide",
+          "min-h-0 w-full flex-1 touch-pan-y overflow-y-auto overflow-x-hidden overscroll-contain pr-0.5 [-webkit-overflow-scrolling:touch] scrollbar-hide sm:pr-1",
+          /* ~1.5× prior min-heights: larger selection viewport, smaller tiles above */
+          "max-sm:min-h-[min(84dvh,42rem)]",
           !compactList &&
-            "sm:min-h-[min(42dvh,560px)] lg:min-h-[min(44dvh,600px)]",
+            "sm:min-h-[min(63dvh,840px)] lg:min-h-[min(66dvh,900px)]",
           loadMoreActive && "pb-16",
         )}
       >

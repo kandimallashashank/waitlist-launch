@@ -495,7 +495,7 @@ export default function EnhancedSidebar({
   };
 
   return (
-    <div className="min-h-0 overflow-y-auto border-r border-gray-200 bg-white p-4 pb-6 [color-scheme:light]">
+    <div className="min-h-0 overflow-visible border-r border-gray-200 bg-white p-4 pb-6 [color-scheme:light]">
       {/* Quick Filters */}
       {quickFilters.length > 0 && (
         <div className="mb-4 pb-4 border-b border-gray-200">
@@ -600,7 +600,11 @@ export default function EnhancedSidebar({
             className="w-full rounded-md border border-[#E5DDD6] bg-white py-1.5 pl-8 pr-2 text-xs text-[#1A1A1A] placeholder:text-[#8A8580] focus:border-terracotta-500/40 focus:outline-none focus:ring-2 focus:ring-terracotta-500/20"
           />
         </div>
-        <div className="max-h-40 overflow-y-auto space-y-0.5 px-1">
+        {/*
+          Nested max-height scrollers inside the mobile filter sheet cause scroll jank
+          (touch targets two scroll layers). Keep a capped inner scroll only on lg+ desktop sidebar.
+        */}
+        <div className="space-y-0.5 px-1 max-h-none overflow-visible lg:max-h-40 lg:overflow-y-auto">
           {filteredBrands.length > 0 ? (
             filteredBrands.map(brand => (
               <CheckboxItem
@@ -640,7 +644,7 @@ export default function EnhancedSidebar({
             className="w-full rounded-md border border-[#E5DDD6] bg-white py-1.5 pl-8 pr-2 text-xs text-[#1A1A1A] placeholder:text-[#8A8580] focus:border-terracotta-500/40 focus:outline-none focus:ring-2 focus:ring-terracotta-500/20"
           />
         </div>
-        <div className="max-h-40 overflow-y-auto space-y-0.5 px-1">
+        <div className="space-y-0.5 px-1 max-h-none overflow-visible lg:max-h-40 lg:overflow-y-auto">
           {filteredScentAccords.length > 0 ? (
             filteredScentAccords.map(scent => (
               <CheckboxItem

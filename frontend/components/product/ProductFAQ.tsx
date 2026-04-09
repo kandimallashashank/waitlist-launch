@@ -39,7 +39,7 @@ const faqs = [
   },
   {
     q: 'Are decant cases reusable?',
-    a: 'Yes! Our decant cases are designed to be reused. Once you finish a sample, simply remove the empty vial and slot in a new one. One 8ml or 10ml case works for multiple fragrances over time—no need to buy a new case for every sample. This makes them perfect for building a rotation or trying new scents on the go.',
+    a: 'Yes! Our decant cases are designed to be reused. Once you finish a sample, simply remove the empty vial and slot in a new one. One 8ml or 10ml case works for multiple fragrances over time, so there is no need to buy a new case for every sample. This makes them perfect for building a rotation or trying new scents on the go.',
   },
   {
     q: 'How many decant cases do I need for a discovery kit?',

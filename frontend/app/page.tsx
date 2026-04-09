@@ -194,15 +194,8 @@ export default function WaitlistPage() {
       const ctx = gsap.context(() => {
         const easeOut = 'expo.out';
 
-        gsap.set('[data-hero]', { opacity: 0, y: 20 });
-        gsap.to('[data-hero]', {
-          opacity: 1,
-          y: 0,
-          duration: 0.72,
-          ease: easeOut,
-          stagger: 0.065,
-          delay: 0.06,
-        });
+        // Hero is not animated here: opacity/transform entrances delay LCP and cause a jump
+        // after async GSAP loads. Scroll-triggered blocks below still animate.
 
         const scrollDefaults = {
           start: 'top 88%',
@@ -371,30 +364,50 @@ export default function WaitlistPage() {
                   </span>
                 </p>
                 <h1 className="font-display text-[2.125rem] font-semibold leading-[1.1] tracking-tight text-[#14120F] sm:text-4xl md:text-[2.85rem] md:leading-[1.06]">
-                  Try more. Regret less.<br />
+                  Explore more. Regret less.<br />
                   <span className="text-[#B85A3A]">Find the ones worth keeping.</span>
                 </h1>
               </div>
 
-              <p data-hero className="max-w-lg text-base leading-relaxed text-[#3A3530] md:text-[1.0625rem]">
-                Whether you&apos;re just starting out or you&apos;ve got a shelf full of bottles you barely touch the problem is the same. Perfume is expensive to get wrong.
-                <br /><br />
-                We&apos;re planning decants from around ₹199 at launch so you can explore freely. New to fragrance? Start with our quiz and we&apos;ll point you in the right direction. Already a collector? Try before you add to the shelf. Either way, the full bottle is here when you&apos;re sure. Pilot preview: prices and blind buy scores are testing values (see the notice under the nav).
+              <p data-hero className="max-w-lg text-base leading-snug text-[#3A3530] md:text-[1.0625rem] md:leading-relaxed">
+                A full bottle is a big decision off a tiny strip of paper. We&apos;re lining up small decants from about ₹199 at launch, a quick quiz when you want a starting point, and sizes you can actually wear before you commit to the bottle. Love layering? Use our{" "}
+                <Link href="/layering-lab" className="font-semibold text-[#B85A3A] underline decoration-[#D4B8A4] underline-offset-2 hover:text-[#A04D2F]">
+                  Layering Lab
+                </Link>
+                {" "}
+                to play with blends, then grab curated combos or discovery kits if you want a ready set. On this pilot, prices and blind-buy scores are placeholders (see the notice under the nav).
               </p>
 
               <div data-hero className="flex flex-wrap gap-2 pt-1">
-                {[
-                  { t: 'New to fragrance?', a: 'Quiz finds your match' },
-                  { t: 'From ₹199', a: 'Try before you commit' },
-                  { t: '450+ fragrances', a: 'Decants + full bottles' },
-                ].map((chip) => (
-                  <span
+                {(
+                  [
+                    {
+                      t: 'New to fragrance?',
+                      a: 'Quiz finds your match',
+                      href: '/quiz',
+                    },
+                    {
+                      t: 'From ₹199',
+                      a: 'Try before you commit',
+                      href: '/catalog',
+                    },
+                    {
+                      t: '450+ fragrances',
+                      a: 'Decants + full bottles',
+                      href: '/catalog',
+                    },
+                  ] as const
+                ).map((chip) => (
+                  <Link
                     key={chip.t}
-                    className="inline-flex items-center gap-2 rounded-full border border-[#E0D8CC] bg-white/80 px-3.5 py-1.5 text-[12px] text-[#14120F] shadow-[0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm"
+                    href={chip.href}
+                    className="inline-flex items-center gap-2 rounded-full border border-[#E0D8CC] bg-white/80 px-3.5 py-1.5 text-[12px] text-[#14120F] shadow-[0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm transition-colors hover:border-[#B85A3A]/45 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B85A3A]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4F0E8]"
                   >
                     <span className="font-semibold tabular-nums">{chip.t}</span>
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-[#8A8279]">{chip.a}</span>
-                  </span>
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-[#8A8279]">
+                      {chip.a}
+                    </span>
+                  </Link>
                 ))}
               </div>
 
@@ -552,6 +565,8 @@ export default function WaitlistPage() {
         </div>
       </section>
 
+      <WaitlistCatalogMarquee sharedCatalog={marqueePicks} />
+
       <section
         id="sample-first"
         className="border-t border-[#E0D8CC] bg-[#F4F0E8] py-14 md:py-20"
@@ -582,8 +597,6 @@ export default function WaitlistPage() {
           </div>
         </div>
       </section>
-
-      <WaitlistCatalogMarquee sharedCatalog={marqueePicks} />
 
       <WaitlistWhatWeOffer />
 

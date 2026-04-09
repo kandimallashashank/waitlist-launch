@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
-import { Star, ShoppingCart, PackageX, ChevronLeft, ChevronRight, Zap, Loader2, Clock3, Wind, Truck, RotateCcw, Mail, ShieldCheck, SlidersHorizontal, Flower2, Users, MapPin, ShieldQuestion, X } from 'lucide-react';
+import { Star, ShoppingCart, PackageX, ChevronLeft, ChevronRight, Zap, Loader2, Clock3, Wind, Truck, RotateCcw, Mail, ShieldCheck, SlidersHorizontal, Flower2, Users, MapPin, ShieldQuestion, X, Info } from 'lucide-react';
 import { base44, type Fragrance, type DecantInventoryItem } from '@/api/base44Client';
 import { mockFragrances } from '@/lib/mockData';
 import { toast } from 'sonner';
@@ -937,6 +937,7 @@ function ProductDetailPageContent() {
                               height={520}
                               className="h-full w-full max-h-[min(82vw,420px)] sm:max-h-[min(62vw,500px)] object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                               priority
+                              fetchPriority="high"
                               loading="eager"
                               unoptimized={isProxied(heroSrc)}
                               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 520px"
@@ -1094,6 +1095,14 @@ function ProductDetailPageContent() {
                 </>
               );
             })()}
+
+            <p className="flex gap-2 rounded-xl border border-[#E4D9D0] bg-white/60 px-3 py-2.5 text-xs leading-relaxed text-[#6B6560]">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#B85A3A]/85" aria-hidden />
+              <span>
+                Images show the retail bottle for reference; your order is a decant, not the full bottle.
+                We have not been able to include decant-vial and case imagery or full case details in the catalog yet due to constraints.
+              </span>
+            </p>
 
             {/* Quick Highlights Card */}
             <motion.div

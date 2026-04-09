@@ -19,7 +19,7 @@ const FEATURES = [
     icon: FlaskConical,
     tag: "Layering Lab",
     headline: "One scent is a vibe.\nTwo is a whole personality.",
-    body: "Pick two or three fragrances. We score accord harmony, concentration balance, how the blend evolves through dry-down, personalised to your quiz profile. Try combinations before you buy a single bottle.",
+    body: "Pick two or three fragrances. We score accord harmony, concentration balance, how the blend evolves through dry-down, personalised to your quiz profile. Try combinations before you buy a single bottle. We also sell our most-worked layering combos and discovery kits right in the Lab: curated sets you can add to cart without guessing.",
     href: "/layering-lab",
     cta: "Open Layering Lab",
   },

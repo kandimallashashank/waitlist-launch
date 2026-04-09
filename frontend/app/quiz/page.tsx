@@ -111,11 +111,15 @@ export default function WaitlistQuizPage() {
     <WaitlistGate featureName="the Quiz" verifiedHasSession={verifiedHasSession}>
       {/*
         Bounded column height so step 2 (anchor grid) gets flex-1 + min-h-0 scroll on iOS Safari.
-        ~8rem ≈ nav (3rem) + pilot notice + pt-4; avoids vh-only max-height inside the picker.
+        Slightly taller column on small screens (6.75rem offset) for more picker viewport; sm+ uses 8rem.
       */}
-      <div className="box-border flex h-[calc(100dvh-8rem)] min-h-[18rem] flex-col overscroll-none pt-4 sm:min-h-[22rem]">
+      <div className="box-border flex h-[calc(100dvh-6.75rem)] min-h-[18rem] flex-col overscroll-none pt-3 max-sm:pt-2 sm:h-[calc(100dvh-8rem)] sm:min-h-[22rem] sm:pt-4">
         <div className="flex min-h-0 flex-1 flex-col">
-          <ForYouWizard waitlistMode onWaitlistSubmitSuccess={handleSuccess} />
+          <ForYouWizard
+            waitlistMode
+            pilotSurveyAfterSubmit
+            onWaitlistSubmitSuccess={handleSuccess}
+          />
         </div>
       </div>
     </WaitlistGate>
