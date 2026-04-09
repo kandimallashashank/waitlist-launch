@@ -516,7 +516,8 @@ export function ForYouWizard({
         params.set("offset", "0");
         // Pyramid notes are omitted from the default list payload; needed to map anchors → likedNotes.
         params.set("include_notes", "true");
-        const res = await fetch(`${API_BASE}/api/v1/fragrances?${params.toString()}`);
+        // Same-origin list route: Supabase when waitlist-only or FastAPI down; avoids client → :8000 (often offline in dev).
+        const res = await fetch(`/api/fragrances/list?${params.toString()}`);
         if (!res.ok) throw new Error("list");
         const data = (await res.json()) as unknown;
         if (!cancelled && Array.isArray(data)) {

@@ -11,6 +11,8 @@ import { getSupabaseAdmin } from "@/lib/waitlist/serverActions";
 import { listFragrancesWithCountFromSupabase } from "@/lib/waitlist/supabasePlpList";
 import { isWaitlistOnlyCatalog } from "@/lib/waitlist/waitlistOnlyCatalog";
 
+export const dynamic = "force-dynamic";
+
 const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 async function fromSupabase(request: Request): Promise<NextResponse> {
