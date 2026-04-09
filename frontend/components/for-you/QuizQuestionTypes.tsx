@@ -1,11 +1,10 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 import { Sparkles, Droplets, Wind, Flame, Leaf, Sun, Moon, Coffee, Zap } from "lucide-react";
 
 // ─────────────────────────────────────────────
-// Shared types & animation presets
+// Shared types
 // ─────────────────────────────────────────────
 export interface QuizOption {
   value: string;
@@ -15,15 +14,6 @@ export interface QuizOption {
   /** Optional icon shown when no image is available */
   icon?: React.ReactNode;
 }
-
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.055, delayChildren: 0.04 } },
-};
-const fadeUp = {
-  hidden: { opacity: 0, y: 16, scale: 0.97 },
-  show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 320, damping: 26 } },
-};
 
 /** Fallback gradient + icon per category value */
 const CATEGORY_FALLBACKS: Record<string, { gradient: string; icon: React.ReactNode }> = {
@@ -70,23 +60,16 @@ export function TypeA({ options, selected, onSelect }: TypeAProps) {
         : "grid-cols-1";
 
   return (
-    <motion.div
-      className={`grid ${cols} gap-3 sm:gap-4 w-full max-w-3xl mx-auto`}
-      variants={stagger}
-      initial="hidden"
-      animate="show"
-    >
+    <div className={`grid ${cols} gap-3 sm:gap-4 w-full max-w-3xl mx-auto`}>
       {options.map((opt) => {
         const active = selected === opt.value;
         const fallback = getFallback(opt.value);
         return (
-          <motion.button
+          <button
             key={opt.value}
-            variants={fadeUp}
-            whileHover={{ scale: 1.025, transition: { duration: 0.18 } }}
-            whileTap={{ scale: 0.96 }}
+            type="button"
             onClick={() => onSelect(opt.value)}
-            className={`relative h-52 sm:h-64 rounded-2xl overflow-hidden transition-all duration-300 ${
+            className={`group relative w-full overflow-hidden rounded-2xl transition-colors duration-200 aspect-[5/6] max-sm:max-h-[min(70vw,22rem)] sm:aspect-auto sm:h-64 sm:max-h-none ${
               active
                 ? "ring-[3px] ring-[#B85A3A] shadow-[0_12px_40px_rgba(184,90,58,0.35)]"
                 : "ring-1 ring-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.18)] hover:shadow-[0_12px_36px_rgba(0,0,0,0.28)]"
@@ -96,7 +79,7 @@ export function TypeA({ options, selected, onSelect }: TypeAProps) {
               <img
                 src={opt.imageUrl}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="absolute inset-0 h-full w-full object-cover object-top sm:object-center"
               />
             ) : (
               <div className={`absolute inset-0 bg-gradient-to-br ${fallback.gradient}`}>
@@ -125,21 +108,16 @@ export function TypeA({ options, selected, onSelect }: TypeAProps) {
 
             {/* Selected check */}
             {active && (
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 500, damping: 22 }}
-                className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full bg-[#B85A3A] shadow-lg"
-              >
+              <div className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center rounded-full bg-[#B85A3A] shadow-lg">
                 <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
-              </motion.div>
+              </div>
             )}
-          </motion.button>
+          </button>
         );
       })}
-    </motion.div>
+    </div>
   );
 }
 
@@ -155,35 +133,28 @@ interface TypeBProps {
 }
 export function TypeB({ options, selected, onToggle, maxSelect, onFilledToMax }: TypeBProps) {
   return (
-    <motion.div
-      className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-5xl mx-auto"
-      variants={stagger}
-      initial="hidden"
-      animate="show"
-    >
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-5xl mx-auto">
       {options.map((opt) => {
         const isSelected = selected.includes(opt.value);
         const isDisabled = !isSelected && maxSelect !== undefined && selected.length >= maxSelect;
         const fallback = getFallback(opt.value);
         return (
-          <motion.button
+          <button
             key={opt.value}
-            variants={fadeUp}
-            whileHover={isDisabled ? {} : { y: -4, transition: { duration: 0.18 } }}
-            whileTap={isDisabled ? {} : { scale: 0.96 }}
+            type="button"
             onClick={() => {
               if (isDisabled) return;
               if (!isSelected) {
                 onToggle(opt.value);
                 if (maxSelect !== undefined && selected.length + 1 >= maxSelect && onFilledToMax) {
-                  window.setTimeout(() => onFilledToMax(), 200);
+                  window.setTimeout(() => onFilledToMax(), 420);
                 }
                 return;
               }
               onToggle(opt.value);
             }}
             disabled={isDisabled}
-            className={`flex flex-col overflow-hidden rounded-2xl text-left transition-all duration-300 ${
+            className={`flex flex-col overflow-hidden rounded-2xl text-left transition-colors duration-200 ${
               isSelected
                 ? "ring-[3px] ring-[#B85A3A] shadow-[0_10px_32px_rgba(184,90,58,0.28)]"
                 : isDisabled
@@ -194,11 +165,7 @@ export function TypeB({ options, selected, onToggle, maxSelect, onFilledToMax }:
             {/* Image area */}
             <div className="relative aspect-[4/3] w-full overflow-hidden">
               {opt.imageUrl ? (
-                <img
-                  src={opt.imageUrl}
-                  alt=""
-                  className={`h-full w-full object-cover transition-transform duration-500 ${isSelected ? "scale-105" : ""}`}
-                />
+                <img src={opt.imageUrl} alt="" className="h-full w-full object-cover" />
               ) : (
                 <div className={`h-full w-full bg-gradient-to-br ${fallback.gradient} flex items-center justify-center`}>
                   <div className="opacity-40">{fallback.icon}</div>
@@ -208,14 +175,9 @@ export function TypeB({ options, selected, onToggle, maxSelect, onFilledToMax }:
               {isSelected && <div className="absolute inset-0 bg-[#B85A3A]/15" />}
               {/* Selection badge */}
               {isSelected && (
-                <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 22 }}
-                  className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#B85A3A] text-[10px] font-bold text-white shadow-md"
-                >
+                <div className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#B85A3A] text-[10px] font-bold text-white shadow-md">
                   {selected.indexOf(opt.value) + 1}
-                </motion.div>
+                </div>
               )}
               {/* Label overlay on image */}
               <div className="absolute inset-x-0 bottom-0 p-3">
@@ -227,10 +189,10 @@ export function TypeB({ options, selected, onToggle, maxSelect, onFilledToMax }:
                 )}
               </div>
             </div>
-          </motion.button>
+          </button>
         );
       })}
-    </motion.div>
+    </div>
   );
 }
 
@@ -253,23 +215,16 @@ export function TypeC({ options, selected, onSelect }: TypeCProps) {
           : "grid-cols-1 sm:grid-cols-3"
         : "grid-cols-2 md:grid-cols-3";
     return (
-      <motion.div
-        className={`grid ${cols} w-full max-w-5xl gap-3 sm:gap-4 mx-auto`}
-        variants={stagger}
-        initial="hidden"
-        animate="show"
-      >
+      <div className={`grid ${cols} w-full max-w-5xl gap-3 sm:gap-4 mx-auto`}>
         {options.map((opt) => {
           const active = selected === opt.value;
           const fallback = getFallback(opt.value);
           return (
-            <motion.button
+            <button
               key={opt.value}
-              variants={fadeUp}
-              whileHover={{ y: -4, transition: { duration: 0.18 } }}
-              whileTap={{ scale: 0.96 }}
+              type="button"
               onClick={() => onSelect(opt.value)}
-              className={`flex flex-col overflow-hidden rounded-2xl text-left transition-all duration-300 ${
+              className={`flex flex-col overflow-hidden rounded-2xl text-left transition-colors duration-200 ${
                 active
                   ? "ring-[3px] ring-[#B85A3A] shadow-[0_10px_32px_rgba(184,90,58,0.28)]"
                   : "ring-1 ring-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.14)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.22)]"
@@ -277,11 +232,7 @@ export function TypeC({ options, selected, onSelect }: TypeCProps) {
             >
               <div className="relative aspect-[3/2] w-full overflow-hidden">
                 {opt.imageUrl ? (
-                  <img
-                    src={opt.imageUrl}
-                    alt=""
-                    className={`h-full w-full object-cover transition-transform duration-500 ${active ? "scale-105" : ""}`}
-                  />
+                  <img src={opt.imageUrl} alt="" className="h-full w-full object-cover" />
                 ) : (
                   <div className={`h-full w-full bg-gradient-to-br ${fallback.gradient} flex items-center justify-center`}>
                     <div className="opacity-40">{fallback.icon}</div>
@@ -290,16 +241,11 @@ export function TypeC({ options, selected, onSelect }: TypeCProps) {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 {active && <div className="absolute inset-0 bg-[#B85A3A]/15" />}
                 {active && (
-                  <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 22 }}
-                    className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#B85A3A] shadow-md"
-                  >
+                  <div className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#B85A3A] shadow-md">
                     <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
-                  </motion.div>
+                  </div>
                 )}
                 {/* Label on image */}
                 <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
@@ -311,31 +257,24 @@ export function TypeC({ options, selected, onSelect }: TypeCProps) {
                   )}
                 </div>
               </div>
-            </motion.button>
+            </button>
           );
         })}
-      </motion.div>
+      </div>
     );
   }
 
   // Text-list mode (experience level, etc.)
   return (
-    <motion.div
-      className="flex flex-col gap-2.5 w-full max-w-lg mx-auto"
-      variants={stagger}
-      initial="hidden"
-      animate="show"
-    >
+    <div className="flex flex-col gap-2.5 w-full max-w-lg mx-auto">
       {options.map((opt) => {
         const active = selected === opt.value;
         return (
-          <motion.button
+          <button
             key={opt.value}
-            variants={fadeUp}
-            whileHover={{ x: 5, transition: { duration: 0.15 } }}
-            whileTap={{ scale: 0.98 }}
+            type="button"
             onClick={() => onSelect(opt.value)}
-            className={`relative flex items-center gap-4 rounded-2xl p-4 pl-5 text-left transition-all overflow-hidden border-2 ${
+            className={`relative flex items-center gap-4 rounded-2xl p-4 pl-5 text-left transition-colors duration-200 overflow-hidden border-2 ${
               active
                 ? "border-[#B85A3A] bg-[#FDF6F3] shadow-[0_6px_24px_rgba(184,90,58,0.16)]"
                 : "border-[#EDE0D8] bg-white shadow-sm hover:shadow-md hover:border-[#D4B8A4]"
@@ -365,14 +304,11 @@ export function TypeC({ options, selected, onSelect }: TypeCProps) {
               )}
             </div>
 
-            <div className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+            <div className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
               active ? "border-[#B85A3A] bg-[#B85A3A]" : "border-[#D0CBC6]"
             }`}>
               {active && (
-                <motion.svg
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 22 }}
+                <svg
                   className="w-3 h-3 text-white"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -380,13 +316,13 @@ export function TypeC({ options, selected, onSelect }: TypeCProps) {
                   strokeWidth={3}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </motion.svg>
+                </svg>
               )}
             </div>
-          </motion.button>
+          </button>
         );
       })}
-    </motion.div>
+    </div>
   );
 }
 
@@ -407,34 +343,27 @@ export function TypeD({ options, selected, onToggle, maxSelect, hint, onFilledTo
       {hint && (
         <p className="text-center text-sm text-[#8A6A5D] mb-5 leading-relaxed">{hint}</p>
       )}
-      <motion.div
-        className="flex flex-wrap gap-2 justify-center"
-        variants={stagger}
-        initial="hidden"
-        animate="show"
-      >
+      <div className="flex flex-wrap gap-2 justify-center">
         {options.map((opt) => {
           const isSelected = selected.includes(opt.value);
           const isDisabled = !isSelected && maxSelect !== undefined && selected.length >= maxSelect;
           return (
-            <motion.button
+            <button
               key={opt.value}
-              variants={fadeUp}
-              whileHover={isDisabled ? {} : { scale: 1.06, transition: { duration: 0.12 } }}
-              whileTap={isDisabled ? {} : { scale: 0.92 }}
+              type="button"
               onClick={() => {
                 if (isDisabled) return;
                 if (!isSelected) {
                   onToggle(opt.value);
                   if (maxSelect !== undefined && selected.length + 1 >= maxSelect && onFilledToMax) {
-                    window.setTimeout(() => onFilledToMax(), 200);
+                    window.setTimeout(() => onFilledToMax(), 420);
                   }
                   return;
                 }
                 onToggle(opt.value);
               }}
               disabled={isDisabled}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
                 isSelected
                   ? "bg-[#1A1A1A] text-white shadow-[0_4px_14px_rgba(26,26,26,0.22)]"
                   : isDisabled
@@ -443,10 +372,10 @@ export function TypeD({ options, selected, onToggle, maxSelect, hint, onFilledTo
               }`}
             >
               {opt.label}
-            </motion.button>
+            </button>
           );
         })}
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -464,23 +393,16 @@ interface TypeFProps {
 export function TypeF({ options, selected, onSelect, showLevelBar = true }: TypeFProps) {
   const total = options.length;
   return (
-    <motion.div
-      className="flex flex-col gap-2.5 w-full max-w-lg mx-auto"
-      variants={stagger}
-      initial="hidden"
-      animate="show"
-    >
+    <div className="flex flex-col gap-2.5 w-full max-w-lg mx-auto">
       {options.map((opt, index) => {
         const active = selected === opt.value;
         const level = index + 1;
         return (
-          <motion.button
+          <button
             key={opt.value}
-            variants={fadeUp}
-            whileHover={{ x: 5, transition: { duration: 0.15 } }}
-            whileTap={{ scale: 0.98 }}
+            type="button"
             onClick={() => onSelect(opt.value)}
-            className={`relative p-4 pl-5 rounded-2xl text-left transition-all overflow-hidden border-2 ${
+            className={`relative p-4 pl-5 rounded-2xl text-left transition-colors duration-200 overflow-hidden border-2 ${
               active
                 ? "border-[#B85A3A] bg-[#FDF6F3] shadow-[0_6px_24px_rgba(184,90,58,0.16)]"
                 : "border-[#EDE0D8] bg-white shadow-sm hover:shadow-md hover:border-[#D4B8A4]"
@@ -503,39 +425,32 @@ export function TypeF({ options, selected, onSelect, showLevelBar = true }: Type
                 {showLevelBar && (
                   <div className="flex gap-1 mt-2.5">
                     {Array.from({ length: total }).map((_, j) => (
-                      <motion.div
+                      <div
                         key={j}
-                        className="h-1 rounded-full"
-                        animate={{
-                          width: j < level ? "20px" : "14px",
-                          backgroundColor:
-                            j < level
-                              ? active ? "#B85A3A" : "#C8956E"
-                              : active ? "rgba(255,255,255,0.3)" : "#E8D4C4",
-                        }}
-                        transition={{ duration: 0.2, delay: j * 0.03 }}
+                        className={`h-1 rounded-full ${
+                          j < level
+                            ? active
+                              ? "w-5 bg-[#B85A3A]"
+                              : "w-5 bg-[#C8956E]"
+                            : active
+                              ? "w-3.5 bg-white/30"
+                              : "w-3.5 bg-[#E8D4C4]"
+                        }`}
                       />
                     ))}
                   </div>
                 )}
               </div>
 
-              <div className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+              <div className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
                 active ? "border-[#B85A3A] bg-[#B85A3A]" : "border-[#D0CBC6]"
               }`}>
-                {active && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 22 }}
-                    className="w-2 h-2 rounded-full bg-white"
-                  />
-                )}
+                {active && <div className="w-2 h-2 rounded-full bg-white" />}
               </div>
             </div>
-          </motion.button>
+          </button>
         );
       })}
-    </motion.div>
+    </div>
   );
 }

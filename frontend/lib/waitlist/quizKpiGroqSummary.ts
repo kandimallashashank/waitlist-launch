@@ -6,6 +6,7 @@ import type { PreferenceAnalyticsData } from "@/components/preferences/Preferenc
 
 const SYSTEM_PROMPT =
   "You write concise copy for fragrance shoppers in India. " +
+  "Always address the reader as \"you\" / \"your\" (second person). Never describe them as \"they\" or \"them\". " +
   "Output plain text only: exactly 2 short sentences, under 45 words total. " +
   "No JSON, no markdown, no bullet points, no quotation marks wrapping the whole reply.";
 
@@ -63,7 +64,7 @@ export async function generatePreferenceKpiSummaryGroq(
 
   const lean = leanKpiPayload(analytics);
   const userContent =
-    "Preference signals (JSON). Write 2 sentences summarizing what they enjoy and how they wear fragrance.\n\n" +
+    "Preference signals (JSON). Write 2 sentences to the quiz-taker using only \"you\" / \"your\" (never \"they\" / \"them\"). Example: \"You enjoy …\" and \"You tend to wear …\".\n\n" +
     JSON.stringify(lean);
 
   const ac = new AbortController();

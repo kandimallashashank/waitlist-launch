@@ -672,9 +672,10 @@ function ShopAllPageContent() {
               <h1 className="font-display text-2xl font-bold leading-tight text-[#1A1A1A] sm:text-3xl">
                 Browse fragrances
               </h1>
-              <p className="mt-1 text-sm text-[#6B6560]">
+              {/* min-height avoids hero reflow when totalCount hydrates (was shifting sticky toolbar). */}
+              <p className="mt-1 min-h-[2.75rem] text-sm leading-snug text-[#6B6560] sm:min-h-0">
                 {totalCount != null ? (
-                  <><span className="font-semibold text-[#1A1A1A]">{totalCount.toLocaleString()}</span> fragrances · decants in 3, 5, 8 &amp; 10 ml · from ₹199</>
+                  <><span className="font-semibold tabular-nums text-[#1A1A1A]">{totalCount.toLocaleString()}</span> fragrances · decants in 3, 5, 8 &amp; 10 ml · from ₹199</>
                 ) : (
                   '450+ fragrances · decants in 3, 5, 8 & 10 ml · from ₹199'
                 )}
@@ -700,7 +701,7 @@ function ShopAllPageContent() {
 
       <div className="flex min-w-0">
         {/* Desktop Sidebar */}
-        <div className="hidden lg:block w-60 shrink-0 sticky top-[3.25rem] self-start h-[calc(100vh-3.25rem)] overflow-y-auto border-r border-[#E8E0D8] bg-white/80">
+        <div className="hidden lg:block w-60 shrink-0 sticky top-12 self-start h-[calc(100dvh-3rem)] overflow-y-auto border-r border-[#E8E0D8] bg-white/80">
           <EnhancedSidebar
             filters={filters}
             onFilterChange={handleFilterChange}
@@ -713,41 +714,48 @@ function ShopAllPageContent() {
 
         <div className="flex-1 min-w-0 flex flex-col">
 
-          {/* ── Sticky toolbar glass style ── */}
-          <div className="sticky top-[3.25rem] z-40 border-b border-[#E4D9D0] bg-[#F5F2EE]/90 backdrop-blur-md px-3 py-2 sm:px-4">
-            <div className="flex items-center gap-2">
-              {/* Mobile filter button */}
+          {/* ── Sticky toolbar: top-12 matches WaitlistPreviewNav h-12 (was 3.25rem → subtle gap/jump). ── */}
+          <div className="sticky top-12 z-40 border-b border-[#E4D9D0] bg-[#F5F2EE]/95 px-3 py-2 backdrop-blur-sm sm:px-4">
+            <div className="flex min-h-10 items-center gap-2">
+              {/* Mobile filter button — badge slot reserved so flex neighbors don’t shift width */}
               <button
                 type="button"
-                className="relative flex shrink-0 items-center gap-1.5 rounded-lg border border-[#E4D9D0] bg-white/80 px-2.5 py-1.5 text-xs font-semibold text-[#5C534C] shadow-sm backdrop-blur-sm transition-colors hover:border-[#B85A3A] hover:text-[#B85A3A] lg:hidden"
+                className="relative flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-[#E4D9D0] bg-white/90 px-2.5 text-xs font-semibold text-[#5C534C] shadow-sm transition-colors hover:border-[#B85A3A] hover:text-[#B85A3A] lg:hidden"
                 onClick={() => setMobileFiltersOpen(true)}
                 aria-expanded={mobileFiltersOpen}
                 aria-controls="catalog-mobile-filters"
               >
                 <Filter className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 Filters
-                {activeFilterCount > 0 && (
-                  <span className="ml-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-[#B85A3A] px-1 text-[9px] font-bold text-white">
-                    {activeFilterCount}
-                  </span>
-                )}
+                <span
+                  className={`ml-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-[9px] font-bold ${
+                    activeFilterCount > 0
+                      ? 'bg-[#B85A3A] text-white'
+                      : 'invisible pointer-events-none'
+                  }`}
+                  aria-hidden={activeFilterCount === 0}
+                >
+                  {activeFilterCount > 0 ? activeFilterCount : '0'}
+                </span>
               </button>
 
               {/* Search */}
-              <div className="relative min-w-0 flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#A09088]" />
+              <div className="relative min-h-9 min-w-0 flex-1">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#A09088]" />
                 <input
-                  type="text"
+                  type="search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search fragrances…"
-                  className="w-full rounded-lg border border-[#E4D9D0] bg-white/80 py-1.5 pl-8.5 pr-3 text-sm text-[#1A1A1A] placeholder:text-[#B0A898] shadow-sm backdrop-blur-sm transition-all focus:border-[#B85A3A] focus:bg-white focus:outline-none"
-                  style={{ paddingLeft: '2rem' }}
+                  enterKeyHint="search"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  className="h-9 w-full rounded-lg border border-[#E4D9D0] bg-white/90 pl-9 pr-3 text-sm text-[#1A1A1A] placeholder:text-[#B0A898] shadow-sm transition-colors focus:border-[#B85A3A] focus:bg-white focus:outline-none"
                 />
               </div>
 
               {/* Size pills */}
-              <div className="hidden sm:flex items-center gap-1 border-l border-[#E0D8D0] pl-2">
+              <div className="hidden h-9 shrink-0 items-center gap-1 border-l border-[#E0D8D0] pl-2 sm:flex">
                 {(['3ml', '8ml', '12ml'] as const).map((size) => (
                   <button
                     key={size}
@@ -764,11 +772,11 @@ function ShopAllPageContent() {
               </div>
 
               {/* Sort */}
-              <div className="hidden sm:flex items-center gap-1.5 border-l border-[#E0D8D0] pl-2">
+              <div className="hidden h-9 shrink-0 items-center gap-1.5 border-l border-[#E0D8D0] pl-2 sm:flex">
                 <select
                   value={sortBy}
                   onChange={(e) => { setSortBy(e.target.value as FragranceSortOption); setListPage(1); }}
-                  className="rounded-lg border border-[#E0D8D0] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#1A1A1A] focus:border-[#B85A3A] focus:outline-none"
+                  className="h-9 rounded-lg border border-[#E0D8D0] bg-white px-2.5 text-xs font-semibold text-[#1A1A1A] focus:border-[#B85A3A] focus:outline-none"
                   aria-label="Sort by"
                 >
                   {FRAGRANCE_SORT_OPTIONS.map((opt) => (
@@ -778,7 +786,7 @@ function ShopAllPageContent() {
               </div>
 
               {/* View toggle + count */}
-              <div className="flex items-center gap-2 border-l border-[#E0D8D0] pl-2">
+              <div className="flex min-h-9 shrink-0 items-center gap-2 border-l border-[#E0D8D0] pl-2">
                 <ListingViewToggle value={listingViewMode} onChange={setListingViewMode} />
                 <span className="hidden text-xs text-[#A09088] tabular-nums lg:block">
                   {searchQuery.trim()

@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { QuizBrandSpinner } from "@/components/quiz/QuizBrandSpinner";
 import { Sparkles, Lock } from "lucide-react";
 import { usePreviewSession } from "@/lib/waitlist/usePreviewSession";
 
@@ -20,8 +21,8 @@ function WaitlistGateBody({
 }: WaitlistGateBodyProps) {
   if (!ready) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#E0D8CC] border-t-[#B85A3A]" />
+      <div className="flex min-h-[60vh] items-center justify-center bg-gradient-to-b from-[#FAF7F4] to-[#F0E9E2]">
+        <QuizBrandSpinner size="sm" />
       </div>
     );
   }

@@ -7,6 +7,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Reserve space for scrollbar so full-width toolbars don’t shift when scrollbars appear. */
+html {
+  scrollbar-gutter: stable;
+}
+
 /*
  * Waitlist preview: nav is a slim sticky bar in normal flow (not the tall fixed store header).
  * Main app uses ~7rem offset; here we avoid a large empty band under the nav.

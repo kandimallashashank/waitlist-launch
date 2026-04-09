@@ -1,10 +1,17 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { QuizBrandSpinner } from "@/components/quiz/QuizBrandSpinner";
 import React from "react";
 import { Leaf, Star, Gem, Trophy } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { QuizLoadingScreen, type QuizLoadingPerfumeImage } from "./QuizLoadingScreen";
@@ -328,6 +335,11 @@ const AUTO_ADVANCE_STEPS = new Set<StepKey>([
   "intensity",
 ]);
 
+/** Delay before auto-advancing on single-select (was 220ms — felt instant / flashy). */
+const AUTO_ADVANCE_SINGLE_MS = 560;
+/** Delay before goNext after multi-select hits max (stacked after chip/card delay in QuizQuestionTypes). */
+const AUTO_ADVANCE_MULTI_MS = 700;
+
 const INITIAL_ANSWERS: ForYouAnswers = {
   experienceLevel: null,
   intensity: null,
@@ -478,7 +490,6 @@ export function ForYouWizard({
 
   const [answers, setAnswers] = useState<ForYouAnswers>(INITIAL_ANSWERS);
   const [stepIndex, setStepIndex] = useState(0);
-  const [direction, setDirection] = useState<1 | -1>(1);
   const [loading, setLoading] = useState(false);
   /** Save-only submit (e.g. subscription quiz): no ``QuizLoadingScreen``, immediate redirect. */
   const [quickSubmitting, setQuickSubmitting] = useState(false);
@@ -489,6 +500,7 @@ export function ForYouWizard({
   const [pilotSurveyOpen, setPilotSurveyOpen] = useState(false);
   const [postQuizHref, setPostQuizHref] = useState<string | null>(null);
   const [anchorCatalog, setAnchorCatalog] = useState<QuizCatalogPerfume[]>([]);
+  const prevAnchorGenderRef = useRef<string | null>(null);
   const goNextRef = useRef<() => void>(() => {});
 
   const catalogById = useMemo(() => {
@@ -499,38 +511,36 @@ export function ForYouWizard({
     return m;
   }, [anchorCatalog]);
 
+  const mergeAnchorRows = useCallback((rows: QuizCatalogPerfume[]) => {
+    if (rows.length === 0) return;
+    setAnchorCatalog((prev) => {
+      const m = new Map(prev.map((p) => [String(p.id), p]));
+      for (const p of rows) {
+        if (p.id != null) m.set(String(p.id), p);
+      }
+      return Array.from(m.values());
+    });
+  }, []);
+
+  useEffect(() => {
+    const g = answers.preferredGender;
+    if (!g) return;
+    if (prevAnchorGenderRef.current === g) return;
+    prevAnchorGenderRef.current = g;
+    setAnchorCatalog([]);
+    setAnswers((cur) => ({
+      ...cur,
+      anchorPerfumeIds: [],
+      preferencesFromAnchors: false,
+    }));
+  }, [answers.preferredGender]);
+
   const experienceOptions: QuizOption[] = useMemo(() => [
     { value: "beginner", label: "New to fragrance", subline: "Easy wins and confident first picks", icon: <Leaf className="w-9 h-9 text-green-500" /> },
     { value: "intermediate", label: "Know what I like", subline: "Already have a few go-to bottles", icon: <Star className="w-9 h-9 fill-amber-400 text-amber-400" /> },
     { value: "enthusiast", label: "Fragrance enthusiast", subline: "Enjoy exploring releases and different styles", icon: <Gem className="w-9 h-9 text-blue-400" /> },
     { value: "expert", label: "Collector mindset", subline: "Want nuance, depth, and unusual profiles", icon: <Trophy className="w-9 h-9 text-amber-500" /> },
   ], []);
-
-  useEffect(() => {
-    if (!answers.preferredGender) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const params = new URLSearchParams();
-        params.set("limit", "240");
-        params.set("offset", "0");
-        // Pyramid notes are omitted from the default list payload; needed to map anchors → likedNotes.
-        params.set("include_notes", "true");
-        // Same-origin list route: Supabase when waitlist-only or FastAPI down; avoids client → :8000 (often offline in dev).
-        const res = await fetch(`/api/fragrances/list?${params.toString()}`);
-        if (!res.ok) throw new Error("list");
-        const data = (await res.json()) as unknown;
-        if (!cancelled && Array.isArray(data)) {
-          setAnchorCatalog(data as QuizCatalogPerfume[]);
-        }
-      } catch {
-        if (!cancelled) setAnchorCatalog([]);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [answers.preferredGender]);
 
   const stepKey = STEP_ORDER[stepIndex];
 
@@ -546,9 +556,8 @@ export function ForYouWizard({
           void goNext();
           return;
         }
-        setDirection(1);
         setStepIndex((current) => Math.min(current + 1, TOTAL_STEPS - 1));
-      }, 220);
+      }, AUTO_ADVANCE_SINGLE_MS);
     }
   };
 
@@ -582,7 +591,6 @@ export function ForYouWizard({
 
   const goBack = () => {
     if (loading || quickSubmitting || stepIndex === 0) return;
-    setDirection(-1);
     setStepIndex((current) => current - 1);
   };
 
@@ -609,7 +617,6 @@ export function ForYouWizard({
           };
         });
       }
-      setDirection(1);
       setStepIndex((current) => current + 1);
       return;
     }
@@ -794,7 +801,7 @@ export function ForYouWizard({
   };
 
   const advanceWhenMultiComplete = () => {
-    window.setTimeout(() => goNextRef.current(), 220);
+    window.setTimeout(() => goNextRef.current(), AUTO_ADVANCE_MULTI_MS);
   };
 
   const skipStep = () => {
@@ -812,7 +819,6 @@ export function ForYouWizard({
       }));
     }
 
-    setDirection(1);
     if (stepIndex < TOTAL_STEPS - 1) {
       setStepIndex((current) => current + 1);
     } else {
@@ -822,8 +828,8 @@ export function ForYouWizard({
 
   if (quickSubmitting) {
     return (
-      <div className="min-h-[100dvh] w-full flex items-center justify-center bg-gradient-to-br from-[#F7F3F0] via-[#F5F0EC] to-[#F2EDE7]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#B85A3A]/25 border-t-[#B85A3A]" />
+      <div className="flex min-h-[100dvh] w-full items-center justify-center bg-gradient-to-br from-[#F7F3F0] via-[#F5F0EC] to-[#F2EDE7]">
+        <QuizBrandSpinner size="md" label="Submitting quiz" />
       </div>
     );
   }
@@ -839,22 +845,8 @@ export function ForYouWizard({
     );
   }
 
-  const variants = {
-    enter: (currentDirection: number) => ({
-      opacity: 0,
-      x: currentDirection > 0 ? 48 : -48,
-      scale: 0.98,
-    }),
-    center: { opacity: 1, x: 0, scale: 1 },
-    exit: (currentDirection: number) => ({
-      opacity: 0,
-      x: currentDirection > 0 ? -48 : 48,
-      scale: 0.98,
-    }),
-  };
-
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-[#FAF7F4] via-[#F6F1EC] to-[#F0E9E2]">
+    <div className="relative flex h-full min-h-0 flex-1 flex-col touch-manipulation bg-gradient-to-b from-[#FAF7F4] via-[#F6F1EC] to-[#F0E9E2]">
       {pilotSurveyOpen && postQuizHref ? (
         <QuizPilotSurveyModal
           navigateHref={postQuizHref}
@@ -865,23 +857,15 @@ export function ForYouWizard({
           router={router}
         />
       ) : null}
-      {/* Ambient background glows */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+      {/* Ambient glows: omitted on small screens — large blurs are costly on mobile GPUs. */}
+      <div className="pointer-events-none fixed inset-0 hidden overflow-hidden md:block">
         <div className="absolute -top-40 right-0 h-[500px] w-[500px] rounded-full bg-[#B85A3A]/8 blur-[120px]" />
         <div className="absolute bottom-0 left-0 h-80 w-80 rounded-full bg-[#D4A574]/7 blur-[90px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-[#8B9E7E]/5 blur-[80px]" />
+        <div className="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#8B9E7E]/5 blur-[80px]" />
       </div>
-      <AnimatePresence custom={direction} mode="wait">
-        <motion.div
-          key={stepKey}
-          custom={direction}
-          variants={variants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        >
+      <div key={stepKey} className="flex h-full min-h-0 flex-1 flex-col">
           <QuizStepFrame
+            bodyLayout={stepKey === "anchorPerfumes" ? "fill" : "default"}
             canContinue={canContinue(stepKey, answers)}
             continueLabel={stepIndex === TOTAL_STEPS - 1 ? "SEE MY MATCHES" : "CONTINUE"}
             onBack={goBack}
@@ -939,11 +923,12 @@ export function ForYouWizard({
               />
             ) : null}
 
-            {stepKey === "anchorPerfumes" ? (
+            {stepKey === "anchorPerfumes" && answers.preferredGender ? (
               <QuizAnchorPerfumePicker
-                catalog={anchorCatalog}
+                gender={answers.preferredGender}
                 selectedIds={answers.anchorPerfumeIds}
                 onToggle={toggleAnchorPerfume}
+                onRowsDiscovered={mergeAnchorRows}
               />
             ) : null}
 
@@ -1038,8 +1023,7 @@ export function ForYouWizard({
               />
             ) : null}
           </QuizStepFrame>
-        </motion.div>
-      </AnimatePresence>
+      </div>
     </div>
   );
 }
@@ -1183,6 +1167,11 @@ function QuizPilotSurveyModal({
 }
 
 interface QuizStepFrameProps {
+  /**
+   * ``fill``: flex column fills parent height; scroll lives inside the question (Safari-friendly).
+   * ``default``: legacy layout with flex spacer before Continue.
+   */
+  bodyLayout?: "default" | "fill";
   canContinue: boolean;
   children: ReactNode;
   continueLabel: string;
@@ -1198,6 +1187,7 @@ interface QuizStepFrameProps {
 }
 
 function QuizStepFrame({
+  bodyLayout = "default",
   canContinue,
   children,
   continueLabel,
@@ -1210,10 +1200,17 @@ function QuizStepFrame({
   title,
   subtitle,
 }: QuizStepFrameProps) {
+  const fill = bodyLayout === "fill";
   return (
-    <section className="relative mx-auto flex min-h-[calc(100svh-5rem)] max-w-6xl flex-col px-4 pb-8 pt-5 sm:px-8 sm:pt-7">
+    <section
+      className={`relative mx-auto flex w-full max-w-6xl flex-col px-4 pt-5 sm:px-8 sm:pt-7 ${
+        fill
+          ? "min-h-0 flex-1 overflow-hidden pb-4"
+          : "min-h-[calc(100svh-5rem)] pb-8"
+      }`}
+    >
       {/* ─── Top bar ─── */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex shrink-0 items-center justify-between gap-3">
         <button
           type="button"
           onClick={onBack}
@@ -1228,10 +1225,9 @@ function QuizStepFrame({
         {/* Progress bar center */}
         <div className="flex flex-1 flex-col gap-1.5">
           <div className="h-[3px] w-full overflow-hidden rounded-full bg-[#EDE0D8]">
-            <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-[#B85A3A] to-[#D4845E]"
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#B85A3A] to-[#D4845E] transition-[width] duration-300 ease-out"
+              style={{ width: `${progressPercent}%` }}
             />
           </div>
         </div>
@@ -1242,59 +1238,49 @@ function QuizStepFrame({
       </div>
 
       {/* ─── Content area ─── */}
-      <div className="flex flex-1 flex-col">
+      <div
+        className={`flex flex-col ${fill ? "min-h-0 flex-1 overflow-hidden" : "flex-1"}`}
+      >
         {/* Title block */}
-        <div className="pt-7 pb-5 sm:pt-9 sm:pb-6">
+        <div className={`shrink-0 ${fill ? "pb-3 pt-4 sm:pb-4 sm:pt-5" : "pb-5 pt-7 sm:pb-6 sm:pt-9"}`}>
           <div className="mx-auto max-w-2xl space-y-3 text-center">
-            <motion.h1
-              key={title}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="font-display text-[1.6rem] font-bold leading-[1.2] tracking-tight text-[#1A1A1A] sm:text-[2.1rem]"
-            >
+            <h1 className="font-display text-[1.6rem] font-bold leading-[1.2] tracking-tight text-[#1A1A1A] sm:text-[2.1rem]">
               {title}
-            </motion.h1>
-            {subtitle ? (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-                className="pt-1"
-              >
-                {subtitle}
-              </motion.div>
-            ) : null}
+            </h1>
+            {subtitle ? <div className="pt-1">{subtitle}</div> : null}
             {submitError && (
-              <motion.p
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mx-auto max-w-xl rounded-2xl border border-[#E7CBC0] bg-[#FFF7F4] px-5 py-2.5 text-center text-sm text-[#9C4A2E]"
-              >
+              <p className="mx-auto max-w-xl rounded-2xl border border-[#E7CBC0] bg-[#FFF7F4] px-5 py-2.5 text-center text-sm text-[#9C4A2E]">
                 {submitError}
-              </motion.p>
+              </p>
             )}
           </div>
         </div>
 
         {/* Question component */}
-        <div className="w-full">{children}</div>
+        <div
+          className={
+            fill
+              ? "flex min-h-0 flex-1 flex-col overflow-hidden"
+              : "w-full shrink-0"
+          }
+        >
+          {children}
+        </div>
 
-        {/* Spacer */}
-        <div className="flex-1 min-h-6" />
+        {!fill ? <div className="min-h-6 flex-1" /> : null}
 
         {/* Bottom actions */}
-        <div className="flex flex-col items-center gap-3 pt-6 pb-2">
-          <motion.button
+        <div
+          className={`flex shrink-0 flex-col items-center gap-3 pb-2 ${fill ? "pt-3" : "pt-6"}`}
+        >
+          <button
             type="button"
             onClick={onContinue}
             disabled={!canContinue}
-            whileHover={canContinue ? { scale: 1.02 } : {}}
-            whileTap={canContinue ? { scale: 0.97 } : {}}
-            className="w-full max-w-xs rounded-2xl bg-[#1A1A1A] px-6 py-4 text-[13px] font-bold tracking-[0.18em] text-white shadow-md transition-all hover:bg-[#B85A3A] hover:shadow-[0_8px_24px_rgba(184,90,58,0.3)] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#D3D0CD] disabled:shadow-none"
+            className="w-full max-w-xs rounded-2xl bg-[#1A1A1A] px-6 py-4 text-[13px] font-bold tracking-[0.18em] text-white shadow-md transition-colors hover:bg-[#B85A3A] hover:shadow-[0_8px_24px_rgba(184,90,58,0.3)] disabled:cursor-not-allowed disabled:bg-[#D3D0CD] disabled:shadow-none"
           >
             {continueLabel}
-          </motion.button>
+          </button>
 
           {onSkip && (
             <button

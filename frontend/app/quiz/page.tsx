@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 
 import type { WaitlistQuizSuccessPayload } from "@/components/for-you/ForYouWizard";
+import { QuizBrandSpinner } from "@/components/quiz/QuizBrandSpinner";
 import { getPreviewAuthHeaders } from "@/lib/waitlist/previewSessionClient";
 import { WaitlistGate } from "@/components/waitlist/WaitlistGate";
 
@@ -15,8 +16,8 @@ const ForYouWizard = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#EDE0D8] border-t-[#B85A3A]" />
+      <div className="flex min-h-[50vh] items-center justify-center bg-gradient-to-b from-[#FAF7F4] to-[#F0E9E2]">
+        <QuizBrandSpinner size="md" />
       </div>
     ),
   },
@@ -85,12 +86,7 @@ export default function WaitlistQuizPage() {
   if (bootstrapping) {
     return (
       <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-gradient-to-b from-[#FAF7F4] to-[#F0E9E2] px-6">
-        <div className="relative">
-          <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#EDE0D8] border-t-[#B85A3A]" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-3 w-3 rounded-full bg-[#B85A3A]/30 animate-pulse" />
-          </div>
-        </div>
+        <QuizBrandSpinner size="lg" label="Loading your quiz" />
         <div className="text-center space-y-1">
           <p className="text-sm font-semibold text-[#1A1A1A]">Loading your quiz</p>
           <p className="text-xs text-[#8A6A5D]">Preparing your personalized experience…</p>
@@ -113,8 +109,14 @@ export default function WaitlistQuizPage() {
 
   return (
     <WaitlistGate featureName="the Quiz" verifiedHasSession={verifiedHasSession}>
-      <div className="pt-4">
-        <ForYouWizard waitlistMode onWaitlistSubmitSuccess={handleSuccess} />
+      {/*
+        Bounded column height so step 2 (anchor grid) gets flex-1 + min-h-0 scroll on iOS Safari.
+        ~8rem ≈ nav (3rem) + pilot notice + pt-4; avoids vh-only max-height inside the picker.
+      */}
+      <div className="box-border flex h-[calc(100dvh-8rem)] min-h-[18rem] flex-col overscroll-none pt-4 sm:min-h-[22rem]">
+        <div className="flex min-h-0 flex-1 flex-col">
+          <ForYouWizard waitlistMode onWaitlistSubmitSuccess={handleSuccess} />
+        </div>
       </div>
     </WaitlistGate>
   );
