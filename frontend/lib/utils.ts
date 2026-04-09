@@ -25,3 +25,20 @@ export function cn(...inputs: ClassValue[]): string {
 export function rupeesUntilFreeShipping(threshold: number, subtotal: number): number {
   return Math.max(0, Math.ceil(threshold - subtotal))
 }
+
+/**
+ * Formats a rupee amount for UI (integer rupees, Indian grouping). Avoids PDP prices like ₹486.18.
+ *
+ * Args:
+ *   amount: Price in INR (may be float from API).
+ *
+ * Returns:
+ *   Localized string without fractional rupees.
+ */
+export function formatInrDisplay(amount: number): string {
+  const whole = Math.round(Number(amount))
+  return whole.toLocaleString('en-IN', {
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+  })
+}

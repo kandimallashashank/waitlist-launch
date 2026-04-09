@@ -4,7 +4,13 @@ import {
   getWaitlistEmailValidationError,
   normalizeWaitlistEmail,
 } from "@/lib/waitlist/emailValidation";
+import {
+  WAITLIST_SESSION_COOKIE,
+  signWaitlistSessionJwt,
+} from "@/lib/waitlist/sessionJwt";
 import { completeWaitlistSignup, getSupabaseAdmin } from "@/lib/waitlist/serverActions";
+
+const SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 30;
 
 interface WaitlistPayload {
   email?: string;
@@ -66,13 +72,34 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json({
+    let sessionToken: string;
+    try {
+      sessionToken = await signWaitlistSessionJwt(rawEmail);
+    } catch (e) {
+      console.error("Waitlist session JWT:", e);
+      return NextResponse.json(
+        { error: "Waitlist session is not configured." },
+        { status: 500 },
+      );
+    }
+
+    const res = NextResponse.json({
       ok: true,
       already: alreadyOnWaitlist,
       emailSent: result.emailSent,
       couponCode: result.couponCode,
       discountPercent: result.discountPercent,
+      /** Same JWT as httpOnly cookie; use Authorization: Bearer for preview APIs if cookies fail. */
+      previewSessionToken: sessionToken,
     });
+    res.cookies.set(WAITLIST_SESSION_COOKIE, sessionToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: SESSION_MAX_AGE_SEC,
+      secure: process.env.NODE_ENV === "production",
+    });
+    return res;
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unexpected error.";
     return NextResponse.json({ error: message }, { status: 500 });

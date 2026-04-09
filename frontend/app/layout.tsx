@@ -1,6 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Poppins } from "next/font/google";
 import { Toaster } from "sonner";
+
+import { AppProvider } from "@/contexts/AppContext";
+import { PilotPreviewDataNotice } from "@/components/waitlist/PilotPreviewDataNotice";
+import { WaitlistPreviewNav } from "@/components/waitlist/WaitlistPreviewNav";
 import "./globals.css";
 
 const inter = Inter({
@@ -35,8 +39,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
       <body className="antialiased font-sans">
-        {children}
-        <Toaster richColors position="top-center" />
+        <AppProvider>
+          <WaitlistPreviewNav />
+          <PilotPreviewDataNotice />
+          {children}
+          <Toaster richColors position="top-center" />
+        </AppProvider>
       </body>
     </html>
   );

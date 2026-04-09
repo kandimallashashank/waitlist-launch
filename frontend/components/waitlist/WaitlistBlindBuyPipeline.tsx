@@ -126,7 +126,7 @@ export default function WaitlistBlindBuyPipeline(): React.ReactElement {
                 className="rounded-2xl border border-white/12 bg-[#14120F] px-6 py-3 text-center shadow-[0_12px_40px_-12px_rgba(0,0,0,0.55)] sm:px-8 sm:py-3.5"
               >
                 <span className="font-display text-sm font-semibold tracking-tight text-white sm:text-base">
-                  SR
+                  ScentRev
                 </span>
               </div>
             </div>

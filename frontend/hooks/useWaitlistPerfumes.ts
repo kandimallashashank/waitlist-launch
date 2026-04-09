@@ -5,10 +5,6 @@ import {
   WAITLIST_STATIC_CATALOG,
   isStaticWaitlistCatalogEnabled,
 } from '@/lib/waitlist/staticCatalog';
-import {
-  readWaitlistCatalogCache,
-  writeWaitlistCatalogCache,
-} from '@/lib/waitlistPerfumeCache';
 import type { WaitlistCatalogEntry } from '@/types/waitlistCatalog';
 import { toWaitlistMarqueePicks } from '@/types/waitlistCatalog';
 
@@ -18,8 +14,11 @@ export type WaitlistPerfume = WaitlistCatalogEntry;
 const DEFAULT_POOL_SIZE = 24;
 const HERO_SLICE = 8;
 
+/** Legacy sessionStorage key from removed waitlist catalog cache (cleared on fetch). */
+const LEGACY_WAITLIST_CATALOG_STORAGE_KEY = 'scentrev_waitlist_catalog_pool_v1';
+
 /**
- * Fetches a shared catalog pool for the waitlist (cached 1h in sessionStorage + memory).
+ * Fetches a shared catalog pool for the waitlist (always refetches; no session cache).
  * Use `perfumes` for hero/showcase slices; `marqueePicks` for strips + dark marquee.
  *
  * Args:
@@ -33,17 +32,14 @@ function initialPerfumes(poolSize: number): WaitlistCatalogEntry[] {
   if (isStaticWaitlistCatalogEnabled() && WAITLIST_STATIC_CATALOG.length > 0) {
     return WAITLIST_STATIC_CATALOG.slice(0, poolSize);
   }
-  if (typeof window === 'undefined') return [];
-  return readWaitlistCatalogCache(poolSize) ?? [];
+  return [];
 }
 
 function initialLoading(poolSize: number): boolean {
   if (isStaticWaitlistCatalogEnabled() && WAITLIST_STATIC_CATALOG.length > 0) {
     return false;
   }
-  if (typeof window === 'undefined') return true;
-  const hit = readWaitlistCatalogCache(poolSize);
-  return hit == null || hit.length === 0;
+  return true;
 }
 
 export function useWaitlistPerfumes(poolSize: number = DEFAULT_POOL_SIZE) {
@@ -60,20 +56,19 @@ export function useWaitlistPerfumes(poolSize: number = DEFAULT_POOL_SIZE) {
   );
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.removeItem(LEGACY_WAITLIST_CATALOG_STORAGE_KEY);
+      } catch {
+        /* private mode / quota */
+      }
+    }
+
     if (isStaticWaitlistCatalogEnabled() && WAITLIST_STATIC_CATALOG.length > 0) {
       const slice = WAITLIST_STATIC_CATALOG.slice(0, poolSize);
       setPerfumes(slice);
       setIsLoading(false);
-      writeWaitlistCatalogCache(poolSize, slice);
       prefetchWaitlistCatalogImages(slice.map((p) => p.image));
-      return undefined;
-    }
-
-    const cached = readWaitlistCatalogCache(poolSize);
-    if (cached && cached.length > 0) {
-      setPerfumes(cached);
-      setIsLoading(false);
-      prefetchWaitlistCatalogImages(cached.map((p) => p.image));
       return undefined;
     }
 
@@ -106,12 +101,10 @@ export function useWaitlistPerfumes(poolSize: number = DEFAULT_POOL_SIZE) {
           });
 
           setPerfumes(mapped);
-          writeWaitlistCatalogCache(poolSize, mapped);
           prefetchWaitlistCatalogImages(mapped.map((p) => p.image));
         } else {
           const fallback = padDefaultPerfumes(poolSize);
           setPerfumes(fallback);
-          writeWaitlistCatalogCache(poolSize, fallback);
           prefetchWaitlistCatalogImages(fallback.map((p) => p.image));
         }
       } catch (error) {
@@ -119,7 +112,6 @@ export function useWaitlistPerfumes(poolSize: number = DEFAULT_POOL_SIZE) {
         if (!cancelled) {
           const fallback = padDefaultPerfumes(poolSize);
           setPerfumes(fallback);
-          writeWaitlistCatalogCache(poolSize, fallback);
           prefetchWaitlistCatalogImages(fallback.map((p) => p.image));
         }
       } finally {

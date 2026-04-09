@@ -1,117 +1,132 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { Sparkles, FlaskConical, Star, Database } from "lucide-react";
 
-/**
- * Waitlist: pillar cards (quiz, Layering Lab, micro-samples) plus Club subscription (Essential /
- * Signature / Prestige). Blind Buy Score lives in `WaitlistBlindBuyPipeline` on the same page.
- *
- * Returns:
- *   Section with pillar copy and subscription summary (no outbound store links).
- */
+const FEATURES = [
+  {
+    n: "01",
+    icon: Sparkles,
+    tag: "Scent Quiz",
+    headline: "Your ex forgot your preferences.\nWe never will.",
+    body: "90 seconds. Tell us how you live, what you wear, where you go. We map your answers against 120,000 perfumes and surface what actually belongs on your skin. No influencer. No guesswork.",
+    href: "/quiz",
+    cta: "Take the quiz",
+  },
+  {
+    n: "02",
+    icon: FlaskConical,
+    tag: "Layering Lab",
+    headline: "One scent is a vibe.\nTwo is a whole personality.",
+    body: "Pick two or three fragrances. We score accord harmony, concentration balance, how the blend evolves through dry-down, personalised to your quiz profile. Try combinations before you buy a single bottle.",
+    href: "/layering-lab",
+    cta: "Open Layering Lab",
+  },
+  {
+    n: "03",
+    icon: Star,
+    tag: "Blind Buy Score",
+    headline: "Hours of Reddit, Facebook, YouTube research.\nCondensed into one number.",
+    body: "On this pilot, blind buy scores are testing placeholders. At launch we aggregate what real people say across Reddit, Facebook, and the open web, fuse it with perfume metrics, and surface a 0–5 score tuned for Indian weather.",
+    href: "/catalog",
+    cta: "See scores",
+  },
+  {
+    n: "04",
+    icon: Database,
+    tag: "Perfume Data",
+    headline: "The brand says it lasts 12 hours.\nYour skin says otherwise.",
+    body: "Sillage, longevity, gender lean, season fit, occasion fit, note pyramid, accord breakdown, climate performance. Real data from 120k+ perfumes, built for Indian weather and Indian buyers. Not a copy-paste from the brand.",
+    href: "/catalog",
+    cta: "Browse catalog",
+  },
+] as const;
+
 export default function WaitlistWhatWeOffer(): React.ReactElement {
   return (
     <section
       id="what-we-provide"
-      className="relative bg-gradient-to-b from-white via-[#FBF8F5] to-white py-16 md:py-20"
+      className="border-t border-[#E0D8CC] bg-[#F4F0E8] py-16 md:py-24"
     >
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="mx-auto max-w-2xl text-center">
-          <span className="text-xs font-semibold uppercase tracking-[0.35em] text-[#B85A3A]">
-            What makes us different
-          </span>
-          <h2 className="font-display mt-3 text-3xl text-[#1A1A1A] md:text-4xl">
-            Discovery, layering, and a monthly rhythm
+      <div className="mx-auto max-w-5xl px-6">
+
+        {/* Header */}
+        <div className="mb-14 max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[#B85A3A]">What ScentRev does</p>
+          <h2 className="font-display mt-3 text-3xl font-semibold leading-tight text-[#14120F] md:text-4xl">
+            Perfume buying in India is broken.<br />
+            <span className="text-[#B85A3A]">We fixed it.</span>
           </h2>
-          <p className="mt-4 text-sm leading-relaxed text-[#6B645C] md:text-base">
-            After you start with micro-samples, these{" "}
-            <span className="font-medium text-[#B85A3A]">MVP</span> pillars keep picks honest: quiz fit,
-            AI- and machine-learning-ranked layering combos you can judge on real metrics, micro try-on
-            sizes and full bottles when you are ready, and an optional monthly{" "}
-            <span className="font-medium text-[#4A4540]">Club</span> so you can keep discovering without
-            full-bottle spend.
-          </p>
+          
         </div>
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-3">
-          <article className="flex flex-col rounded-2xl border border-[#E8E0D8] bg-white p-6 shadow-[0_12px_40px_rgba(26,26,26,0.06)] transition-shadow duration-300 hover:shadow-[0_16px_48px_rgba(26,26,26,0.09)]">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#B85A3A]">
-              For the quiz
-            </p>
-            <h3 className="font-display mt-3 text-xl leading-snug text-[#1A1A1A] md:text-2xl">
-              Your ex forgot your preferences.
-              <br />
-              We never will.
-            </h3>
-            <p className="mt-4 flex-1 text-sm leading-relaxed text-[#5F5C57]">
-              The internet has opinions. Your skin has answers. Tell us how you live, and we match you to
-              a fragrance that belongs on you, not just on a shelf. No influencer. No guesswork. Just
-              data from people who actually wear it.
-            </p>
-          </article>
+        {/* Feature grid */}
+        <div className="grid gap-4 md:grid-cols-2">
+          {FEATURES.map(({ n, icon: Icon, tag, headline, body, href, cta }) => (
+            <Link
+              key={n}
+              href={href}
+              className="group relative flex flex-col rounded-2xl border border-[#E0D8CC] bg-white p-7 transition-all duration-200 hover:border-[#B85A3A]/40 hover:shadow-[0_8px_32px_rgba(26,26,26,0.08)]"
+            >
+              {/* Top row */}
+              <div className="mb-5 flex items-start justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FDF6F3] border border-[#F0D8CC]">
+                  <Icon className="h-5 w-5 text-[#B85A3A]" aria-hidden />
+                </div>
+                <span className="font-mono text-xs text-[#B85A3A]/50">{n}</span>
+              </div>
 
-          <article className="flex flex-col rounded-2xl border border-[#E8E0D8] bg-white p-6 shadow-[0_12px_40px_rgba(26,26,26,0.06)] transition-shadow duration-300 hover:shadow-[0_16px_48px_rgba(26,26,26,0.09)]">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#B85A3A]">
-              Layering Lab
-            </p>
-            <h3 className="font-display mt-3 text-xl leading-snug text-[#1A1A1A] md:text-2xl">
-              One scent is a voice.
-              <br />
-              Two is a signature.
-            </h3>
-            <p className="mt-4 flex-1 text-sm leading-relaxed text-[#5F5C57]">
-              <span className="font-medium text-[#4A4540]">Layering Lab</span> uses AI and machine
-              learning on large, real-world signals (not hand-wavy taste tests) to surface which pairs tend
-              to work best together. You get rich metrics and transparency so you can compare combos and
-              decide what deserves a wear on your own skin.
-            </p>
-          </article>
+              {/* Tag */}
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-[#B85A3A]">{tag}</p>
 
-          <article className="flex flex-col rounded-2xl border border-[#E8E0D8] bg-white p-6 shadow-[0_12px_40px_rgba(26,26,26,0.06)] transition-shadow duration-300 hover:shadow-[0_16px_48px_rgba(26,26,26,0.09)]">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#B85A3A]">
-              How it works: microsamples
-            </p>
-            <h3 className="font-display mt-3 text-xl leading-snug text-[#1A1A1A] md:text-2xl">
-              A ₹200 decision beats
-              <br />a ₹12,000 regret.
-            </h3>
-            <p className="mt-4 flex-1 text-sm leading-relaxed text-[#5F5C57]">
-              A bottle is a commitment. Your skin is the final judge, not the bottle, not the review,
-              not the person who called it &quot;nice.&quot; Wear it for two days. Let it move through
-              dry-down, sleep, and sunlight. Only then do you know. We send you the truth in{' '}
-              <span className="font-medium text-[#4A4540]">3ml</span> so the answer lives on your skin.
-              You commit when your skin says yes.
-            </p>
-          </article>
+              {/* Headline */}
+              <h3 className="font-display text-lg font-semibold leading-snug text-[#14120F] mb-3 whitespace-pre-line">
+                {headline}
+              </h3>
+
+              {/* Body */}
+              <p className="flex-1 text-sm leading-relaxed text-[#3A3530]">{body}</p>
+
+              {/* CTA */}
+              <div className="mt-5 flex items-center gap-1.5 text-xs font-semibold text-[#B85A3A]">
+                <span className="group-hover:underline underline-offset-2">{cta}</span>
+                <span className="transition-transform group-hover:translate-x-0.5">→</span>
+              </div>
+            </Link>
+          ))}
         </div>
 
-        <article className="mt-10 rounded-2xl border border-[#E8E0D8] bg-gradient-to-br from-[#FAF7F2] via-white to-[#FBF8F5] p-6 shadow-[0_12px_40px_rgba(26,26,26,0.06)] md:mt-12 md:p-8">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#B85A3A]">
-            Club · monthly subscription
-          </p>
-          <h3 className="font-display mt-3 text-xl leading-snug text-[#1A1A1A] md:text-2xl">
-            Essential, Signature, or Prestige.
-            <br />
-            One new 8ml every month.
-          </h3>
-          <p className="mt-4 text-sm leading-relaxed text-[#5F5C57] md:text-[0.9375rem]">
-            Choose a tier, then each month you either{" "}
-            <span className="font-medium text-[#4A4540]">pick the 8ml yourself</span> or, when you enable{" "}
-            <span className="font-medium text-[#4A4540]">auto-select</span>, we choose for you from the
-            preferences you gave in the quiz. You keep smelling something different every month and build
-            a real collection at a fraction of full-bottle cost.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-2" aria-label="Subscription plan tiers">
-            {(['Essential', 'Signature', 'Prestige'] as const).map((tier) => (
-              <span
-                key={tier}
-                className="rounded-full border border-[#E0D8CC] bg-white/95 px-3.5 py-1.5 text-xs font-semibold tracking-tight text-[#3D3A36] shadow-sm"
-              >
-                {tier}
-              </span>
-            ))}
+        {/* Subscription strip */}
+        <Link
+          href="/subscribe"
+          className="group mt-4 flex flex-col gap-4 rounded-2xl border border-[#E0D8CC] bg-white p-7 transition-all duration-200 hover:border-[#B85A3A]/40 hover:shadow-[0_8px_32px_rgba(26,26,26,0.08)] md:flex-row md:items-center md:justify-between"
+        >
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#B85A3A] mb-2">Scent Box · Monthly</p>
+            <h3 className="font-display text-lg font-semibold text-[#14120F] mb-1.5">
+              Keep discovering. One new 8ml every month.
+            </h3>
+            <p className="text-sm leading-relaxed text-[#3A3530] max-w-lg">
+              Pick a tier, choose your fragrance each month. Or let your quiz profile choose for you.
+              Cancel anytime.
+            </p>
           </div>
-        </article>
+          <div className="flex shrink-0 flex-col items-start gap-2.5 md:items-end">
+            <div className="flex flex-wrap gap-2">
+              {(["Essential", "Signature", "Prestige"] as const).map((tier) => (
+                <span key={tier} className="rounded-full border border-[#E0D8CC] bg-[#F4F0E8] px-3 py-1 text-xs font-semibold text-[#3D3A36]">
+                  {tier}
+                </span>
+              ))}
+            </div>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#B85A3A]">
+              <span className="group-hover:underline underline-offset-2">See plans</span>
+              <span className="transition-transform group-hover:translate-x-0.5">→</span>
+            </div>
+          </div>
+        </Link>
+
       </div>
     </section>
   );

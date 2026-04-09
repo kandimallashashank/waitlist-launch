@@ -1,5 +1,5 @@
 /**
- * Shared waitlist catalog entries: one fetch/cache pool for hero, showcase, and marquees.
+ * Shared waitlist catalog entries: one fetch pool for hero, showcase, and marquees.
  */
 
 export interface WaitlistCatalogEntry {

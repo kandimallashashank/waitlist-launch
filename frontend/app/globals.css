@@ -7,6 +7,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Waitlist preview: nav is a slim sticky bar in normal flow (not the tall fixed store header).
+ * Main app uses ~7rem offset; here we avoid a large empty band under the nav.
+ */
+@layer utilities {
+  .store-main-scroll-offset {
+    padding-top: 0;
+  }
+}
+
 /* Hero: subtle chevron motion without Framer (keeps homepage hero JS smaller / earlier LCP). */
 @keyframes hero-chevron-nudge {
   0%,

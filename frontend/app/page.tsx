@@ -6,13 +6,13 @@ import {
   ChevronDown,
   Database,
   FlaskConical,
-  LayoutDashboard,
   Mail,
   Sparkles,
   SprayCan,
   TestTube2,
   ThermometerSun,
   TrendingUp,
+  Droplets,
 } from 'lucide-react';
 import IconBadge from '@/components/common/IconBadge';
 import WaitlistBlindBuyPipeline from '@/components/waitlist/WaitlistBlindBuyPipeline';
@@ -28,6 +28,7 @@ import {
   isValidWaitlistEmail,
 } from '@/lib/waitlist/emailValidation';
 import { toast } from 'sonner';
+import { storePreviewSessionFromSignup } from '@/lib/waitlist/previewSessionClient';
 
 const sizes = [
   {
@@ -36,6 +37,13 @@ const sizes = [
     icon: TestTube2,
     gradient: 'from-[#E9F0EC] via-[#F6FAF8] to-white',
     iconColor: 'text-[#6D7D63]',
+  },
+  {
+    label: '5ml Standard',
+    detail: 'Between sample and travel',
+    icon: Droplets,
+    gradient: 'from-[#EDE9F5] via-[#F5F3FA] to-white',
+    iconColor: 'text-[#6B5B8E]',
   },
   {
     label: '8ml Travel',
@@ -81,6 +89,24 @@ export default function WaitlistPage() {
     if (typeof window === 'undefined') return;
     try {
       const params = new URLSearchParams(window.location.search);
+      if (params.get('locked') === '1') {
+        toast.warning('Pilot preview is locked', {
+          description:
+            'Join the waitlist below (email + Join). After that, Quiz and other preview links work.',
+          duration: 7000,
+        });
+        window.history.replaceState(null, '', `${window.location.pathname}${window.location.hash}`);
+        const focusWaitlist = () => {
+          document.getElementById('waitlist-form')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          });
+          emailInputRef.current?.focus({ preventScroll: true });
+        };
+        requestAnimationFrame(() => {
+          setTimeout(focusWaitlist, 80);
+        });
+      }
       if (!params.has('email')) return;
       const raw = params.get('email')?.trim();
       if (!raw) return;
@@ -124,7 +150,9 @@ export default function WaitlistPage() {
         discountPercent?: number;
         already?: boolean;
         emailSent?: boolean;
+        previewSessionToken?: string;
       };
+      storePreviewSessionFromSignup(data.previewSessionToken);
       if (data.couponCode) setCouponCode(data.couponCode);
       if (data.discountPercent != null) setDiscountPercent(data.discountPercent);
       setAlreadyJoined(Boolean(data.already));
@@ -335,21 +363,7 @@ export default function WaitlistPage() {
         <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-6">
           <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:gap-10 xl:gap-14">
             <div className="min-w-0 flex-1 space-y-8 lg:max-w-[min(640px,58%)] lg:pt-2">
-              <div data-hero className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex h-11 min-w-[2.75rem] items-center justify-center rounded-2xl bg-[#14120F] px-2 text-xs font-semibold tracking-tight text-white shadow-lg shadow-[#14120F]/20 ring-1 ring-white/10 sm:text-sm">
-                  SR
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[13px] font-semibold tracking-tight text-[#14120F]">ScentRev</p>
-                  <p className="text-xs text-[#6B645C]">Micro samples · full bottles · shipped in India</p>
-                </div>
-                <span className="hidden h-8 w-px bg-[#D9D1C7] sm:block" aria-hidden />
-                <span className="rounded-full border border-[#D9D1C7] bg-white/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#6B645C] shadow-sm backdrop-blur-sm">
-                  Waitlist
-                </span>
-              </div>
-
-              <div data-hero className="space-y-3">
+            <div data-hero className="space-y-3">
                 <p className="inline-flex items-center gap-2 text-xs font-medium">
                   <Sparkles className="h-3.5 w-3.5 shrink-0 text-[#B85A3A]" aria-hidden />
                   <span className="inline bg-gradient-to-r from-[#B85A3A] via-[#D4A574] to-[#B85A3A] bg-[length:300%_100%] bg-clip-text font-semibold text-transparent animate-gradient">
@@ -357,25 +371,22 @@ export default function WaitlistPage() {
                   </span>
                 </p>
                 <h1 className="font-display text-[2.125rem] font-semibold leading-[1.1] tracking-tight text-[#14120F] sm:text-4xl md:text-[2.85rem] md:leading-[1.06]">
-                  Find your scent with data, not guesswork.
+                  Try more. Regret less.<br />
+                  <span className="text-[#B85A3A]">Find the ones worth keeping.</span>
                 </h1>
               </div>
 
-              <p data-hero className="max-w-xl text-base leading-relaxed text-[#4A4540] md:text-[1.0625rem]">
-                We sell <span className="font-medium text-[#14120F]">micro fragrance samples</span> (3ml to 10ml) and{' '}
-                <span className="font-medium text-[#14120F]">full-size bottles</span> in India: try on real skin first,
-                then buy the bottle when your skin agrees. Join for launch timing and your discount, then keep
-                scrolling for sizes, how micro compares to full bottles, and{' '}
-                <span className="font-medium text-[#14120F]">Blind Buy Score</span>
-                : a 0-5 blind-buy rating from Reddit, Facebook, and web chatter fused with perfume metrics so you waste
-                less time searching.
+              <p data-hero className="max-w-lg text-base leading-relaxed text-[#3A3530] md:text-[1.0625rem]">
+                Whether you&apos;re just starting out or you&apos;ve got a shelf full of bottles you barely touch the problem is the same. Perfume is expensive to get wrong.
+                <br /><br />
+                We&apos;re planning decants from around ₹199 at launch so you can explore freely. New to fragrance? Start with our quiz and we&apos;ll point you in the right direction. Already a collector? Try before you add to the shelf. Either way, the full bottle is here when you&apos;re sure. Pilot preview: prices and blind buy scores are testing values (see the notice under the nav).
               </p>
 
               <div data-hero className="flex flex-wrap gap-2 pt-1">
                 {[
-                  { t: '450+ fragrances', a: 'Samples & full bottles' },
-                  { t: 'From ₹199', a: 'Micro samples' },
-                  { t: 'India-first', a: 'Heat & humidity' },
+                  { t: 'New to fragrance?', a: 'Quiz finds your match' },
+                  { t: 'From ₹199', a: 'Try before you commit' },
+                  { t: '450+ fragrances', a: 'Decants + full bottles' },
                 ].map((chip) => (
                   <span
                     key={chip.t}
@@ -427,7 +438,7 @@ export default function WaitlistPage() {
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#B85A3A]">Join</p>
                     <p className="mt-1 font-display text-xl font-semibold text-[#14120F]">Waitlist</p>
                   </div>
-                  <span className="hidden shrink-0 rounded-full border border-[#E8E0D6] bg-[#FAF7F2] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#6B645C] sm:inline-flex sm:items-center sm:gap-1.5">
+                  <span className="hidden shrink-0 rounded-full border border-[#E8E0D6] bg-[#FAF7F2] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#3A3530] sm:inline-flex sm:items-center sm:gap-1.5">
                     <Sparkles className="h-3.5 w-3.5 text-[#B85A3A]" aria-hidden />
                     Launching soon
                   </span>
@@ -543,130 +554,30 @@ export default function WaitlistPage() {
 
       <section
         id="sample-first"
-        className="relative z-[1] -mt-10 border-t border-transparent bg-gradient-to-b from-[#E8DFD4]/90 via-[#EDE6DC] to-[#F0EBE3] pb-16 pt-6 md:-mt-16 md:pb-24 md:pt-8"
+        className="border-t border-[#E0D8CC] bg-[#F4F0E8] py-14 md:py-20"
       >
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D4C9BB] to-transparent" aria-hidden />
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div
-            data-scroll="fade"
-            className="relative overflow-hidden rounded-[1.5rem] border border-[#D9D0C4] bg-[#FAF7F2] p-5 shadow-[0_32px_90px_-28px_rgba(20,18,15,0.2)] sm:rounded-[1.75rem] sm:p-6 md:rounded-[2rem] md:p-10 lg:p-12"
-          >
-            <div
-              className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(184,90,58,0.12),transparent_68%)]"
-              aria-hidden
-            />
-            <div
-              className="pointer-events-none absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(109,125,99,0.1),transparent_70%)]"
-              aria-hidden
-            />
-
-            <div className="relative grid gap-8 sm:gap-10 lg:grid-cols-12 lg:gap-12 lg:items-start">
-              <div className="min-w-0 lg:col-span-5">
-                <span className="inline-block max-w-full text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B85A3A] sm:text-xs sm:tracking-[0.28em] md:tracking-[0.32em]">
-                  Who we are
-                </span>
-                <h2 className="mt-2 font-display text-[1.625rem] font-semibold leading-[1.12] tracking-tight text-[#14120F] text-balance sm:mt-3 sm:text-3xl sm:leading-tight md:text-[2.25rem] md:leading-tight">
-                  <span className="block">Sample first.</span>
-                  <span className="mt-2 block text-[1.35rem] font-semibold leading-[1.15] text-[#5F5C57] sm:mt-1.5 sm:text-3xl sm:leading-tight">
-                    Buy smarter.
-                  </span>
-                </h2>
-                <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#4A4540] sm:mt-5 sm:text-sm md:text-base md:leading-relaxed">
-                  ScentRev is built for India: affordable micro-sizes for honest wear in your climate, and full bottles
-                  when you are ready. We sell both so you can try first, then commit with confidence. Everything on this
-                  page exists to make that decision easier.
-                </p>
-
-                <span className="mt-8 block text-[10px] font-semibold uppercase tracking-[0.22em] text-[#8A8279] sm:mt-10 sm:tracking-[0.28em]">
-                  Sizes we ship
-                </span>
-                <div
-                  data-stagger="cards"
-                  className="mt-4 flex gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0 [&::-webkit-scrollbar]:hidden"
-                >
-                  {sizes.map((size) => (
-                    <div
-                      key={size.label}
-                      data-card
-                      className="waitlist-section-card min-w-[148px] shrink-0 rounded-2xl border border-[#D9D0C4] bg-white/80 p-4 shadow-[0_12px_40px_rgba(20,18,15,0.06)] backdrop-blur-sm sm:min-w-0"
-                    >
-                      <IconBadge
-                        icon={size.icon}
-                        gradient={size.gradient}
-                        iconClassName={size.iconColor}
-                        className="mb-3 h-12 w-12"
-                      />
-                      <p className="text-sm font-medium text-[#14120F]">{size.label}</p>
-                      <p className="mt-1 text-xs text-[#7A726A]">{size.detail}</p>
-                    </div>
-                  ))}
+        <div className="mx-auto max-w-5xl px-5 sm:px-6">
+          <div data-scroll="fade" className="grid gap-10 md:grid-cols-2 md:items-start">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#B85A3A]">The smarter way to buy</p>
+              <h2 className="mt-2 font-display text-2xl font-semibold leading-tight text-[#14120F] sm:text-3xl">
+                You bought the bottle.<br />You wore it twice.
+              </h2>
+              <p className="mt-4 text-sm leading-relaxed text-[#3A3530]">
+                Happens to beginners. Happens to collectors. A full bottle is a commitment your nose makes in 30 seconds in air conditioning, on a paper strip. Your skin in Indian heat is a completely different story.
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-[#3A3530]">
+                A decant lets you live with a fragrance for two days before you decide. Wear it to work, through the afternoon, to sleep. If it still feels right, the full bottle is right here. If not, you saved yourself a shelf ornament.
+              </p>
+            </div>
+            <div data-stagger="cards" className="grid grid-cols-3 gap-3">
+              {sizes.map((size) => (
+                <div key={size.label} data-card className="rounded-2xl border border-[#D9D0C4] bg-white/80 p-4 backdrop-blur-sm">
+                  <IconBadge icon={size.icon} gradient={size.gradient} iconClassName={size.iconColor} className="mb-3 h-10 w-10" />
+                  <p className="text-xs font-semibold text-[#14120F]">{size.label}</p>
+                  <p className="mt-0.5 text-[10px] text-[#7A726A]">{size.detail}</p>
                 </div>
-              </div>
-
-              <div className="min-w-0 lg:col-span-7">
-                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-2">
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8A8279] sm:tracking-[0.22em]">
-                      At a glance
-                    </p>
-                    <p className="mt-1 max-w-[22rem] text-[15px] font-medium leading-snug text-[#14120F] sm:max-w-none sm:text-sm sm:leading-normal">
-                      Micro samples vs. jumping to a full bottle
-                    </p>
-                  </div>
-                  <span className="w-fit shrink-0 rounded-full border border-[#E0D6CC] bg-white/90 px-3 py-1.5 text-[9px] font-semibold uppercase leading-tight tracking-wide text-[#6B645C] sm:py-1 sm:text-[10px] sm:tracking-wider">
-                    Same juice, different risk
-                  </span>
-                </div>
-                <div
-                  data-scroll="lift"
-                  className="overflow-hidden rounded-2xl border border-[#D4C9BB] bg-gradient-to-b from-[#FFFCF8] to-[#F6F1E9] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_18px_50px_-20px_rgba(20,18,15,0.12)]"
-                >
-                  <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,0.9fr)] items-center gap-4 border-b border-[#E8DFD6] bg-[#F0E9E0] px-5 py-3 sm:grid">
-                    <div className="flex min-w-0 items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-[#5F5C57]">
-                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#B85A3A]" aria-hidden />
-                      Comparison
-                    </div>
-                    <span className="min-w-0 text-center text-[11px] font-bold uppercase tracking-wide text-[#B85A3A]">
-                      Micro
-                    </span>
-                    <span className="min-w-0 text-center text-[11px] font-bold uppercase tracking-wide text-[#5F5C57]">
-                      Full bottle
-                    </span>
-                  </div>
-                  <div data-stagger="rows" className="divide-y divide-[#E8DFD6]">
-                    {comparison.map((row) => (
-                      <div key={row.label} data-row className="transition-colors hover:bg-[#FFF9F3]/90">
-                        <div className="px-3 py-3.5 sm:hidden">
-                          <p className="text-[13px] font-semibold leading-snug text-[#14120F]">{row.label}</p>
-                          <div className="mt-2.5 grid grid-cols-2 gap-0 overflow-hidden rounded-xl border border-[#E4D9CE] bg-white/90 shadow-[0_1px_0_rgba(255,255,255,0.85)_inset]">
-                            <div className="border-r border-[#EDE5DC] px-3 py-3">
-                              <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-[#B85A3A]">
-                                Micro
-                              </p>
-                              <p className="mt-1.5 text-[13px] font-semibold leading-snug text-[#2C2824]">
-                                {row.micro}
-                              </p>
-                            </div>
-                            <div className="px-3 py-3">
-                              <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-[#7A726A]">
-                                Full bottle
-                              </p>
-                              <p className="mt-1.5 text-[13px] leading-snug text-[#5F5C57]">{row.full}</p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,0.9fr)] items-center gap-4 px-5 py-3.5 text-sm sm:grid">
-                          <span className="min-w-0 font-medium leading-normal text-[#14120F]">{row.label}</span>
-                          <span className="min-w-0 text-center font-semibold leading-normal text-[#B85A3A]">
-                            {row.micro}
-                          </span>
-                          <span className="min-w-0 text-center leading-normal text-[#5F5C57]">{row.full}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -680,92 +591,47 @@ export default function WaitlistPage() {
 
       <section
         id="recommendation-signals"
-        className="relative border-t border-[#E8E0D6] bg-gradient-to-b from-[#EFEBE3] to-[#F8F5EF] py-16 md:py-24"
+        className="border-t border-[#E0D8CC] bg-[#F4F0E8] py-14 md:py-20"
       >
-        <div className="mx-auto max-w-6xl px-5 sm:px-6">
-          <div data-scroll="fade" className="mx-auto max-w-2xl text-center">
-            <span className="text-xs font-semibold uppercase tracking-[0.32em] text-[#B85A3A]">
-              In the product
-            </span>
-            <h2 className="mt-3 font-display text-3xl font-semibold leading-tight tracking-tight text-[#14120F] md:text-4xl">
-              ~120k perfumes, serious analytics, India-aware KPIs
+        <div className="mx-auto max-w-5xl px-5 sm:px-6">
+          <div data-scroll="fade" className="mb-10">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#B85A3A]">The data behind it</p>
+            <h2 className="mt-2 font-display text-2xl font-semibold text-[#14120F] sm:text-3xl">
+              Not hype. Not guesswork.<br />
+              <span className="text-[#3A3530]">120,000 perfumes worth of signal.</span>
             </h2>
-            <p className="mt-4 text-base leading-relaxed text-[#4A4540] md:text-lg">
-              We draw on a dataset of roughly <span className="font-medium text-[#14120F]">120,000 perfumes</span>: rich
-              enough for real analytics: what people actually like, how demand shifts by season, how notes and accords
-              cluster, brand and reformulation lineage, and plenty beyond. A fragrance that crushes in cooler, drier
-              Western weather often falls flat in Indian heat and humidity; we surface{' '}
-              <span className="font-medium text-[#14120F]">KPIs and fit metrics</span> so you can see what is more
-              likely to work here, not just what is trending abroad. Same stack powers{' '}
-              <span className="font-medium text-[#14120F]">Blind Buy Score</span> (0-5, weighted across community
-              signals and catalog metrics) and the quiz.
-            </p>
           </div>
-
-          <div className="mt-12">
-            <div
-              data-scroll="lift"
-              className="mx-auto max-w-3xl overflow-hidden rounded-2xl border border-[#2A2826] bg-[#14120F] text-white shadow-[0_28px_90px_rgba(20,18,15,0.22)]"
-            >
-              <div className="flex items-center justify-between gap-3 border-b border-white/10 bg-[#1A1816] px-5 py-4">
-                <div className="flex min-w-0 items-center gap-2">
-                  <LayoutDashboard className="h-5 w-5 shrink-0 text-[#D4A574]" aria-hidden />
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">Project KPIs</p>
-                    <p className="truncate text-sm font-medium text-white">Dataset &amp; fit KPIs (illustrative)</p>
-                  </div>
-                </div>
-                <span className="hidden shrink-0 text-[10px] font-semibold uppercase tracking-wider text-emerald-400/90 sm:inline">
-                  Live signals
-                </span>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {[
+              {
+                icon: Database,
+                color: 'text-[#8B9E7E]',
+                stat: '120k+',
+                label: 'Perfumes mapped',
+                sub: 'Notes, accords, longevity, sillage, gender lean, seasons, occasions every dimension scored.',
+              },
+              {
+                icon: ThermometerSun,
+                color: 'text-[#D4A574]',
+                stat: 'India-first',
+                label: 'Climate-aware data',
+                sub: 'A fragrance that works in London autumn may fail in Delhi summer. We bake heat and humidity into every recommendation.',
+              },
+              {
+                icon: TrendingUp,
+                color: 'text-[#B85A3A]',
+                stat: '0–5',
+                label: 'Blind Buy Score',
+                sub: 'Real community signals from Reddit, Facebook, and the web fused with perfume metrics. No more 2-hour research sessions.',
+              },
+            ].map(({ icon: Icon, color, stat, label, sub }) => (
+              <div key={label} className="rounded-2xl border border-[#E0D8CC] bg-white/80 p-5 backdrop-blur-sm">
+                <Icon className={`mb-3 h-5 w-5 ${color}`} aria-hidden />
+                <p className="text-2xl font-bold text-[#14120F]">{stat}</p>
+                <p className="mt-0.5 text-sm font-semibold text-[#14120F]">{label}</p>
+                <p className="mt-1.5 text-xs leading-relaxed text-[#3A3530]">{sub}</p>
               </div>
-              <div className="space-y-4 p-5">
-                <p className="text-xs leading-relaxed text-white/55">
-                  Illustrative preview: catalog depth, climate fit, and readable KPIs in one place.
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3">
-                    <Database className="mt-0.5 h-4 w-4 shrink-0 text-[#8B9E7E]" aria-hidden />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-sm font-medium text-white">120k+ perfume dataset</span>
-                        <span className="font-mono text-xs text-emerald-300/95">Rich analytics</span>
-                      </div>
-                      <p className="mt-1 text-xs text-white/50">
-                        Massive structured data for serious analysis: preferences, seasons, notes and accords, brands,
-                        reformulations, and cross-links so we can answer what people like and how profiles compare.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3">
-                    <ThermometerSun className="mt-0.5 h-4 w-4 shrink-0 text-[#D4A574]" aria-hidden />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-sm font-medium text-white">India vs. Western climate</span>
-                        <span className="font-mono text-xs text-amber-200/90">Wearability</span>
-                      </div>
-                      <p className="mt-1 text-xs text-white/50">
-                        What sells in the West does not always survive Indian heat and monsoon humidity. We bake
-                        climate into fit so you are not judging a Delhi summer by a London autumn.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3">
-                    <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-[#B85A3A]" aria-hidden />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-sm font-medium text-white">KPIs &amp; fit metrics</span>
-                        <span className="font-mono text-xs text-rose-200/85">Clear signals</span>
-                      </div>
-                      <p className="mt-1 text-xs text-white/50">
-                        Lots of readable indicators: will this likely work for you here, not just on paper? Crowd and
-                        purchase signals cut hype and highlight what repeatedly performs.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -786,23 +652,31 @@ export default function WaitlistPage() {
               Join the waitlist
             </Link>
           </div>
-          <p className="mx-auto mt-12 max-w-lg border-t border-white/10 pt-10 text-sm leading-relaxed text-white/65">
-            Questions? Email{' '}
-            <a
-              href="mailto:support@scentrev.com"
-              className="font-medium text-[#D4A574] underline-offset-2 transition-colors hover:text-[#e0b589] hover:underline"
-            >
-              support@scentrev.com
-            </a>{' '}
-            or{' '}
-            <a
-              href="mailto:shashank@scentrev.com"
-              className="font-medium text-[#D4A574] underline-offset-2 transition-colors hover:text-[#e0b589] hover:underline"
-            >
-              shashank@scentrev.com
-            </a>
-            .
-          </p>
+          <div className="mx-auto mt-12 max-w-lg border-t border-white/10 pt-10 space-y-4">
+            <div className="flex items-center justify-center gap-6 text-sm">
+              <Link
+                href="/about"
+                className="font-medium text-[#D4A574] underline-offset-2 transition-colors hover:text-[#e0b589] hover:underline"
+              >
+                Our Story
+              </Link>
+              <span className="text-white/20">·</span>
+              <a
+                href="mailto:support@scentrev.com"
+                className="font-medium text-[#D4A574] underline-offset-2 transition-colors hover:text-[#e0b589] hover:underline"
+              >
+                support@scentrev.com
+              </a>
+              <span className="text-white/20">·</span>
+              <a
+                href="mailto:shashank@scentrev.com"
+                className="font-medium text-[#D4A574] underline-offset-2 transition-colors hover:text-[#e0b589] hover:underline"
+              >
+                shashank@scentrev.com
+              </a>
+            </div>
+            <p className="text-xs text-white/40 text-center">© {new Date().getFullYear()} ScentRev. Built in India.</p>
+          </div>
         </div>
       </section>
     </main>

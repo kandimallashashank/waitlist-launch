@@ -42,7 +42,7 @@ function showcaseFromPool(pool: WaitlistMarqueePick[] | undefined): WaitlistMarq
  */
 interface WaitlistCatalogMarqueeProps {
   /**
-   * When set, use this pool instead of fetching (same cached set as waitlist hero/showcase).
+   * When set, use this pool instead of fetching (same shared set as waitlist hero/showcase).
    */
   sharedCatalog?: WaitlistMarqueePick[];
 }
