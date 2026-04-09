@@ -13,6 +13,7 @@ All configuration for `next dev` must live in **`frontend/.env.local`** (not `.e
 
 ```bash
 cd waitlist-launch/frontend
+cd waitlist-launch/frontend
 npm install
 cp .env.example .env.local
 # Edit .env.local: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_*, NEXT_PUBLIC_* 
