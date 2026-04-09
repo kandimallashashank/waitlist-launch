@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/waitlist-pilot-followup",
-      "schedule": "*/20 * * * *"
+      "schedule": "0 */3 * * *"
     }
   ]
 }
