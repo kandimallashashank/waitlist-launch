@@ -38,6 +38,8 @@ import {
 
 const API_BASE = getPublicApiBaseUrl();
 const QUIZ_SUBMIT_TIMEOUT_MS = 60_000;
+/** Pause after quiz completes before showing the pilot survey. */
+const PILOT_SURVEY_AFTER_QUIZ_DELAY_MS = 1_000;
 const MIN_LOADING_MS = 450;
 const SLOW_LOADING_MS = 6500;
 const TOTAL_STEPS = 11;
@@ -718,6 +720,7 @@ export function ForYouWizard({
               waitlist: null,
               navigate: redirectHref,
             };
+            await delay(PILOT_SURVEY_AFTER_QUIZ_DELAY_MS);
             setPilotSurveyOpen(true);
             setQuickSubmitting(false);
             return;
@@ -802,6 +805,7 @@ export function ForYouWizard({
               waitlist: payload,
               navigate: null,
             };
+            await delay(PILOT_SURVEY_AFTER_QUIZ_DELAY_MS);
             setLoading(false);
             setLoadingSlow(false);
             setPilotSurveyOpen(true);
@@ -822,6 +826,7 @@ export function ForYouWizard({
             waitlist: null,
             navigate: nextHref,
           };
+          await delay(PILOT_SURVEY_AFTER_QUIZ_DELAY_MS);
           setLoading(false);
           setLoadingSlow(false);
           setPilotSurveyOpen(true);

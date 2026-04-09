@@ -322,246 +322,178 @@ export default function WaitlistPage() {
       ref={rootRef}
       className="waitlist-page min-h-screen bg-[#F4F0E8] text-[#14120F] selection:bg-[#B85A3A]/25 selection:text-[#14120F]"
     >
-      <div
-        className="pointer-events-none fixed inset-0 opacity-[0.035]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-        }}
-        aria-hidden
-      />
 
       <WaitlistValueTicker />
 
-      <section className="relative overflow-hidden border-b border-[#E0D8CC]/90 pb-20 pt-10 md:pb-28 md:pt-14">
+      <section className="relative overflow-hidden border-b border-[#E0D8CC]/90 pb-20 pt-14 md:pb-28 md:pt-24">
+        {/* warm radial glow only */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.4]"
+          className="pointer-events-none absolute inset-x-0 top-0 h-96 opacity-60"
           aria-hidden
           style={{
-            backgroundImage: `linear-gradient(105deg, transparent 0%, transparent 38%, rgba(184,90,58,0.06) 50%, transparent 62%),
-              radial-gradient(ellipse 100% 80% at 0% 0%, rgba(184,90,58,0.14), transparent 55%),
-              radial-gradient(ellipse 80% 70% at 100% 10%, rgba(109,125,99,0.11), transparent 50%),
-              radial-gradient(ellipse 60% 45% at 70% 100%, rgba(212,165,116,0.1), transparent 55%)`,
-          }}
-        />
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.35] [mask-image:linear-gradient(to_bottom,black,transparent)]"
-          aria-hidden
-          style={{
-            backgroundImage: `linear-gradient(rgba(20,18,15,0.03) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(20,18,15,0.03) 1px, transparent 1px)`,
-            backgroundSize: '48px 48px',
+            background: 'radial-gradient(ellipse 90% 100% at 50% 0%, rgba(184,90,58,0.13) 0%, transparent 70%)',
           }}
         />
 
-        <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-6">
-          <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:gap-10 xl:gap-14">
-            <div className="min-w-0 flex-1 space-y-8 lg:max-w-[min(640px,58%)] lg:pt-2">
-            <div data-hero className="space-y-3">
-                <p className="inline-flex items-center gap-2 text-xs font-medium">
-                  <Sparkles className="h-3.5 w-3.5 shrink-0 text-[#B85A3A]" aria-hidden />
-                  <span className="inline bg-gradient-to-r from-[#B85A3A] via-[#D4A574] to-[#B85A3A] bg-[length:300%_100%] bg-clip-text font-semibold text-transparent animate-gradient">
-                    Early access + launch discount
-                  </span>
+        <div className="relative z-10 mx-auto max-w-2xl px-5 sm:px-6 text-center">
+          <div data-hero className="space-y-5">
+            <p className="inline-flex items-center gap-2 text-xs font-medium">
+              <Sparkles className="h-3.5 w-3.5 shrink-0 text-[#B85A3A]" aria-hidden />
+              <span className="inline bg-gradient-to-r from-[#B85A3A] via-[#D4A574] to-[#B85A3A] bg-[length:300%_100%] bg-clip-text font-semibold text-transparent animate-gradient">
+                Early access + launch discount
+              </span>
+            </p>
+
+            <h1 className="font-display text-[2.4rem] font-semibold leading-[1.08] tracking-tight text-[#14120F] sm:text-5xl md:text-[3.25rem]">
+              Explore more. Regret less.<br />
+              <span className="text-[#B85A3A]">Find the ones worth keeping.</span>
+            </h1>
+
+            <p className="mx-auto max-w-lg text-base leading-relaxed text-[#3A3530] md:text-[1.0625rem]">
+              A 10-second store sniff is nothing like wearing a perfume all day in Indian heat. Try a small sample first, from ₹199. Take a quick quiz to find something that fits, or use the{" "}
+              <Link href="/layering-lab" className="font-semibold text-[#B85A3A] underline decoration-[#D4B8A4] underline-offset-2 hover:text-[#A04D2F]">
+                Layering Lab
+              </Link>
+              {" "}to mix two scents. Love it? The full bottle is right here.
+            </p>
+          </div>
+
+          {/* Waitlist form */}
+          <div data-hero className="mt-9" id="waitlist-form">
+            {submitted ? (
+              <div className="rounded-2xl border border-[#E0D8CC] bg-white/90 px-6 py-8 text-center">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFF3ED]">
+                  <Sparkles className="h-7 w-7 text-[#B85A3A]" />
+                </div>
+                <h2 className="font-display text-2xl font-semibold text-[#14120F]">
+                  {alreadyJoined ? "You're already on the waitlist" : "You're on the list"}
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-[#5F5C57]">
+                  {alreadyJoined
+                    ? couponEmailSent
+                      ? 'Check your inbox. We just sent your discount details again.'
+                      : "This email is already registered. Your launch discount is below."
+                    : "Check your inbox. We've sent your exclusive discount code."}
                 </p>
-                <h1 className="font-display text-[2.125rem] font-semibold leading-[1.1] tracking-tight text-[#14120F] sm:text-4xl md:text-[2.85rem] md:leading-[1.06]">
-                  Explore more. Regret less.<br />
-                  <span className="text-[#B85A3A]">Find the ones worth keeping.</span>
-                </h1>
-              </div>
-
-              <p data-hero className="max-w-lg text-base leading-snug text-[#3A3530] md:text-[1.0625rem] md:leading-relaxed">
-                A full bottle is a big decision off a tiny strip of paper. We&apos;re lining up small decants from about ₹199 at launch, a quick quiz when you want a starting point, and sizes you can actually wear before you commit to the bottle. Love layering? Use our{" "}
-                <Link href="/layering-lab" className="font-semibold text-[#B85A3A] underline decoration-[#D4B8A4] underline-offset-2 hover:text-[#A04D2F]">
-                  Layering Lab
+                {couponCode && (
+                  <div className="mt-6 rounded-2xl border-2 border-dashed border-[#D4A574]/80 bg-[#FDF6F3] p-5">
+                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#B85A3A]">
+                      Your early access code
+                    </p>
+                    <p className="font-mono text-2xl font-bold tracking-[0.2em] text-[#14120F]">{couponCode}</p>
+                    {discountPercent && (
+                      <p className="mt-2 text-sm font-semibold text-[#B85A3A]">
+                        {discountPercent}% off · single use
+                      </p>
+                    )}
+                  </div>
+                )}
+                <Link
+                  href="#recommendation-signals"
+                  className="mt-6 inline-block text-sm font-medium text-[#B85A3A] transition-colors hover:text-[#A04D2F]"
+                >
+                  How signals show up in the product →
                 </Link>
-                {" "}
-                to play with blends, then grab curated combos or discovery kits if you want a ready set. On this pilot, prices and blind-buy scores are placeholders (see the notice under the nav).
-              </p>
-
-              <div data-hero className="flex flex-wrap gap-2 pt-1">
-                {(
-                  [
-                    {
-                      t: 'New to fragrance?',
-                      a: 'Quiz finds your match',
-                      href: '/quiz',
-                    },
-                    {
-                      t: 'From ₹199',
-                      a: 'Try before you commit',
-                      href: '/catalog',
-                    },
-                    {
-                      t: '450+ fragrances',
-                      a: 'Decants + full bottles',
-                      href: '/catalog',
-                    },
-                  ] as const
-                ).map((chip) => (
-                  <Link
-                    key={chip.t}
-                    href={chip.href}
-                    className="inline-flex items-center gap-2 rounded-full border border-[#E0D8CC] bg-white/80 px-3.5 py-1.5 text-[12px] text-[#14120F] shadow-[0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm transition-colors hover:border-[#B85A3A]/45 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B85A3A]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4F0E8]"
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} noValidate className="space-y-3">
+                <div className="hidden">
+                  <label htmlFor="waitlist-company" className="text-sm">Company</label>
+                  <input
+                    id="waitlist-company"
+                    type="text"
+                    value={botTrap}
+                    onChange={(e) => setBotTrap(e.target.value)}
+                    className="w-full rounded-lg border border-[#E5DDD6] px-3 py-2 text-sm"
+                  />
+                </div>
+                <div className="mx-auto flex max-w-md flex-col gap-2 sm:flex-row">
+                  <div
+                    className={`flex flex-1 items-center gap-2 rounded-xl border bg-white px-3 py-2.5 transition focus-within:ring-2 focus-within:ring-[#B85A3A]/15 ${
+                      emailFieldError
+                        ? 'border-[#B85A3A] focus-within:border-[#B85A3A]'
+                        : 'border-[#E0D8CC] focus-within:border-[#B85A3A]/40'
+                    }`}
                   >
-                    <span className="font-semibold tabular-nums">{chip.t}</span>
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-[#8A8279]">
-                      {chip.a}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-
-              <div data-hero className="max-w-xl">
-                <BrandLogosSection variant="inline" eyebrow="Brands on ScentRev" />
-              </div>
-
-              <a
-                href="#sample-first"
-                data-hero
-                className="inline-flex items-center gap-2 text-sm font-medium text-[#B85A3A] transition-colors hover:text-[#A04D2F]"
-              >
-                <span>See how samples compare</span>
-                <ChevronDown
-                  className="h-4 w-4 opacity-80 motion-safe:animate-[hero-chevron-nudge_2.2s_ease-in-out_infinite]"
-                  aria-hidden
-                />
-              </a>
-            </div>
-
-            <div
-              data-hero
-              className="relative w-full shrink-0 lg:sticky lg:top-28 lg:w-[min(100%,420px)] lg:self-start xl:top-32"
-              id="waitlist-form"
-            >
-              <div className="pointer-events-none absolute -inset-4 rounded-[2rem] opacity-90 blur-2xl" aria-hidden>
-                <div
-                  className="absolute left-1/2 top-1/2 h-[200px] w-[200px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40 animate-[orb-circle_18s_ease-in-out_infinite]"
-                  style={{ background: 'radial-gradient(circle, rgba(184,90,58,0.5) 0%, transparent 70%)' }}
-                />
-                <div
-                  className="absolute left-1/2 top-1/2 h-[160px] w-[160px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 animate-[orb-circle-alt_22s_ease-in-out_infinite]"
-                  style={{ background: 'radial-gradient(circle, rgba(212,165,116,0.45) 0%, transparent 70%)' }}
-                />
-              </div>
-
-              <div className="relative z-10 rounded-[1.75rem] bg-gradient-to-br from-[#B85A3A]/30 via-[#D4A574]/18 to-[#8B9E7E]/22 p-[1px] shadow-[0_28px_80px_-20px_rgba(20,18,15,0.22)] ring-1 ring-[#14120F]/[0.04]">
-                <div className="relative overflow-hidden rounded-[1.75rem] border border-[#E8E2DA] bg-white/[0.97] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-md sm:p-8">
-                  <div className="mb-6 flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#B85A3A]">Join</p>
-                    <p className="mt-1 font-display text-xl font-semibold text-[#14120F]">Waitlist</p>
-                  </div>
-                  <span className="hidden shrink-0 rounded-full border border-[#E8E0D6] bg-[#FAF7F2] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#3A3530] sm:inline-flex sm:items-center sm:gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5 text-[#B85A3A]" aria-hidden />
-                    Launching soon
-                  </span>
-                  </div>
-
-                {submitted ? (
-                  <div className="py-6 text-center sm:py-8">
-                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFF3ED]">
-                    <Sparkles className="h-7 w-7 text-[#B85A3A]" />
-                  </div>
-                  <h2 className="font-display text-2xl font-semibold text-[#14120F]">
-                    {alreadyJoined ? "You're already on the waitlist" : "You're on the list"}
-                  </h2>
-                  <p className="mt-2 text-sm leading-relaxed text-[#5F5C57]">
-                    {alreadyJoined
-                      ? couponEmailSent
-                        ? 'Check your inbox. We just sent your discount details again.'
-                        : "This email is already registered. Your launch discount is below; check past emails from us if you need the full welcome note."
-                      : "Check your inbox. We've sent your exclusive discount code."}
-                  </p>
-                  {couponCode && (
-                    <div className="mt-6 rounded-2xl border-2 border-dashed border-[#D4A574]/80 bg-[#FDF6F3] p-5">
-                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#B85A3A]">
-                        Your early access code
-                      </p>
-                      <p className="font-mono text-2xl font-bold tracking-[0.2em] text-[#14120F]">{couponCode}</p>
-                      {discountPercent && (
-                        <p className="mt-2 text-sm font-semibold text-[#B85A3A]">
-                          {discountPercent}% off · single use
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  <Link
-                    href="#recommendation-signals"
-                    className="mt-8 inline-block text-sm font-medium text-[#B85A3A] transition-colors hover:text-[#A04D2F]"
-                  >
-                    How signals show up in the product →
-                  </Link>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit} noValidate className="space-y-5">
-                  <div>
-                    <label htmlFor="waitlist-email" className="text-sm font-medium text-[#4A4540]">
-                      Email
-                    </label>
-                    <div
-                      className={`mt-2 flex items-center gap-2 rounded-xl border bg-white px-3 py-2.5 transition focus-within:ring-2 focus-within:ring-[#B85A3A]/15 ${
-                        emailFieldError
-                          ? 'border-[#B85A3A] focus-within:border-[#B85A3A]'
-                          : 'border-[#E0D8CC] focus-within:border-[#B85A3A]/40'
-                      }`}
-                    >
-                      <Mail className="h-4 w-4 shrink-0 text-[#B85A3A]" aria-hidden />
-                      <input
-                        ref={emailInputRef}
-                        id="waitlist-email"
-                        name="email"
-                        type="email"
-                        autoComplete="email"
-                        inputMode="email"
-                        spellCheck={false}
-                        maxLength={WAITLIST_EMAIL_MAX_LENGTH}
-                        value={email}
-                        onChange={(e) => {
-                          setEmail(e.target.value);
-                          setEmailFieldError(null);
-                        }}
-                        placeholder="you@example.com"
-                        aria-invalid={emailFieldError ? true : undefined}
-                        aria-describedby={emailFieldError ? 'waitlist-email-error' : undefined}
-                        className="w-full bg-transparent text-sm outline-none placeholder:text-[#A39A91] focus-visible:ring-0 focus-visible:ring-offset-0"
-                      />
-                    </div>
-                    {emailFieldError ? (
-                      <p id="waitlist-email-error" className="mt-2 text-sm text-[#B85A3A]" role="alert">
-                        {emailFieldError}
-                      </p>
-                    ) : null}
-                  </div>
-
-                  <div className="hidden">
-                    <label htmlFor="waitlist-company" className="text-sm">
-                      Company
-                    </label>
+                    <Mail className="h-4 w-4 shrink-0 text-[#B85A3A]" aria-hidden />
                     <input
-                      id="waitlist-company"
-                      type="text"
-                      value={botTrap}
-                      onChange={(e) => setBotTrap(e.target.value)}
-                      className="w-full rounded-lg border border-[#E5DDD6] px-3 py-2 text-sm"
+                      ref={emailInputRef}
+                      id="waitlist-email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      inputMode="email"
+                      spellCheck={false}
+                      maxLength={WAITLIST_EMAIL_MAX_LENGTH}
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setEmailFieldError(null);
+                      }}
+                      placeholder="your@email.com"
+                      aria-invalid={emailFieldError ? true : undefined}
+                      aria-describedby={emailFieldError ? 'waitlist-email-error' : undefined}
+                      className="w-full bg-transparent text-sm outline-none placeholder:text-[#A39A91] focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                   </div>
-
                   <Button
                     type="submit"
                     disabled={loading || !emailPassesValidation}
-                    className="h-12 w-full rounded-xl bg-[#B85A3A] text-[15px] font-semibold text-white shadow-md shadow-[#B85A3A]/20 transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#A04D2F] hover:shadow-lg hover:shadow-[#B85A3A]/25 active:scale-[0.98] disabled:active:scale-100"
+                    className="h-12 whitespace-nowrap rounded-xl bg-[#B85A3A] px-6 text-[15px] font-semibold text-white shadow-md shadow-[#B85A3A]/20 transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-[#A04D2F] hover:shadow-lg hover:shadow-[#B85A3A]/25 active:scale-[0.98] disabled:active:scale-100"
                   >
-                    {loading ? 'Joining…' : 'Join the waitlist'}
+                    {loading ? 'Joining…' : 'Get early access'}
                   </Button>
-                  <p className="text-center text-[11px] leading-relaxed text-[#8A8279]">
-                    We&apos;ll email a thank-you note and keep you posted on launch.
+                </div>
+                {emailFieldError ? (
+                  <p id="waitlist-email-error" className="text-sm text-[#B85A3A]" role="alert">
+                    {emailFieldError}
                   </p>
-                  </form>
-                )}
-              </div>
-            </div>
+                ) : null}
+                <p className="text-center text-[11px] leading-relaxed text-[#8A8279]">
+                  We&apos;ll email a thank-you note and keep you posted on launch.
+                </p>
+              </form>
+            )}
           </div>
-        </div>
+
+          {/* Chips */}
+          <div data-hero className="mt-7 flex flex-wrap justify-center gap-2">
+            {(
+              [
+                { t: 'New to fragrance?', a: 'Quiz finds your match', href: '/quiz' },
+                { t: 'From ₹199', a: 'Try before you commit', href: '/catalog' },
+                { t: '450+ fragrances', a: 'Decants + full bottles', href: '/catalog' },
+              ] as const
+            ).map((chip) => (
+              <Link
+                key={chip.t}
+                href={chip.href}
+                className="inline-flex items-center gap-2 rounded-full border border-[#E0D8CC] bg-white/80 px-3.5 py-1.5 text-[12px] text-[#14120F] shadow-[0_1px_0_rgba(255,255,255,0.9)] transition-colors hover:border-[#B85A3A]/45 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B85A3A]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4F0E8]"
+              >
+                <span className="font-semibold tabular-nums">{chip.t}</span>
+                <span className="text-[10px] font-medium uppercase tracking-wider text-[#8A8279]">
+                  {chip.a}
+                </span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Brand logos */}
+          <div data-hero className="mx-auto mt-8 max-w-xl">
+            <BrandLogosSection variant="inline" eyebrow="Brands on ScentRev" />
+          </div>
+
+          <a
+            href="#sample-first"
+            data-hero
+            className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-[#B85A3A] transition-colors hover:text-[#A04D2F]"
+          >
+            <span>See how samples compare</span>
+            <ChevronDown
+              className="h-4 w-4 opacity-80 motion-safe:animate-[hero-chevron-nudge_2.2s_ease-in-out_infinite]"
+              aria-hidden
+            />
+          </a>
         </div>
       </section>
 
@@ -576,13 +508,13 @@ export default function WaitlistPage() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#B85A3A]">The smarter way to buy</p>
               <h2 className="mt-2 font-display text-2xl font-semibold leading-tight text-[#14120F] sm:text-3xl">
-                You bought the bottle.<br />You wore it twice.
+                Try it for three days.<br />Then decide.
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-[#3A3530]">
-                Happens to beginners. Happens to collectors. A full bottle is a commitment your nose makes in 30 seconds in air conditioning, on a paper strip. Your skin in Indian heat is a completely different story.
+                A paper strip in a cold mall is not a real test. Your skin, your body heat, your whole day -- that is the real test. A small sample gives you that.
               </p>
               <p className="mt-3 text-sm leading-relaxed text-[#3A3530]">
-                A decant lets you live with a fragrance for two days before you decide. Wear it to work, through the afternoon, to sleep. If it still feels right, the full bottle is right here. If not, you saved yourself a shelf ornament.
+                Still love it after three days? The full bottle is right here. Not feeling it? No harm done.
               </p>
             </div>
             <div data-stagger="cards" className="grid grid-cols-3 gap-3">
@@ -608,10 +540,10 @@ export default function WaitlistPage() {
       >
         <div className="mx-auto max-w-5xl px-5 sm:px-6">
           <div data-scroll="fade" className="mb-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#B85A3A]">The data behind it</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#B85A3A]">Why you can trust our picks</p>
             <h2 className="mt-2 font-display text-2xl font-semibold text-[#14120F] sm:text-3xl">
-              Not hype. Not guesswork.<br />
-              <span className="text-[#3A3530]">120,000 perfumes worth of signal.</span>
+              Not brand claims.<br />
+              <span className="text-[#3A3530]">Real data from real wearers.</span>
             </h2>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -621,21 +553,21 @@ export default function WaitlistPage() {
                 color: 'text-[#8B9E7E]',
                 stat: '120k+',
                 label: 'Perfumes mapped',
-                sub: 'Notes, accords, longevity, sillage, gender lean, seasons, occasions every dimension scored.',
+                sub: 'Every dimension of a perfume mapped -- notes, how long it lasts, how strong it projects, what season it suits.',
               },
               {
                 icon: ThermometerSun,
                 color: 'text-[#D4A574]',
                 stat: 'India-first',
                 label: 'Climate-aware data',
-                sub: 'A fragrance that works in London autumn may fail in Delhi summer. We bake heat and humidity into every recommendation.',
+                sub: 'A perfume that works in London rain fails in Delhi summer. Every pick is scored for Indian weather.',
               },
               {
                 icon: TrendingUp,
                 color: 'text-[#B85A3A]',
                 stat: '0–5',
                 label: 'Blind Buy Score',
-                sub: 'Real community signals from Reddit, Facebook, and the web fused with perfume metrics. No more 2-hour research sessions.',
+                sub: 'We read thousands of reviews so you don\'t have to. One number tells you how safe it is to buy without smelling first.',
               },
             ].map(({ icon: Icon, color, stat, label, sub }) => (
               <div key={label} className="rounded-2xl border border-[#E0D8CC] bg-white/80 p-5 backdrop-blur-sm">

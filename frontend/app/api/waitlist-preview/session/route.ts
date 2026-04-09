@@ -102,6 +102,7 @@ export async function GET(req: Request) {
         "answers, recommendation_snapshot, scent_profile, preference_analytics",
       )
       .eq("email", email)
+      .order("updated_at", { ascending: false })
       .limit(1);
 
     const quizRow = quizRows?.[0] as

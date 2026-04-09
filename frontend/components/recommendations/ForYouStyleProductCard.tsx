@@ -359,7 +359,7 @@ export const ForYouStyleProductCard = React.memo(function ForYouStyleProductCard
             }}
             disabled={isAddingToCart}
             className={cn(
-              'mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition-all duration-200',
+              'mt-2 flex w-full min-h-[44px] items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition-all duration-200',
               cartFlashActive
                 ? 'bg-green-600 text-white'
                 : isAddingToCart

@@ -29,6 +29,7 @@ export async function saveWaitlistQuizPreferences(
     .from("waitlist_quiz_preferences")
     .select("id")
     .eq("email", email)
+    .order("updated_at", { ascending: false })
     .limit(1);
 
   if (selErr) {
@@ -97,6 +98,7 @@ export async function getWaitlistQuizAnswersJson(
     .from("waitlist_quiz_preferences")
     .select("answers")
     .eq("email", email)
+    .order("updated_at", { ascending: false })
     .limit(1);
 
   if (error || !data?.length) {

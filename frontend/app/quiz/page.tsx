@@ -41,39 +41,65 @@ export default function WaitlistQuizPage() {
   /** Mirrors session endpoint success so WaitlistGate can skip a second /session fetch. */
   const [verifiedHasSession, setVerifiedHasSession] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
+  const refreshSession = useCallback(
+    async (options?: { showBootstrapping?: boolean }) => {
+      const showBootstrapping = options?.showBootstrapping === true;
+      if (showBootstrapping) {
+        setBootstrapping(true);
+      }
       try {
         const res = await fetch("/api/waitlist-preview/session", {
           credentials: "include",
           headers: { ...getPreviewAuthHeaders() },
+          cache: "no-store",
         });
-        if (cancelled) return;
         setVerifiedHasSession(res.ok);
         if (!res.ok) {
+          setResult(null);
           return;
         }
         const data = (await res.json()) as {
           quiz_result?: WaitlistQuizSuccessPayload | null;
         };
-        if (data.quiz_result && !cancelled) {
-          setResult(data.quiz_result);
-        }
+        setResult(data.quiz_result ?? null);
       } catch {
-        if (!cancelled) {
-          setVerifiedHasSession(false);
-        }
+        setVerifiedHasSession(false);
       } finally {
-        if (!cancelled) {
+        if (showBootstrapping) {
           setBootstrapping(false);
         }
       }
-    })();
+    },
+    [],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    const safeRefresh = async (options?: { showBootstrapping?: boolean }) => {
+      if (cancelled) return;
+      await refreshSession(options);
+    };
+
+    void safeRefresh({ showBootstrapping: true });
+
+    const onWindowFocus = () => {
+      void safeRefresh();
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void safeRefresh();
+      }
+    };
+
+    window.addEventListener("focus", onWindowFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     return () => {
       cancelled = true;
+      window.removeEventListener("focus", onWindowFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, []);
+  }, [refreshSession]);
 
   const handleSuccess = useCallback((payload: WaitlistQuizSuccessPayload) => {
     setResult(payload);

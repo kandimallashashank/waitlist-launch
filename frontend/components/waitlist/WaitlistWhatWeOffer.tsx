@@ -9,8 +9,8 @@ const FEATURES = [
     n: "01",
     icon: Sparkles,
     tag: "Scent Quiz",
-    headline: "Your ex forgot your preferences.\nWe never will.",
-    body: "90 seconds. Tell us how you live, what you wear, where you go. We map your answers against 120,000 perfumes and surface what actually belongs on your skin. No influencer. No guesswork.",
+    headline: "New to this?\nWe've got you.",
+    body: "Answer 5 quick questions about where you go and how you like to smell. Takes under 2 minutes. We'll show you perfumes that actually fit your life. No expertise needed.",
     href: "/quiz",
     cta: "Take the quiz",
   },
@@ -18,8 +18,8 @@ const FEATURES = [
     n: "02",
     icon: FlaskConical,
     tag: "Layering Lab",
-    headline: "One scent is a vibe.\nTwo is a whole personality.",
-    body: "Pick two or three fragrances. We score accord harmony, concentration balance, how the blend evolves through dry-down, personalised to your quiz profile. Try combinations before you buy a single bottle. We also sell our most-worked layering combos and discovery kits right in the Lab: curated sets you can add to cart without guessing.",
+    headline: "One scent is good.\nTwo can be something else entirely.",
+    body: "Pick two perfumes and see how they work together before buying. We'll tell you if they're a great pair or if one will overpower the other. Love the combo? Add it to your cart as a set.",
     href: "/layering-lab",
     cta: "Open Layering Lab",
   },
@@ -27,8 +27,8 @@ const FEATURES = [
     n: "03",
     icon: Star,
     tag: "Blind Buy Score",
-    headline: "Hours of Reddit, Facebook, YouTube research.\nCondensed into one number.",
-    body: "On this pilot, blind buy scores are testing placeholders. At launch we aggregate what real people say across Reddit, Facebook, and the open web, fuse it with perfume metrics, and surface a 0–5 score tuned for Indian weather.",
+    headline: "Scared to buy without smelling it?\nWe did the research for you.",
+    body: "Every perfume gets a score from 0 to 5. Higher means safer to buy without smelling first. We pull from thousands of real reviews so you don't have to spend two hours on Reddit. (Scores are test placeholders on this pilot, real ones come at launch.)",
     href: "/catalog",
     cta: "See scores",
   },
@@ -37,7 +37,7 @@ const FEATURES = [
     icon: Database,
     tag: "Perfume Data",
     headline: "The brand says it lasts 12 hours.\nYour skin says otherwise.",
-    body: "Sillage, longevity, gender lean, season fit, occasion fit, note pyramid, accord breakdown, climate performance. Real data from 120k+ perfumes, built for Indian weather and Indian buyers. Not a copy-paste from the brand.",
+    body: "We track real longevity, how far the scent travels, whether it works in summer or winter, and how it holds up in Indian heat. What real wearers say, not what the brand claims.",
     href: "/catalog",
     cta: "Browse catalog",
   },
@@ -55,8 +55,8 @@ export default function WaitlistWhatWeOffer(): React.ReactElement {
         <div className="mb-14 max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[#B85A3A]">What ScentRev does</p>
           <h2 className="font-display mt-3 text-3xl font-semibold leading-tight text-[#14120F] md:text-4xl">
-            Perfume buying in India is broken.<br />
-            <span className="text-[#B85A3A]">We fixed it.</span>
+            Try first.<br />
+            <span className="text-[#B85A3A]">Buy only what you love.</span>
           </h2>
           
         </div>
@@ -69,12 +69,9 @@ export default function WaitlistWhatWeOffer(): React.ReactElement {
               href={href}
               className="group relative flex flex-col rounded-2xl border border-[#E0D8CC] bg-white p-7 transition-all duration-200 hover:border-[#B85A3A]/40 hover:shadow-[0_8px_32px_rgba(26,26,26,0.08)]"
             >
-              {/* Top row */}
-              <div className="mb-5 flex items-start justify-between">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FDF6F3] border border-[#F0D8CC]">
-                  <Icon className="h-5 w-5 text-[#B85A3A]" aria-hidden />
-                </div>
-                <span className="font-mono text-xs text-[#B85A3A]/50">{n}</span>
+              {/* Icon */}
+              <div className="mb-4">
+                <Icon className="h-6 w-6 text-[#B85A3A]" aria-hidden />
               </div>
 
               {/* Tag */}
@@ -108,8 +105,7 @@ export default function WaitlistWhatWeOffer(): React.ReactElement {
               Keep discovering. One new 8ml every month.
             </h3>
             <p className="text-sm leading-relaxed text-[#3A3530] max-w-lg">
-              Pick a tier, choose your fragrance each month. Or let your quiz profile choose for you.
-              Cancel anytime.
+              Pick a tier. Get a new 8ml sample every month. Your quiz picks it, or you do. Cancel whenever.
             </p>
           </div>
           <div className="flex shrink-0 flex-col items-start gap-2.5 md:items-end">

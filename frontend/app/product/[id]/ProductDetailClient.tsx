@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
-import { Star, ShoppingCart, PackageX, ChevronLeft, ChevronRight, Zap, Loader2, Clock3, Wind, Truck, RotateCcw, Mail, ShieldCheck, SlidersHorizontal, Flower2, Users, MapPin, ShieldQuestion, X, Info } from 'lucide-react';
+import { Star, ShoppingCart, PackageX, ChevronLeft, ChevronRight, ChevronDown, Zap, Loader2, Clock3, Wind, Truck, RotateCcw, Mail, ShieldCheck, SlidersHorizontal, Flower2, Users, MapPin, ShieldQuestion, X, Info } from 'lucide-react';
 import { base44, type Fragrance, type DecantInventoryItem } from '@/api/base44Client';
 import { mockFragrances } from '@/lib/mockData';
 import { toast } from 'sonner';
@@ -294,6 +294,7 @@ function ProductDetailPageContent() {
   const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewedItem[]>([]);
   const [aiInsights, setAiInsights] = useState<FragranceAiInsights | null>(null);
   const [reviewSummary, setReviewSummary] = useState<ReviewSummary | null>(null);
+  const [expandedSupportItem, setExpandedSupportItem] = useState<string | null>('shipping');
   const heroImageStageRef = useRef<HTMLDivElement | null>(null);
   const MAGNIFIER_LENS_SIZE_PX = 130;
   const MAGNIFIER_ZOOM_SCALE = 2.35;
@@ -768,9 +769,17 @@ function ProductDetailPageContent() {
   const entryBadgeLabel = getEntrySourceBadgeLabel(
     searchParams.get('source') || searchParams.get('from')
   );
+  const stickyImageRaw = fragrance.image_url || (fragrance as { primary_image_url?: string }).primary_image_url;
+  const stickyImageSrc = stickyImageRaw
+    ? getProxiedImageUrl(stickyImageRaw, {
+        knockOutWhiteMat: isProductPerfumeUrl(stickyImageRaw),
+        catalogAssetVersion:
+          (fragrance as { catalog_updated_at?: string | number | null }).catalog_updated_at ?? null,
+      }) || stickyImageRaw
+    : null;
 
   return (
-    <div className="min-h-screen w-full min-w-0 overflow-x-clip bg-[#F5F2EE]">
+    <div className="min-h-screen w-full min-w-0 overflow-x-clip bg-[#F5F2EE] pb-28 md:pb-0">
 
       {/* ── Page hero strip matches catalog/quiz style ── */}
       <div className="relative overflow-hidden border-b border-[#E8DDD5] bg-[#F5F2EE] px-4 py-5 sm:px-6">
@@ -1495,48 +1504,68 @@ function ProductDetailPageContent() {
               </div>
             </motion.div>
 
-            {/* Shipping + contact support cards (below accepted payments) */}
+            {/* Shipping + support details as compact accordion */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, ease: 'easeOut', delay: 0.16 }}
-              className="grid gap-2 sm:grid-cols-2"
+              className="space-y-2"
             >
-              <div className="rounded-xl border border-[#F0EDE9] bg-[#FDF6F3] p-3">
-                <div className="mb-2 flex items-center gap-2">
-                  <Truck className="h-4 w-4 text-[#B85A3A]" />
-                  <p className="text-sm font-semibold text-[#1A1A1A]">Free shipping above ₹599</p>
-                </div>
-                <p className="text-xs text-[#5C5A52]">Pan-India delivery via trusted courier partners. Standard delivery in 3-7 business days.</p>
-              </div>
-              <div className="rounded-xl border border-[#F0EDE9] bg-[#FDF6F3] p-3">
-                <div className="mb-2 flex items-center gap-2">
-                  <RotateCcw className="h-4 w-4 text-[#B85A3A]" />
-                  <p className="text-sm font-semibold text-[#1A1A1A]">7-day easy returns</p>
-                </div>
-                <p className="text-xs text-[#5C5A52]">Unopened items can be returned within 7 days. Refunds are processed in 3-5 business days.</p>
-              </div>
-              <div className="rounded-xl border border-[#F0EDE9] bg-[#FDF6F3] p-3">
-                <div className="mb-2 flex items-center gap-2">
-                  <Clock3 className="h-4 w-4 text-[#B85A3A]" />
-                  <p className="text-sm font-semibold text-[#1A1A1A]">Same-day dispatch</p>
-                </div>
-                <p className="text-xs text-[#5C5A52]">Orders placed before 2 PM IST are dispatched the same day for faster delivery.</p>
-              </div>
-              <div className="rounded-xl border border-[#F0EDE9] bg-[#FDF6F3] p-3">
-                <div className="mb-2 flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-[#B85A3A]" />
-                  <p className="text-sm font-semibold text-[#1A1A1A]">Track every order</p>
-                </div>
-                <p className="text-xs text-[#5C5A52]">Get tracking updates end-to-end from dispatch to doorstep delivery.</p>
-              </div>
-              <div className="rounded-xl border border-[#F0EDE9] bg-[#FDF6F3] p-3 sm:col-span-2">
-                <div className="mb-2 flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-[#B85A3A]" />
-                  <p className="text-sm font-semibold text-[#1A1A1A]">Need help?</p>
-                </div>
-                <p className="text-xs text-[#5C5A52]">support@scentrev.com · +91 98765 43210 · Mon-Sat, 10am - 7pm IST.</p>
-              </div>
+              {[
+                {
+                  id: 'shipping',
+                  title: 'Free shipping above ₹599',
+                  body: 'Pan-India delivery via trusted courier partners. Standard delivery in 3-7 business days.',
+                  icon: Truck,
+                },
+                {
+                  id: 'returns',
+                  title: '7-day easy returns',
+                  body: 'Unopened items can be returned within 7 days. Refunds are processed in 3-5 business days.',
+                  icon: RotateCcw,
+                },
+                {
+                  id: 'dispatch',
+                  title: 'Same-day dispatch',
+                  body: 'Orders placed before 2 PM IST are dispatched the same day for faster delivery.',
+                  icon: Clock3,
+                },
+                {
+                  id: 'tracking',
+                  title: 'Track every order',
+                  body: 'Get tracking updates end-to-end from dispatch to doorstep delivery.',
+                  icon: ShieldCheck,
+                },
+                {
+                  id: 'help',
+                  title: 'Need help?',
+                  body: 'support@scentrev.com · +91 98765 43210 · Mon-Sat, 10am - 7pm IST.',
+                  icon: Mail,
+                },
+              ].map((item) => {
+                const isOpen = expandedSupportItem === item.id;
+                const Icon = item.icon;
+                return (
+                  <div key={item.id} className="rounded-xl border border-[#F0EDE9] bg-[#FDF6F3]">
+                    <button
+                      type="button"
+                      onClick={() => setExpandedSupportItem(isOpen ? null : item.id)}
+                      className="flex w-full items-center gap-2 p-3 text-left"
+                      aria-expanded={isOpen}
+                    >
+                      <Icon className="h-4 w-4 shrink-0 text-[#B85A3A]" />
+                      <span className="flex-1 text-sm font-semibold text-[#1A1A1A]">{item.title}</span>
+                      <ChevronDown
+                        className={`h-4 w-4 shrink-0 text-[#8B8078] transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                        aria-hidden
+                      />
+                    </button>
+                    {isOpen ? (
+                      <p className="border-t border-[#F0E8E1] px-3 pb-3 pt-2 text-xs text-[#5C5A52]">{item.body}</p>
+                    ) : null}
+                  </div>
+                );
+              })}
             </motion.div>
             </div>
 
@@ -1678,6 +1707,65 @@ function ProductDetailPageContent() {
         {/* Subscribe CTA shown after reviews when user has engaged with the product */}
         <div className="mb-16">
           <SubscriptionBanner variant="slim" />
+        </div>
+      </div>
+
+      {/* Sticky mobile purchase bar: keeps core details + CTA visible without long scroll */}
+      <div className="fixed inset-x-0 bottom-0 z-[120] border-t border-[#E8DDD5] bg-white/95 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_-20px_rgba(24,16,12,0.35)] backdrop-blur md:hidden">
+        <div className="mx-auto w-full max-w-7xl">
+          <div className="flex items-center gap-2.5">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-[#EADFD7] bg-[#F6F1EB]">
+                {stickyImageSrc ? (
+                  <Image
+                    src={stickyImageSrc}
+                    alt={fragrance.name}
+                    width={48}
+                    height={48}
+                    className="h-full w-full object-contain"
+                    unoptimized={stickyImageSrc.startsWith('/api/proxy-image')}
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gradient-to-b from-[#E5DED7] to-[#D2C8BE]" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="line-clamp-1 text-xs font-semibold text-[#1A1A1A]">{fragrance.name}</p>
+                <p className="line-clamp-1 text-[11px] text-neutral-500">
+                  {uiListedDecantLabel(selectedSize)} · ₹{formatInrDisplay(bundleTotalInr)}
+                </p>
+              </div>
+            </div>
+            {IS_WAITLIST_PREVIEW && productInStock ? (
+              <Link
+                href="/"
+                className="inline-flex min-h-[2.75rem] items-center justify-center rounded-xl border border-[#EADFD7] bg-[#FFF9F5] px-3 text-xs font-semibold text-[#B85A3A]"
+              >
+                Join waitlist
+              </Link>
+            ) : productInStock ? (
+              <div className="flex shrink-0 items-center gap-2">
+                <WishlistButton
+                  item={{ id: fragrance.id || '', type: 'fragrance', name: fragrance.name }}
+                  size="sm"
+                  variant="onCard"
+                  showLabel
+                  className="rounded-xl"
+                />
+                <button
+                  type="button"
+                  onClick={addToCart}
+                  className="inline-flex min-h-[2.75rem] items-center justify-center rounded-xl bg-[#B85A3A] px-3.5 text-xs font-semibold text-white"
+                >
+                  Add to Cart
+                </button>
+              </div>
+            ) : (
+              <div className="inline-flex min-h-[2.75rem] items-center justify-center rounded-xl border border-neutral-200 bg-neutral-100 px-3 text-xs font-semibold text-neutral-500">
+                Out of stock
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

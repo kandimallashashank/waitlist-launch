@@ -19,6 +19,8 @@ interface WishlistButtonProps {
    * ``default``: stronger shadow for headers / loose layouts.
    */
   variant?: 'default' | 'onCard';
+  /** Shows text label next to heart icon for explicit CTA contexts. */
+  showLabel?: boolean;
   /** Extra classes on the button element. */
   className?: string;
 }
@@ -36,6 +38,7 @@ export default function WishlistButton({
   item,
   size = 'md',
   variant = 'default',
+  showLabel = false,
   className,
 }: WishlistButtonProps) {
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -78,6 +81,8 @@ export default function WishlistButton({
     ? `Remove ${nameShort} from wishlist`
     : `Add ${nameShort} to wishlist`;
 
+  const labelText = wishlisted ? 'Wishlisted' : 'Favourite';
+
   return (
     <button
       type="button"
@@ -86,9 +91,10 @@ export default function WishlistButton({
       aria-label={ariaLabel}
       aria-pressed={wishlisted}
       className={cn(
-        'z-10 flex items-center justify-center rounded-full disabled:opacity-50',
+        'z-10 flex items-center justify-center disabled:opacity-50',
+        showLabel ? 'gap-1.5 rounded-xl px-3' : 'rounded-full',
         'transition-[transform,box-shadow,colors,border-color] duration-150 ease-out hover:scale-[1.04] active:scale-[0.96]',
-        sizeClasses[size],
+        showLabel ? 'min-h-[44px] min-w-[104px]' : sizeClasses[size],
         variantClasses,
         className,
       )}
@@ -100,6 +106,9 @@ export default function WishlistButton({
           wishlisted ? 'fill-terracotta-500 text-terracotta-500' : 'text-neutral-400',
         )}
       />
+      {showLabel ? (
+        <span className="text-xs font-semibold text-[#1A1A1A]">{labelText}</span>
+      ) : null}
     </button>
   );
 }
