@@ -1,14 +1,34 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 
-import {
-  ForYouWizard,
-  type WaitlistQuizSuccessPayload,
-} from "@/components/for-you/ForYouWizard";
-import { QuizPilotResultsPanel } from "@/components/quiz/QuizPilotResultsPanel";
+import type { WaitlistQuizSuccessPayload } from "@/components/for-you/ForYouWizard";
 import { getPreviewAuthHeaders } from "@/lib/waitlist/previewSessionClient";
 import { WaitlistGate } from "@/components/waitlist/WaitlistGate";
+
+const ForYouWizard = dynamic(
+  () =>
+    import("@/components/for-you/ForYouWizard").then((m) => ({
+      default: m.ForYouWizard,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#EDE0D8] border-t-[#B85A3A]" />
+      </div>
+    ),
+  },
+);
+
+const QuizPilotResultsPanel = dynamic(
+  () =>
+    import("@/components/quiz/QuizPilotResultsPanel").then((m) => ({
+      default: m.QuizPilotResultsPanel,
+    })),
+  { ssr: false },
+);
 
 /**
  * Waitlist pilot scent quiz: restore saved results from session API, or run wizard.
@@ -17,6 +37,8 @@ import { WaitlistGate } from "@/components/waitlist/WaitlistGate";
 export default function WaitlistQuizPage() {
   const [result, setResult] = useState<WaitlistQuizSuccessPayload | null>(null);
   const [bootstrapping, setBootstrapping] = useState(true);
+  /** Mirrors session endpoint success so WaitlistGate can skip a second /session fetch. */
+  const [verifiedHasSession, setVerifiedHasSession] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -26,7 +48,9 @@ export default function WaitlistQuizPage() {
           credentials: "include",
           headers: { ...getPreviewAuthHeaders() },
         });
-        if (!res.ok || cancelled) {
+        if (cancelled) return;
+        setVerifiedHasSession(res.ok);
+        if (!res.ok) {
           return;
         }
         const data = (await res.json()) as {
@@ -36,7 +60,9 @@ export default function WaitlistQuizPage() {
           setResult(data.quiz_result);
         }
       } catch {
-        /* no session or network */
+        if (!cancelled) {
+          setVerifiedHasSession(false);
+        }
       } finally {
         if (!cancelled) {
           setBootstrapping(false);
@@ -86,7 +112,7 @@ export default function WaitlistQuizPage() {
   }
 
   return (
-    <WaitlistGate featureName="the Quiz">
+    <WaitlistGate featureName="the Quiz" verifiedHasSession={verifiedHasSession}>
       <div className="pt-4">
         <ForYouWizard waitlistMode onWaitlistSubmitSuccess={handleSuccess} />
       </div>

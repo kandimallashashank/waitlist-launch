@@ -512,7 +512,7 @@ export function ForYouWizard({
     (async () => {
       try {
         const params = new URLSearchParams();
-        params.set("limit", "500");
+        params.set("limit", "240");
         params.set("offset", "0");
         // Pyramid notes are omitted from the default list payload; needed to map anchors → likedNotes.
         params.set("include_notes", "true");

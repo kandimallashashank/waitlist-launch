@@ -5,20 +5,19 @@ import Link from "next/link";
 import { Sparkles, Lock } from "lucide-react";
 import { usePreviewSession } from "@/lib/waitlist/usePreviewSession";
 
-interface WaitlistGateProps {
+interface WaitlistGateBodyProps {
   children: React.ReactNode;
-  /** Label shown in the lock screen, e.g. "Quiz" */
-  featureName?: string;
+  featureName: string;
+  ready: boolean;
+  hasSession: boolean;
 }
 
-/**
- * Wraps a page and shows a waitlist signup prompt if the user hasn't joined yet.
- * Once they have a preview session token, renders children normally.
- */
-export function WaitlistGate({ children, featureName = "this feature" }: WaitlistGateProps) {
-  const { ready, hasSession } = usePreviewSession();
-
-  // Loading — show minimal spinner so there's no layout flash
+function WaitlistGateBody({
+  children,
+  featureName,
+  ready,
+  hasSession,
+}: WaitlistGateBodyProps) {
   if (!ready) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -27,7 +26,6 @@ export function WaitlistGate({ children, featureName = "this feature" }: Waitlis
     );
   }
 
-  // Not on waitlist — show gate
   if (!hasSession) {
     return (
       <div className="flex min-h-[80vh] flex-col items-center justify-center px-6 text-center">
@@ -66,4 +64,62 @@ export function WaitlistGate({ children, featureName = "this feature" }: Waitlis
   }
 
   return <>{children}</>;
+}
+
+function WaitlistGateWithProbe({
+  children,
+  featureName,
+}: {
+  children: React.ReactNode;
+  featureName: string;
+}) {
+  const { ready, hasSession } = usePreviewSession();
+  return (
+    <WaitlistGateBody
+      featureName={featureName}
+      ready={ready}
+      hasSession={hasSession}
+    >
+      {children}
+    </WaitlistGateBody>
+  );
+}
+
+interface WaitlistGateProps {
+  children: React.ReactNode;
+  /** Label shown in the lock screen, e.g. "Quiz" */
+  featureName?: string;
+  /**
+   * When set, skip ``/api/waitlist-preview/session`` inside the gate (parent already called it).
+   * Avoids duplicate network work on pages that bootstrap session first (e.g. quiz).
+   */
+  verifiedHasSession?: boolean;
+}
+
+/**
+ * Wraps a page and shows a waitlist signup prompt if the user hasn't joined yet.
+ * Once they have a preview session token, renders children normally.
+ */
+export function WaitlistGate({
+  children,
+  featureName = "this feature",
+  verifiedHasSession,
+}: WaitlistGateProps) {
+  if (typeof verifiedHasSession === "boolean") {
+    return (
+      <WaitlistGateBody
+        featureName={featureName}
+        ready
+        hasSession={verifiedHasSession}
+      >
+        {children}
+      </WaitlistGateBody>
+    );
+  }
+
+  return (
+    <WaitlistGateWithProbe featureName={featureName}>
+      {children}
+    </WaitlistGateWithProbe>
+  );
 }

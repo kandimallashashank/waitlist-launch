@@ -10,15 +10,6 @@ import type { QuizCatalogPerfume } from "@/lib/quizAnchorDerivation";
 
 const MAX_PICK = 5;
 
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.03, delayChildren: 0.06 } },
-};
-const fadeUp = {
-  hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 320, damping: 28 } },
-};
-
 interface QuizAnchorPerfumePickerProps {
   catalog: QuizCatalogPerfume[];
   selectedIds: string[];
@@ -79,12 +70,7 @@ export function QuizAnchorPerfumePicker({
 
       {/* Grid fewer columns on small screens so tiles are wider and less “tall narrow” */}
       <div className="max-h-[min(52vh,440px)] w-full overflow-y-auto overflow-x-hidden pr-1 scrollbar-hide">
-        <motion.div
-          className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4"
-          variants={stagger}
-          initial="hidden"
-          animate="show"
-        >
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
           {filtered.map((p) => {
             const id = String(p.id);
             const selected = selectedIds.includes(id);
@@ -93,19 +79,16 @@ export function QuizAnchorPerfumePicker({
             const img = getProxiedImageUrl(rawImg) || rawImg;
 
             return (
-              <motion.button
+              <button
                 key={id}
                 type="button"
-                variants={fadeUp}
-                whileHover={atCap ? {} : { y: -3 }}
-                whileTap={atCap ? {} : { scale: 0.97 }}
                 disabled={atCap}
                 onClick={() => onToggle(id)}
                 className={cn(
-                  "flex flex-col overflow-hidden rounded-[18px] text-left transition-all",
+                  "flex flex-col overflow-hidden rounded-[18px] text-left transition-all duration-200",
                   selected
                     ? "ring-[3px] ring-[#B85A3A] shadow-[0_8px_24px_rgba(184,90,58,0.18)]"
-                    : "ring-1 ring-[#E8D4C4] bg-white shadow-sm hover:shadow-md hover:ring-[#D4B8A4]",
+                    : "ring-1 ring-[#E8D4C4] bg-white shadow-sm hover:shadow-md hover:ring-[#D4B8A4] enabled:hover:-translate-y-0.5 enabled:active:scale-[0.98]",
                   atCap && "cursor-not-allowed opacity-40",
                 )}
               >
@@ -116,6 +99,8 @@ export function QuizAnchorPerfumePicker({
                     <img
                       src={img}
                       alt=""
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-contain p-2 drop-shadow-[0_6px_12px_rgba(0,0,0,0.08)]"
                       style={{ mixBlendMode: "multiply" }}
                       onError={(e) => {
@@ -153,10 +138,10 @@ export function QuizAnchorPerfumePicker({
                     {p.name || "-"}
                   </p>
                 </div>
-              </motion.button>
+              </button>
             );
           })}
-        </motion.div>
+        </div>
         {filtered.length === 0 && (
           <p className="py-8 text-center text-sm text-[#8A6A5D]">No matches. Try another search.</p>
         )}
