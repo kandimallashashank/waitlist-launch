@@ -110,27 +110,8 @@ export default function CategoryPillsNav({ activeCategory }: CategoryPillsNavPro
   const [personalizedBuyEligible, setPersonalizedBuyEligible] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      setPersonalizedBuyEligible(false);
-      return undefined;
-    }
-    let cancelled = false;
-    (async () => {
-      try {
-        const token = await getAccessToken();
-        const res = await fetch(`${API_BASE}/api/v1/quiz/status`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        if (!res.ok || cancelled) return;
-        const data: { personalized_buy_eligible?: boolean } = await res.json();
-        if (!cancelled) setPersonalizedBuyEligible(Boolean(data.personalized_buy_eligible));
-      } catch {
-        if (!cancelled) setPersonalizedBuyEligible(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    // Quiz status check not needed in waitlist — "For You" pill is not shown
+    setPersonalizedBuyEligible(false);
   }, [user]);
 
   const categories = useMemo(() => {

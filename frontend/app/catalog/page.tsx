@@ -683,8 +683,10 @@ function ShopAllPageContent() {
               <p className="mt-3 flex max-w-2xl gap-2 text-xs leading-relaxed text-[#8A7A72]">
                 <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#B85A3A]/85" aria-hidden />
                 <span>
-                  Photos show the retail bottle for reference; you receive a decant in your chosen size, not the full bottle.
-                  We have not been able to add separate imagery for decant vials or case options yet due to catalog constraints.
+                  On this pilot, catalog tiles and product pages show the retail bottle for reference only; you receive a
+                  decant in your chosen size, not the full bottle. Decant-size bottle photography is not on the site yet.
+                  At launch, each size will include its own imagery so you can see exactly how 3 ml, 5 ml, 8 ml, and 10 ml
+                  bottles and cases look before you buy.
                 </span>
               </p>
             </div>

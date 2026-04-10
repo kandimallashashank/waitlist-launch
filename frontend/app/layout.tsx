@@ -11,12 +11,16 @@ const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-inter",
+  display: "swap",
+  preload: true,
 });
 
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-poppins",
+  display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -38,7 +42,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
-      <body className="antialiased font-sans">
+      <body className="antialiased font-sans overflow-x-hidden">
         <AppProvider>
           <WaitlistPreviewNav />
           <PilotPreviewDataNotice />

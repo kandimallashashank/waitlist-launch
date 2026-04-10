@@ -8,7 +8,7 @@ import type { CSSProperties } from 'react';
  * - Desktop: carousel tiles capped so rows stay scannable; horizontal scroll when many tiles.
  *
  * ``PRODUCT_CARD_LAYOUT_SCALE`` scales carousel / section card widths vs baseline.
- * Set to ``1`` so homepage, PDP “similar / recently viewed”, and best-seller rows match
+ * Set to ``1`` so homepage, PDP similar rows, and best-seller rows match
  * the pre-shrink footprint; PLP density stays governed by grid columns (2–3), not this.
  */
 
@@ -78,7 +78,7 @@ export const SECTION_CARD_BEST_SELLERS_WIDTH_STYLE: CSSProperties = {
 };
 
 /**
- * PDP “Smells similar” / “You may also like” / “Recently viewed” carousel cards.
+ * PDP “Smells similar” / “You may also like” carousel cards.
  * Increased by ~25% so recommendation rows read larger and more prominent.
  */
 const PDP_SIMILAR_DIVISOR = 1.83 / PRODUCT_CARD_LAYOUT_SCALE;

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useReducedMotion } from 'framer-motion';
+import { useHydrationSafeReducedMotion } from '@/hooks/useHydrationSafeReducedMotion';
 
 import { cn } from '@/lib/utils';
 import { storeUrl } from '@/lib/storeUrl';
@@ -123,7 +123,7 @@ export default function BrandLogosSection({
   eyebrow = 'Featured houses',
   className,
 }: BrandLogosSectionProps) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useHydrationSafeReducedMotion();
 
   if (variant === 'inline') {
     return (

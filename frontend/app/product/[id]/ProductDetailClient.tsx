@@ -11,14 +11,12 @@ import { base44, type Fragrance, type DecantInventoryItem } from '@/api/base44Cl
 import { mockFragrances } from '@/lib/mockData';
 import { toast } from 'sonner';
 import WishlistButton from '@/components/wishlist/WishlistButton';
-import { PdpCompactCard, PdpScrollCarousel, type PdpCarouselFragrance } from '@/components/product/PdpCarouselCard';
 import Breadcrumbs from '@/components/common/Breadcrumbs';
 import { ProductDetailLoadingSkeleton } from '@/components/product/ProductDetailLoadingSkeleton';
 import { useAppContext } from '@/contexts/AppContext';
 import { useScrollRestoration } from '@/hooks/use-scroll-restoration';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { getProxiedImageUrl, isProductPerfumeUrl } from '@/lib/imageProxy';
-import { getRecentlyViewed, trackRecentlyViewed, type RecentlyViewedItem } from '@/lib/storage/recentlyViewedStorage';
 import { isFragranceInStock } from '@/lib/fragranceStock';
 import { getAccessToken } from '@/lib/supabase';
 import { formatInrDisplay, rupeesUntilFreeShipping } from '@/lib/utils';
@@ -35,7 +33,9 @@ const ReviewSection = (_p: {
   fragranceId: string;
   fragranceName: string;
 }): null => null;
-const YouMayAlsoLike = (_p: Record<string, unknown>): null => null;
+const YouMayAlsoLike = dynamic(() => import('@/components/product/YouMayAlsoLike'), {
+  loading: () => <div className="h-48 animate-pulse rounded-xl bg-neutral-50" />,
+});
 const BlindBuySection = (_p: Record<string, unknown>): null => null;
 const HandFilledSection = (): null => null;
 const ProductFAQ = (): null => null;
@@ -247,21 +247,6 @@ function DescriptionBlock({ text }: { text: string }) {
   );
 }
 
-/**
- * Maps localStorage recently viewed row to the shared PDP carousel card shape.
- */
-function recentlyViewedToCarouselFrag(item: RecentlyViewedItem): PdpCarouselFragrance {
-  return {
-    id: item.id,
-    name: item.name,
-    brand_name: item.brand,
-    brand: item.brand,
-    image_url: item.image_url,
-    price_3ml: item.price_3ml,
-    blind_buy_score: item.blind_buy_score,
-  };
-}
-
 // ---------------------------------------------------------------------------
 // Product Detail Page
 // ---------------------------------------------------------------------------
@@ -291,7 +276,6 @@ function ProductDetailPageContent() {
   });
   const [decantInventory, setDecantInventory] = useState<DecantInventoryItem[]>([]);
   const [selectedDecantCases, setSelectedDecantCases] = useState<SelectedCase[]>([]);
-  const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewedItem[]>([]);
   const [aiInsights, setAiInsights] = useState<FragranceAiInsights | null>(null);
   const [reviewSummary, setReviewSummary] = useState<ReviewSummary | null>(null);
   const [expandedSupportItem, setExpandedSupportItem] = useState<string | null>('shipping');
@@ -317,17 +301,6 @@ function ProductDetailPageContent() {
     // Intentionally depend on productId + searchParams only; loadProduct reads them each run.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId, searchParams]);
-
-  useEffect(() => {
-    if (!productId || !user?.email) return;
-    base44.entities.RecentViews.track(productId, 'product_page').catch(() => {});
-  }, [productId, user?.email]);
-
-  useEffect(() => {
-    if (!fragrance?.id) return;
-    const items = getRecentlyViewed().filter((item) => item.id !== fragrance.id).slice(0, 8);
-    setRecentlyViewed(items);
-  }, [fragrance?.id]);
 
   useEffect(() => {
     if (!fragrance?.id || !fragrance.review_count || fragrance.review_count < 3) return;
@@ -393,7 +366,6 @@ function ProductDetailPageContent() {
     try {
       let product: Fragrance | null = null;
       let apiFailed = false;
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
       try {
         const [staticRes, liveRes] = await Promise.allSettled([
@@ -454,19 +426,14 @@ function ProductDetailPageContent() {
         },
         viewSource
       );
-      trackRecentlyViewed({
-        id: product.id || '', name: product.name || '', brand: product.brand || '',
-        brand_slug: (product.brand || '').toLowerCase().replace(/\s+/g, '-'),
-        image_url: product.image_url,
-        price_3ml: product.price_3ml || 0,
-        price_8ml: typeof product.price_8ml === 'number' ? product.price_8ml : undefined,
-        price_12ml: typeof product.price_12ml === 'number' ? product.price_12ml : undefined,
-        blind_buy_score: product.blind_buy_score,
-      });
 
-      // Fetch global decant inventory (shared pool across all perfumes)
+      // Global decant-case rows (Next.js API — no FastAPI)
       try {
-        const invRes = await fetch(`${API_URL}/api/v1/decant-inventory/global`);
+        const invRes = await fetch('/api/decant-inventory/global', {
+          headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(8000),
+          cache: 'no-store',
+        });
         if (invRes.ok) setDecantInventory(await invRes.json());
       } catch {}
     } catch (error: unknown) {
@@ -1108,8 +1075,9 @@ function ProductDetailPageContent() {
             <p className="flex gap-2 rounded-xl border border-[#E4D9D0] bg-white/60 px-3 py-2.5 text-xs leading-relaxed text-[#6B6560]">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#B85A3A]/85" aria-hidden />
               <span>
-                Images show the retail bottle for reference; your order is a decant, not the full bottle.
-                We have not been able to include decant-vial and case imagery or full case details in the catalog yet due to constraints.
+                On this pilot, photos show the retail bottle for reference only; your order is a decant in the size you pick,
+                not the full bottle. Decant-size bottle photography is not live on product pages yet. At launch, each size will
+                have its own imagery so you can see how 3 ml, 5 ml, 8 ml, and 10 ml bottles and cases look before you buy.
               </span>
             </p>
 
@@ -1648,25 +1616,6 @@ function ProductDetailPageContent() {
           <ProductFAQ />
         </div>
 
-        {/* Recently Viewed horizontal carousel (same card as Smells Similar / You May Also Like) */}
-        {recentlyViewed.length > 0 && (
-          <div className="mb-16">
-            <div className="mb-4 flex items-center gap-2">
-              <div className="h-5 w-1 rounded-full bg-[#B85A3A]" />
-              <h2 className="text-lg font-bold text-[#1A1A1A]">Recently Viewed</h2>
-            </div>
-            <PdpScrollCarousel label="recently-viewed">
-              {recentlyViewed.map((item) => (
-                <PdpCompactCard
-                  key={item.id}
-                  frag={recentlyViewedToCarouselFrag(item)}
-                  hrefSearch="source=recent"
-                />
-              ))}
-            </PdpScrollCarousel>
-          </div>
-        )}
-
         {/* AI Review Summary shown only after LLM responds, requires ≥3 reviews */}
         {reviewSummary?.summary && (
           <motion.div
@@ -1737,12 +1686,13 @@ function ProductDetailPageContent() {
               </div>
             </div>
             {IS_WAITLIST_PREVIEW && productInStock ? (
-              <Link
-                href="/"
-                className="inline-flex min-h-[2.75rem] items-center justify-center rounded-xl border border-[#EADFD7] bg-[#FFF9F5] px-3 text-xs font-semibold text-[#B85A3A]"
+              <button
+                type="button"
+                onClick={addToCart}
+                className="inline-flex min-h-[2.75rem] items-center justify-center rounded-xl bg-[#B85A3A] px-3.5 text-xs font-semibold text-white shadow-sm"
               >
-                Join waitlist
-              </Link>
+                Add to Cart
+              </button>
             ) : productInStock ? (
               <div className="flex shrink-0 items-center gap-2">
                 <WishlistButton

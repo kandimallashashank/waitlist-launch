@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useReducedMotion } from 'framer-motion';
+import { useHydrationSafeReducedMotion } from '@/hooks/useHydrationSafeReducedMotion';
 
 const TICKER_ITEMS = [
   'Samples from ₹199',
@@ -21,7 +21,7 @@ const TICKER_ITEMS = [
  */
 export default function WaitlistValueTicker(): React.ReactElement {
   const loop = [...TICKER_ITEMS, ...TICKER_ITEMS];
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useHydrationSafeReducedMotion();
 
   if (reduceMotion) {
     return (

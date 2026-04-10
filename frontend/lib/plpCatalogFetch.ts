@@ -100,10 +100,7 @@ export async function fetchPlpCatalogPage(
   params.set('sort', options?.sortApi ?? sortOptionToApiParam(sortBy));
   appendPlpCatalogQueryParams(params, filters, options?.genderForApi);
 
-  const apiBase = getPublicApiBaseUrl();
-  const url = apiBase
-    ? `${apiBase}/api/v1/fragrances/?${params.toString()}`
-    : `/api/fragrances/list?${params.toString()}`;
+  const url = `/api/fragrances/list?${params.toString()}`;
 
   const res = await fetchWithTimeout(url, {
     headers: { Accept: 'application/json' },
@@ -131,10 +128,7 @@ export async function fetchPlpCatalogPageWithCount(
   params.set('sort', options?.sortApi ?? sortOptionToApiParam(sortBy));
   appendPlpCatalogQueryParams(params, filters, options?.genderForApi);
 
-  const apiBase = getPublicApiBaseUrl();
-  const url = apiBase
-    ? `${apiBase}/api/v1/fragrances/list-with-count?${params.toString()}`
-    : `/api/fragrances/list-with-count?${params.toString()}`;
+  const url = `/api/fragrances/list-with-count?${params.toString()}`;
 
   const res = await fetchWithTimeout(url, {
     headers: { Accept: 'application/json' },
@@ -163,10 +157,7 @@ export async function fetchPlpCatalogTotal(
   const params = new URLSearchParams();
   appendPlpCatalogQueryParams(params, filters, options?.genderForApi);
 
-  const apiBase = getPublicApiBaseUrl();
-  const url = apiBase
-    ? `${apiBase}/api/v1/fragrances/list-count?${params.toString()}`
-    : `/api/fragrances/list-count?${params.toString()}`;
+  const url = `/api/fragrances/list-count?${params.toString()}`;
 
   const res = await fetchWithTimeout(url, {
     headers: { Accept: 'application/json' },
@@ -185,10 +176,7 @@ export async function fetchHybridSearchFragrances(
   query: string,
   apiBase: string
 ): Promise<Fragrance[]> {
-  const base = apiBase?.trim().replace(/\/+$/, "") || "";
-  const url = base
-    ? `${base}/api/v1/hybrid-search/search?query=${encodeURIComponent(query)}&limit=50`
-    : `/api/fragrances/hybrid-search?query=${encodeURIComponent(query)}&limit=50`;
+  const url = `/api/fragrances/hybrid-search?query=${encodeURIComponent(query)}&limit=50`;
   try {
     const res = await fetchWithTimeout(
       url,

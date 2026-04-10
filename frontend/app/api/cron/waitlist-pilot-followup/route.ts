@@ -86,18 +86,20 @@ export async function GET(req: Request) {
     const prefs = prefRows?.[0];
 
     const snap = prefs?.recommendation_snapshot as
-      | Array<{ name?: string; brand?: string }>
+      | Array<{ name?: string; brand?: string; image_url?: string | null; primary_image_url?: string | null }>
       | undefined;
     const quizPicks = Array.isArray(snap)
       ? snap.slice(0, 3).map((p) => ({
           name: typeof p.name === "string" ? p.name : "",
           brand: typeof p.brand === "string" ? p.brand : "",
+          image_url: (typeof p.image_url === "string" ? p.image_url : null) ||
+                     (typeof p.primary_image_url === "string" ? p.primary_image_url : null),
         }))
       : [];
 
     const { data: layerRows } = await supabase
       .from("waitlist_layering_events")
-      .select("summary_snippet, harmony_score, harmony_label")
+      .select("summary_snippet, harmony_score, harmony_label, fragrance_names, fragrance_images")
       .eq("email", email)
       .eq("success", true)
       .order("created_at", { ascending: false })
@@ -108,6 +110,8 @@ export async function GET(req: Request) {
           summary_snippet?: string | null;
           harmony_score?: number | null;
           harmony_label?: string | null;
+          fragrance_names?: string[] | null;
+          fragrance_images?: (string | null)[] | null;
         }
       | undefined;
 
@@ -123,6 +127,12 @@ export async function GET(req: Request) {
         typeof lastLayer?.harmony_label === "string"
           ? lastLayer.harmony_label
           : null,
+      layeringFragranceNames: Array.isArray(lastLayer?.fragrance_names)
+        ? lastLayer.fragrance_names.filter((n): n is string => typeof n === "string")
+        : undefined,
+      layeringFragranceImages: Array.isArray(lastLayer?.fragrance_images)
+        ? lastLayer.fragrance_images
+        : undefined,
     });
 
     const ok = await sendViaResend(email, subject, html, text);

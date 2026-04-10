@@ -2,6 +2,7 @@
 
 import { QuizBrandSpinner } from "@/components/quiz/QuizBrandSpinner";
 import React from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Leaf, Star, Gem, Trophy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -35,11 +36,12 @@ import {
   formatWaitlistPreviewApiError,
   getPreviewAuthHeaders,
 } from "@/lib/waitlist/previewSessionClient";
+import { QuizPilotSurveyModal } from "@/components/quiz/QuizPilotSurveyModal";
 
 const API_BASE = getPublicApiBaseUrl();
 const QUIZ_SUBMIT_TIMEOUT_MS = 60_000;
-/** Pause after quiz completes before showing the pilot survey. */
-const PILOT_SURVEY_AFTER_QUIZ_DELAY_MS = 1_000;
+/** Pause after quiz completes before showing the pilot survey — long enough for user to see perfumes. */
+const PILOT_SURVEY_AFTER_QUIZ_DELAY_MS = 10_000;
 const MIN_LOADING_MS = 450;
 const SLOW_LOADING_MS = 6500;
 const TOTAL_STEPS = 11;
@@ -133,8 +135,14 @@ interface ForYouWizardProps {
   /**
    * Waitlist: after loading screen, show results on the parent instead of navigating.
    * Omit ``afterSubmitHref`` when using this (full loading UX runs).
+   *
+   * When ``meta.openPilotSurveyAfterMs`` is set, the parent must schedule the pilot survey
+   * (the wizard unmounts once results render — do not open the survey from inside the wizard).
    */
-  onWaitlistSubmitSuccess?: (payload: WaitlistQuizSuccessPayload) => void;
+  onWaitlistSubmitSuccess?: (
+    payload: WaitlistQuizSuccessPayload,
+    meta?: { openPilotSurveyAfterMs?: number },
+  ) => void;
 }
 
 interface NoteGroupOption extends QuizOption {
@@ -356,10 +364,10 @@ const AUTO_ADVANCE_STEPS = new Set<StepKey>([
   "intensity",
 ]);
 
-/** Delay before auto-advancing on single-select (was 220ms; felt instant / flashy). */
-const AUTO_ADVANCE_SINGLE_MS = 560;
+/** Delay before auto-advancing on single-select — long enough to see the selection highlight. */
+const AUTO_ADVANCE_SINGLE_MS = 820;
 /** Delay before goNext after multi-select hits max (stacked after chip/card delay in QuizQuestionTypes). */
-const AUTO_ADVANCE_MULTI_MS = 700;
+const AUTO_ADVANCE_MULTI_MS = 900;
 
 const INITIAL_ANSWERS: ForYouAnswers = {
   experienceLevel: null,
@@ -511,6 +519,7 @@ export function ForYouWizard({
 
   const [answers, setAnswers] = useState<ForYouAnswers>(INITIAL_ANSWERS);
   const [stepIndex, setStepIndex] = useState(0);
+  const [direction, setDirection] = useState<1 | -1>(1);
   const [loading, setLoading] = useState(false);
   /** Save-only submit (e.g. subscription quiz): no ``QuizLoadingScreen``, immediate redirect. */
   const [quickSubmitting, setQuickSubmitting] = useState(false);
@@ -593,6 +602,7 @@ export function ForYouWizard({
           void goNext();
           return;
         }
+        setDirection(1);
         setStepIndex((current) => Math.min(current + 1, TOTAL_STEPS - 1));
       }, AUTO_ADVANCE_SINGLE_MS);
     }
@@ -628,6 +638,7 @@ export function ForYouWizard({
 
   const goBack = () => {
     if (loading || quickSubmitting || stepIndex === 0) return;
+    setDirection(-1);
     setStepIndex((current) => current - 1);
   };
 
@@ -654,6 +665,7 @@ export function ForYouWizard({
           };
         });
       }
+      setDirection(1);
       setStepIndex((current) => current + 1);
       return;
     }
@@ -671,9 +683,7 @@ export function ForYouWizard({
     const redirectHref = afterSubmitHref?.trim();
     const submitUrl = isWaitlist
       ? "/api/waitlist-preview/quiz/submit"
-      : API_BASE
-        ? `${API_BASE}/api/v1/quiz/submit`
-        : "/api/v1/quiz/submit";
+      : "/api/waitlist-preview/quiz/submit"; // waitlist app only — no FastAPI
 
     const buildRequestInit = (): RequestInit => {
       const headers: Record<string, string> = {
@@ -801,14 +811,10 @@ export function ForYouWizard({
         if (pilotSurveyAfterSubmit) {
           const surveyDone = await fetchWaitlistQuizSurveyCompleted();
           if (!surveyDone) {
-            pilotSurveyPendingRef.current = {
-              waitlist: payload,
-              navigate: null,
-            };
-            await delay(PILOT_SURVEY_AFTER_QUIZ_DELAY_MS);
+            pilotSurveyPendingRef.current = { waitlist: null, navigate: null };
+            onWaitlistSubmitSuccess(payload, { openPilotSurveyAfterMs: 5_000 });
             setLoading(false);
             setLoadingSlow(false);
-            setPilotSurveyOpen(true);
             return;
           }
         }
@@ -886,6 +892,7 @@ export function ForYouWizard({
     }
 
     if (stepIndex < TOTAL_STEPS - 1) {
+      setDirection(1);
       setStepIndex((current) => current + 1);
     } else {
       void goNext();
@@ -927,7 +934,21 @@ export function ForYouWizard({
         <div className="absolute bottom-0 left-0 h-80 w-80 rounded-full bg-[#D4A574]/7 blur-[90px]" />
         <div className="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#8B9E7E]/5 blur-[80px]" />
       </div>
-      <div key={stepKey} className="flex h-full min-h-0 flex-1 flex-col">
+      <AnimatePresence mode="wait" initial={false} custom={direction}>
+        <motion.div
+          key={stepKey}
+          custom={direction}
+          variants={{
+            enter: (d: number) => ({ opacity: 0, x: d > 0 ? 40 : -40 }),
+            center: { opacity: 1, x: 0 },
+            exit: (d: number) => ({ opacity: 0, x: d > 0 ? -40 : 40 }),
+          }}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{ duration: 0.28, ease: [0.32, 0, 0.18, 1] }}
+          className="flex h-full min-h-0 flex-1 flex-col"
+        >
           <QuizStepFrame
             bodyLayout={stepKey === "anchorPerfumes" ? "fill" : "default"}
             denseHeader={stepKey === "anchorPerfumes"}
@@ -1088,139 +1109,8 @@ export function ForYouWizard({
               />
             ) : null}
           </QuizStepFrame>
-      </div>
-    </div>
-  );
-}
-
-function QuizPilotSurveyModal({ onFinished }: { onFinished: () => void }) {
-  const [tooLong, setTooLong] = useState(3);
-  const [tags, setTags] = useState<string[]>([]);
-  const [freeText, setFreeText] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const toggleTag = (t: string) => {
-    setTags((prev) =>
-      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t],
-    );
-  };
-
-  const finish = async (mode: "skip" | "submit") => {
-    setSaving(true);
-    try {
-      await fetch("/api/waitlist-preview/quiz/survey", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          ...getPreviewAuthHeaders(),
-        },
-        body: JSON.stringify(
-          mode === "skip"
-            ? { skipped: true }
-            : {
-                too_long_rating: tooLong,
-                irrelevant_tags: tags,
-                free_text: freeText.slice(0, 2000),
-              },
-        ),
-      });
-    } catch {
-      /* non-blocking: still advance so the user is not stuck */
-    } finally {
-      setSaving(false);
-      onFinished();
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4">
-      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl border border-[#E8DFD8] bg-[#FDFBF8] p-6 shadow-2xl">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#B85A3A]">
-          Quick pilot check-in
-        </p>
-        <h2 className="mt-2 font-display text-xl text-[#1A1A1A]">
-          How did the quiz feel?
-        </h2>
-        <p className="mt-2 text-sm text-[#5F5C57]">
-          About 10 seconds. We only ask this once per account; it helps us fix length and pacing before launch.
-        </p>
-
-        <p className="mt-5 text-xs font-semibold text-[#1A1A1A]">
-          Felt too long? (1 = not at all, 5 = very)
-        </p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <button
-              key={n}
-              type="button"
-              onClick={() => setTooLong(n)}
-              className={`rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
-                tooLong === n
-                  ? "bg-[#1A1A1A] text-white"
-                  : "bg-white text-[#5F5C57] ring-1 ring-[#E5DED4]"
-              }`}
-            >
-              {n}
-            </button>
-          ))}
-        </div>
-
-        <p className="mt-5 text-xs font-semibold text-[#1A1A1A]">
-          Anything feel off?
-        </p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {[
-            { id: "too_many_questions", label: "Too many questions" },
-            { id: "too_many_steps", label: "Too many steps" },
-            { id: "irrelevant_questions", label: "Irrelevant questions" },
-            { id: "unclear_options", label: "Unclear answer options" },
-          ].map((o) => (
-            <button
-              key={o.id}
-              type="button"
-              onClick={() => toggleTag(o.id)}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                tags.includes(o.id)
-                  ? "bg-[#B85A3A] text-white"
-                  : "bg-white text-[#5F5C57] ring-1 ring-[#E5DED4]"
-              }`}
-            >
-              {o.label}
-            </button>
-          ))}
-        </div>
-
-        <label className="mt-5 block text-xs font-semibold text-[#1A1A1A]">
-          Anything else? (optional)
-          <textarea
-            value={freeText}
-            onChange={(e) => setFreeText(e.target.value)}
-            rows={2}
-            className="mt-2 w-full resize-none rounded-xl border border-[#E5DED4] bg-white px-3 py-2 text-sm text-[#1A1A1A] outline-none ring-0 focus:border-[#B85A3A]"
-            placeholder="One line is enough…"
-          />
-        </label>
-
-        <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            disabled={saving}
-            onClick={() => void finish("skip")}
-            className="rounded-xl px-4 py-3 text-sm font-semibold text-[#8A7A72] hover:bg-white/80"
-          >
-            Skip
-          </button>
-          <button
-            type="button"
-            disabled={saving}
-            onClick={() => void finish("submit")}
-            className="rounded-xl bg-[#1A1A1A] px-5 py-3 text-sm font-bold tracking-wide text-white hover:bg-[#B85A3A] disabled:opacity-60"
-          >
-            {saving ? "Saving…" : "Send feedback"}
-          </button>
-        </div>
-      </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

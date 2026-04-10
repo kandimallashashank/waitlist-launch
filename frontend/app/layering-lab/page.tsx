@@ -464,6 +464,75 @@ function ConcentrationBadge({ concentration }: { concentration?: string }) {
   );
 }
 
+/** Compact horizontal card for mobile — tap to add, shows image + name + remove. */
+function MobileFragranceSlot({
+  index,
+  fragrance,
+  onRemove,
+  onOpen,
+}: {
+  index: number;
+  fragrance: Fragrance | null;
+  onRemove: () => void;
+  onOpen: () => void;
+}) {
+  const slot = SLOT_CONFIG[index] ?? SLOT_CONFIG[0];
+
+  if (!fragrance) {
+    return (
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex w-full items-center gap-3 rounded-2xl border-2 border-dashed border-[#D9CBC3] bg-gradient-to-r from-white/90 to-[#FFF9F5]/90 px-4 py-3.5 text-left transition-all active:scale-[0.98] hover:border-[#B85A3A]/55"
+      >
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FDF6F3] ring-1 ring-[#E8DDD8]">
+          <Plus className="h-5 w-5 text-[#B85A3A]/70" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8B4513]">
+            {slot.step}. {slot.title}
+          </p>
+          <p className="mt-0.5 text-xs text-[#7A726B]">{slot.hint}</p>
+        </div>
+        <span className="shrink-0 text-xs font-medium text-[#B85A3A]">Add</span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-[#E4D5CD] bg-white px-3 py-3 shadow-sm">
+      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[#FAF7F4]">
+        {fragrance.primary_image_url ? (
+          <Image
+            src={getProxiedImageUrl(fragrance.primary_image_url) || fragrance.primary_image_url}
+            alt={fragrance.name}
+            fill
+            className="object-contain p-1.5 mix-blend-multiply"
+            sizes="56px"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-[10px] text-gray-300">?</div>
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8B4513]">
+          {slot.step}. {slot.title}
+        </p>
+        <p className="mt-0.5 truncate text-sm font-semibold text-[#1A1A1A]">{fragrance.name}</p>
+        <p className="truncate text-xs text-gray-400">{fragrance.brand_name}</p>
+      </div>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="shrink-0 rounded-full p-1.5 transition-colors hover:bg-gray-100"
+        aria-label={`Remove ${fragrance.name}`}
+      >
+        <X className="h-4 w-4 text-gray-400" />
+      </button>
+    </div>
+  );
+}
+
 function FragranceSlot({
   index,
   fragrance,
@@ -643,30 +712,41 @@ function SearchModal({
   React.useEffect(() => { search('', ''); }, [search]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[82vh] flex flex-col overflow-hidden"
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 40 }}
+        className="relative bg-white sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl h-[92dvh] sm:max-h-[82vh] flex flex-col overflow-hidden rounded-t-2xl"
       >
         {/* Search bar */}
         <div className="p-4 border-b space-y-3">
-          <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-2.5">
-            <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            <input
-              autoFocus
-              value={query}
-              onChange={handleInput}
-              placeholder="Search by name or brand…"
-              className="flex-1 bg-transparent text-sm outline-none text-[#1A1A1A] placeholder-gray-400"
-            />
-            {query && (
-              <button onClick={() => { setQuery(''); search('', family); }}>
-                <X className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-            )}
+          {/* Mobile drag handle */}
+          <div className="mx-auto mb-1 h-1 w-10 rounded-full bg-gray-200 sm:hidden" aria-hidden />
+          <div className="flex items-center gap-2">
+            <div className="flex flex-1 items-center gap-3 bg-gray-50 rounded-xl px-4 py-2.5">
+              <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <input
+                autoFocus
+                value={query}
+                onChange={handleInput}
+                placeholder="Search by name or brand…"
+                className="flex-1 bg-transparent text-sm outline-none text-[#1A1A1A] placeholder-gray-400"
+              />
+              {query && (
+                <button onClick={() => { setQuery(''); search('', family); }}>
+                  <X className="w-3.5 h-3.5 text-gray-400" />
+                </button>
+              )}
+            </div>
+            <button
+              onClick={onClose}
+              className="shrink-0 rounded-xl border border-gray-200 p-2.5 text-gray-500 hover:bg-gray-50"
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
           {/* Family filter chips */}
           <div className="flex gap-1.5 flex-wrap">
@@ -2116,7 +2196,20 @@ function LayeringLabPageContent() {
 
         {/* Fragrance Slots */}
         <div className="mb-6 rounded-2xl border border-[#E8DFD8] bg-white p-4 shadow-sm md:p-6">
-          <div className="grid gap-4 md:grid-cols-3 md:items-stretch md:gap-4">
+          {/* Mobile: vertical stack of compact horizontal cards */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {[0, 1, 2].map((i) => (
+              <MobileFragranceSlot
+                key={i}
+                index={i}
+                fragrance={selected[i]}
+                onRemove={() => handleRemove(i)}
+                onOpen={() => setModalSlot(i)}
+              />
+            ))}
+          </div>
+          {/* Desktop: 3-column grid */}
+          <div className="hidden md:grid md:grid-cols-3 md:items-stretch md:gap-4">
             {[0, 1, 2].map((i) => (
               <FragranceSlot
                 key={i}

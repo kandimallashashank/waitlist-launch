@@ -61,6 +61,39 @@ export async function POST(req: Request) {
 
     const answers = body.answers as QuizAnswersPayload;
 
+    // ── Idempotency: if this email already has results, return them directly ──
+    const { data: existingRows } = await supabase
+      .from("waitlist_quiz_preferences")
+      .select("answers, recommendation_snapshot, scent_profile, preference_analytics")
+      .eq("email", email)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+
+    const existingRow = existingRows?.[0] as
+      | { answers?: unknown; recommendation_snapshot?: unknown; scent_profile?: unknown; preference_analytics?: unknown }
+      | undefined;
+
+    if (existingRow?.recommendation_snapshot) {
+      const snap = existingRow.recommendation_snapshot;
+      const recommendations = Array.isArray(snap)
+        ? snap.slice(0, 12).map((r: Record<string, unknown>) => ({
+            id: String(r.id ?? ""),
+            slug: typeof r.slug === "string" ? r.slug : null,
+            brand: typeof r.brand === "string" ? r.brand : "",
+            name: typeof r.name === "string" ? r.name : "Fragrance",
+            image_url: typeof r.image_url === "string" ? r.image_url : null,
+            match_score: typeof r.match_score === "number" ? r.match_score : undefined,
+          }))
+        : [];
+      return NextResponse.json({
+        recommendations,
+        preference_analytics: existingRow.preference_analytics ?? null,
+        scent_profile: existingRow.scent_profile ?? null,
+        pipeline: "cached",
+      });
+    }
+    // ── End idempotency check ──
+
     const {
       recommendations: recommendationsFull,
       scent_profile,

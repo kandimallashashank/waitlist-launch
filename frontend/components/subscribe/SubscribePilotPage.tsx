@@ -56,23 +56,7 @@ export function SubscribePilotPage(): React.ReactElement {
   const [tierPricing, setTierPricing] = useState(DEFAULT_TIER_PRICING);
 
   useEffect(() => {
-    let cancelled = false;
-    void fetch(`${API_BASE}/api/v1/subscriptions/plans`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((plans: unknown) => {
-        if (!Array.isArray(plans) || cancelled) return;
-        const next = { ...DEFAULT_TIER_PRICING };
-        for (const row of plans as Array<Record<string, unknown>>) {
-          if ((row.billing_cycle || 'monthly') !== 'monthly') continue;
-          const tier = String(row.tier || row.catalog_tier || '').toLowerCase();
-          if (!next[tier]) continue;
-          const m = Number(row.price_inr ?? row.monthly_price_inr);
-          if (Number.isFinite(m) && m > 0) next[tier] = { ...next[tier], monthly: m };
-        }
-        setTierPricing(next);
-      })
-      .catch(() => {});
-    return () => { cancelled = true; };
+    // Subscription plan pricing is hardcoded for the waitlist pilot — no live API needed.
   }, []);
 
   const startingMonthly = useMemo(() => Math.min(...Object.values(tierPricing).map((p) => p.monthly)), [tierPricing]);

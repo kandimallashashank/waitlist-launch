@@ -219,68 +219,9 @@ const LIVE_FIELDS_FETCH_CONCURRENCY = 4;
  * Returns:
  *     Map of id → live row; empty map on failure.
  */
-export async function fetchFragranceLiveFields(ids: string[]): Promise<Map<string, FragranceLiveFieldsRow>> {
-  const map = new Map<string, FragranceLiveFieldsRow>();
-  if (!ids.length || !API_BASE) return map;
-
-  // Lazy import to avoid pulling Upstash into client bundles
-  let getCachedLiveFields: typeof import('@/lib/cache/catalogCache').getCachedLiveFields | undefined;
-  let setCachedLiveFields: typeof import('@/lib/cache/catalogCache').setCachedLiveFields | undefined;
-  if (typeof window === 'undefined') {
-    try {
-      const mod = await import('@/lib/cache/catalogCache');
-      getCachedLiveFields = mod.getCachedLiveFields;
-      setCachedLiveFields = mod.setCachedLiveFields;
-    } catch { /* client-side or missing skip */ }
-  }
-
-  const chunks: string[][] = [];
-  for (let i = 0; i < ids.length; i += LIVE_FIELDS_CHUNK) {
-    chunks.push(ids.slice(i, i + LIVE_FIELDS_CHUNK));
-  }
-
-  async function processChunk(chunk: string[]): Promise<void> {
-    if (chunk.length === 0) return;
-
-    if (getCachedLiveFields) {
-      const cached = await getCachedLiveFields<FragranceLiveFieldsRow[]>(chunk);
-      if (Array.isArray(cached) && cached.length > 0) {
-        for (const row of cached) {
-          if (row?.id) map.set(row.id, row);
-        }
-        return;
-      }
-    }
-
-    try {
-      const res = await fetch(`${API_BASE}/api/v1/fragrances/live-fields`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ids: chunk }),
-      });
-      if (!res.ok) return;
-      const rows = (await res.json()) as FragranceLiveFieldsRow[];
-      if (!Array.isArray(rows)) return;
-      for (const row of rows) {
-        if (row?.id) map.set(row.id, row);
-      }
-      if (setCachedLiveFields && rows.length > 0) {
-        void setCachedLiveFields(chunk, rows).catch(() => {});
-      }
-    } catch {
-      // Catalog cards still valid without live overlay
-    }
-  }
-
-  for (let i = 0; i < chunks.length; i += LIVE_FIELDS_FETCH_CONCURRENCY) {
-    const wave = chunks.slice(i, i + LIVE_FIELDS_FETCH_CONCURRENCY);
-    await Promise.all(wave.map((c) => processChunk(c)));
-  }
-
-  return map;
+export async function fetchFragranceLiveFields(_ids: string[]): Promise<Map<string, FragranceLiveFieldsRow>> {
+  // Live fields are served via Supabase through /api/fragrances/[id]/live — no FastAPI needed.
+  return new Map();
 }
 
 function mergeLiveIntoPerfumeCards(
@@ -586,12 +527,12 @@ const buildPerfumeQuery = (params?: PerfumeQueryParams): string => {
 
 async function fetchPerfumesFromApi(params?: PerfumeQueryParams): Promise<PerfumeCard[]> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(new Error('Request timeout')), 10000); // 10s timeout
+  const timeoutId = setTimeout(() => controller.abort(new Error('Request timeout')), 10000);
 
   try {
     const query = buildPerfumeQuery(params);
-    const path = `/api/v1/fragrances/?${query || 'limit=500'}`;
-    const url = API_BASE ? `${API_BASE}${path}` : path;
+    // Always use the Next.js proxy route — never FastAPI directly
+    const url = `/api/fragrances/list?${query || 'limit=500'}`;
     const response = await fetch(url, {
       signal: controller.signal,
       headers: { Accept: 'application/json' },
@@ -600,17 +541,11 @@ async function fetchPerfumesFromApi(params?: PerfumeQueryParams): Promise<Perfum
 
     clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`API error: ${response.status}`);
 
     const data: ApiFragrance[] = await response.json();
+    if (!Array.isArray(data) || data.length === 0) throw new Error('Invalid API response');
 
-    if (!Array.isArray(data) || data.length === 0) {
-      throw new Error('Invalid API response: expected non-empty array');
-    }
-
-    console.log(`Loaded ${data.length} perfumes from API`);
     const cards = data.map(convertApiFragrance);
     return attachLivePricesToCards(cards);
   } catch (error) {
@@ -618,12 +553,7 @@ async function fetchPerfumesFromApi(params?: PerfumeQueryParams): Promise<Perfum
     const isAbort =
       (error instanceof Error && error.name === 'AbortError') ||
       (typeof error === 'object' && error !== null && (error as { name?: string }).name === 'AbortError');
-    if (isAbort) {
-      console.warn('Perfume list request was aborted (timeout or navigation).');
-    } else {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.warn('Failed to fetch from API:', errorMessage);
-    }
+    if (!isAbort) console.warn('Failed to fetch from API:', error instanceof Error ? error.message : error);
     throw error;
   }
 }

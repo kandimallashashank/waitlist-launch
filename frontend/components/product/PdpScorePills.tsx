@@ -29,20 +29,7 @@ export default function PdpScorePills({ fragranceId }: { fragranceId: string }) 
   const [complimentFactor, setComplimentFactor] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!fragranceId) return;
-    let cancelled = false;
-    fetch(`${API}/api/v1/fragrances/${fragranceId}/pdp-scores`, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(5000),
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (!cancelled && data?.compliment_factor != null) {
-          setComplimentFactor(data.compliment_factor);
-        }
-      })
-      .catch(() => {});
-    return () => { cancelled = true; };
+    // pdp-scores endpoint requires FastAPI — not available in waitlist
   }, [fragranceId]);
 
   if (complimentFactor == null) return null;

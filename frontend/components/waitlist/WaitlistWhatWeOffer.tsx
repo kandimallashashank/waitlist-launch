@@ -10,7 +10,7 @@ const FEATURES = [
     icon: Sparkles,
     tag: "Scent Quiz",
     headline: "New to this?\nWe've got you.",
-    body: "Answer 5 quick questions about where you go and how you like to smell. Takes under 2 minutes. We'll show you perfumes that actually fit your life. No expertise needed.",
+    body: "Answer 11 quick questions about where you go and how you like to smell. Takes under 3 minutes. We'll show you perfumes that actually fit your life. No expertise needed.",
     href: "/quiz",
     cta: "Take the quiz",
   },

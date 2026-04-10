@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Check, Sparkles, ArrowRight, RotateCcw, FlaskConical } from 'lucide-react';
+import { ChevronDown, Check, Sparkles, ArrowRight, RotateCcw, FlaskConical, Info, X } from 'lucide-react';
 
 import ScentProfileChart from '@/components/profile/ScentProfileChart';
 import {
@@ -29,6 +29,17 @@ export interface QuizPilotRecommendation {
   /** Some API paths expose the PLP field name; prefer with ``image_url`` (same as catalog). */
   primary_image_url?: string | null;
   match_score?: number;
+  match_reasons?: string[];
+  scent_family?: string | null;
+  info_card?: {
+    longevity_score: number;
+    longevity_label?: string;
+    sillage_score: number;
+    sillage_label?: string;
+    accords?: string[];
+    performance_notes?: string;
+    concentration?: string;
+  } | null;
 }
 
 /**
@@ -202,6 +213,133 @@ function QuizResultProductCardImageArea({
   );
 }
 
+/**
+ * Inline info card shown below the product name on quiz result tiles.
+ * Displays longevity, sillage, top accords, and concentration at a glance.
+ */
+function QuizInfoCardInline({
+  info_card,
+  scent_family,
+  match_reasons,
+}: {
+  info_card: NonNullable<QuizPilotRecommendation['info_card']>;
+  scent_family?: string | null;
+  match_reasons?: string[];
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="mt-1.5 w-full">
+      <button
+        type="button"
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen((o) => !o); }}
+        className="inline-flex items-center gap-1 rounded-md bg-[#F5EFE8] px-2 py-0.5 text-[10px] font-semibold text-[#8A6A5D] transition-colors hover:bg-[#EDE4DA] hover:text-[#B85A3A]"
+      >
+        <Info className="h-3 w-3" />
+        {open ? 'Hide details' : 'Quick stats'}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          >
+            <div className="mt-1.5 space-y-1.5 rounded-lg border border-[#EDE0D8] bg-[#FAF7F4] p-2.5 text-[11px]">
+              {/* Longevity + Sillage */}
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <span className="text-[#8A7A72]">Longevity</span>
+                  <div className="mt-0.5 flex items-center gap-1">
+                    <div className="h-1 flex-1 rounded-full bg-[#E8D4C4]">
+                      <div
+                        className="h-1 rounded-full bg-[#B85A3A]"
+                        style={{ width: `${Math.min(100, (info_card.longevity_score / 10) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="font-semibold text-[#1A1A1A] tabular-nums">
+                      {info_card.longevity_score.toFixed(1)}
+                    </span>
+                  </div>
+                  {info_card.longevity_label && (
+                    <span className="text-[10px] capitalize text-[#8A7A72]">{info_card.longevity_label}</span>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <span className="text-[#8A7A72]">Sillage</span>
+                  <div className="mt-0.5 flex items-center gap-1">
+                    <div className="h-1 flex-1 rounded-full bg-[#E8D4C4]">
+                      <div
+                        className="h-1 rounded-full bg-[#D4A574]"
+                        style={{ width: `${Math.min(100, (info_card.sillage_score / 10) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="font-semibold text-[#1A1A1A] tabular-nums">
+                      {info_card.sillage_score.toFixed(1)}
+                    </span>
+                  </div>
+                  {info_card.sillage_label && (
+                    <span className="text-[10px] capitalize text-[#8A7A72]">{info_card.sillage_label}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Accords */}
+              {info_card.accords && info_card.accords.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {info_card.accords.slice(0, 4).map((a) => (
+                    <span key={a} className="rounded-full border border-[#E8D4C4] bg-white px-1.5 py-0.5 text-[10px] capitalize text-[#5C3A28]">
+                      {a}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Concentration + Scent family */}
+              <div className="flex flex-wrap gap-2">
+                {info_card.concentration && (
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-[#8A7A72]">
+                    {info_card.concentration}
+                  </span>
+                )}
+                {scent_family && (
+                  <span className="rounded-full bg-[#B85A3A]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#B85A3A]">
+                    {scent_family}
+                  </span>
+                )}
+              </div>
+
+              {/* Match reasons */}
+              {match_reasons && match_reasons.length > 0 && (
+                <div className="border-t border-[#EDE0D8] pt-1.5">
+                  <span className="text-[10px] font-semibold text-[#B85A3A]">Why this match</span>
+                  <ul className="mt-0.5 space-y-0.5">
+                    {match_reasons.slice(0, 3).map((r, i) => (
+                      <li key={i} className="flex items-start gap-1 text-[10px] text-[#5C3A28]">
+                        <Check className="mt-0.5 h-2.5 w-2.5 shrink-0 text-[#8B9E7E]" />
+                        {r}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Performance notes */}
+              {info_card.performance_notes && (
+                <p className="text-[10px] italic text-[#8A7A72]">{info_card.performance_notes}</p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export function QuizPilotResultsPanel({
   recommendations,
   answers,
@@ -326,9 +464,25 @@ export function QuizPilotResultsPanel({
                       <p className="line-clamp-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#B85A3A]">
                         {r.brand}
                       </p>
-                      <p className="mt-1 line-clamp-2 flex-1 text-[13px] font-semibold leading-snug text-[#1A1A1A] sm:text-sm">
+                      <p className="mt-1 line-clamp-2 text-[13px] font-semibold leading-snug text-[#1A1A1A] sm:text-sm">
                         {r.name}
                       </p>
+                      {r.info_card && (
+                        <QuizInfoCardInline
+                          info_card={r.info_card}
+                          scent_family={r.scent_family}
+                          match_reasons={r.match_reasons}
+                        />
+                      )}
+                      {!r.info_card && r.match_reasons && r.match_reasons.length > 0 && (
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {r.match_reasons.slice(0, 2).map((reason, ri) => (
+                            <span key={ri} className="rounded-full bg-[#F5EFE8] px-2 py-0.5 text-[10px] text-[#8A6A5D]">
+                              {reason}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </>
                 );

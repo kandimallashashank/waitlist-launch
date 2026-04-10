@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Info } from 'lucide-react';
 import { PdpCompactCard, PdpScrollCarousel, type PdpCarouselFragrance } from '@/components/product/PdpCarouselCard';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+import { getPreviewAuthHeaders } from '@/lib/waitlist/previewSessionClient';
 
 interface YouMayAlsoLikeProps {
   fragranceId: string;
@@ -19,26 +18,57 @@ export default function YouMayAlsoLike({ fragranceId, fragranceName }: YouMayAls
 
   useEffect(() => {
     if (!fragranceId) return;
-    fetch(`${API_URL}/api/v1/fragrances/${fragranceId}/similar?limit=10`)
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => setDbSimilar(Array.isArray(data) ? data : []))
-      .catch(() => setDbSimilar([]))
-      .finally(() => setLoadingDb(false));
+    let cancelled = false;
 
-    fetch(`${API_URL}/api/v1/vector-search/similar/${fragranceId}?limit=12&exclude_same_brand=true`)
-      .then((res) => (res.ok ? res.json() : { similar_fragrances: [] }))
-      .then((data) => setVectorSimilar(data.similar_fragrances || []))
-      .catch(() => setVectorSimilar([]))
-      .finally(() => setLoadingVector(false));
+    const headers = { ...getPreviewAuthHeaders() };
+
+    const run = async () => {
+      setLoadingDb(true);
+      setLoadingVector(true);
+      let similar: PdpCarouselFragrance[] = [];
+      try {
+        const simRes = await fetch(`/api/waitlist-preview/fragrances/${fragranceId}/similar?limit=10`, {
+          credentials: 'include',
+          headers,
+        });
+        similar = simRes.ok ? ((await simRes.json()) as PdpCarouselFragrance[]) : [];
+        if (!Array.isArray(similar)) similar = [];
+      } catch {
+        similar = [];
+      }
+      if (cancelled) return;
+      setDbSimilar(similar);
+      setLoadingDb(false);
+
+      const excludeIds = [fragranceId, ...similar.map((f) => f.id)].filter(Boolean);
+      const excludeQs = excludeIds.map((id) => encodeURIComponent(id)).join(',');
+      try {
+        const recRes = await fetch(
+          `/api/fragrances/${fragranceId}/recommendations?limit=12&exclude=${excludeQs}`,
+          { credentials: 'include' },
+        );
+        const rec = recRes.ok ? ((await recRes.json()) as PdpCarouselFragrance[]) : [];
+        if (!cancelled) setVectorSimilar(Array.isArray(rec) ? rec : []);
+      } catch {
+        if (!cancelled) setVectorSimilar([]);
+      } finally {
+        if (!cancelled) setLoadingVector(false);
+      }
+    };
+
+    void run();
+
+    return () => {
+      cancelled = true;
+    };
   }, [fragranceId]);
 
-  const dbIds = new Set(dbSimilar.map((f) => f.id));
-  const uniqueVector = vectorSimilar.filter((f) => !dbIds.has(f.id) && f.id !== fragranceId);
+  const uniqueRecs = vectorSimilar.filter((f) => f.id !== fragranceId);
   const hasDbSimilar = dbSimilar.length > 0;
-  const hasVector = uniqueVector.length > 0;
+  const hasRecs = uniqueRecs.length > 0;
 
   if (loadingDb && loadingVector) return null;
-  if (!hasDbSimilar && !hasVector) return null;
+  if (!hasDbSimilar && !hasRecs) return null;
 
   const displayName =
     fragranceName?.replace(/\s+(EDT|EDP|Parfum|Extrait|EDC)$/i, '') || 'this fragrance';
@@ -47,10 +77,16 @@ export default function YouMayAlsoLike({ fragranceId, fragranceName }: YouMayAls
     <div className="space-y-10">
       {hasDbSimilar && (
         <div>
-          <div className="mb-4 flex items-center gap-2">
+          <div className="mb-2 flex items-center gap-2">
             <div className="h-5 w-1 rounded-full bg-[#B85A3A]" />
             <h3 className="text-lg font-bold text-[#1A1A1A]">Smells Similar to {displayName}</h3>
           </div>
+          <p className="mb-4 flex items-start gap-2 text-xs leading-relaxed text-[#8A7A72]">
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#B85A3A]/70" aria-hidden />
+            <span>
+              These fragrances share key notes, accords, or scent family with {displayName}. If you enjoy this one, these are your safest next picks.
+            </span>
+          </p>
           <PdpScrollCarousel label="similar">
             {dbSimilar.map((frag) => (
               <PdpCompactCard
@@ -68,14 +104,20 @@ export default function YouMayAlsoLike({ fragranceId, fragranceName }: YouMayAls
         </div>
       )}
 
-      {hasVector && (
+      {hasRecs && (
         <div>
-          <div className="mb-4 flex items-center gap-2">
+          <div className="mb-2 flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-[#D4A574]" />
             <h3 className="text-lg font-bold text-[#1A1A1A]">You May Also Like</h3>
           </div>
+          <p className="mb-4 flex items-start gap-2 text-xs leading-relaxed text-[#8A7A72]">
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#B85A3A]/70" aria-hidden />
+            <span>
+              From the same scent family as {displayName}, ordered by how safe they are to buy blind.
+            </span>
+          </p>
           <PdpScrollCarousel label="recommendations">
-            {uniqueVector.slice(0, 12).map((frag) => (
+            {uniqueRecs.slice(0, 12).map((frag) => (
               <PdpCompactCard key={frag.id} frag={frag} hrefSearch="source=recommendation" />
             ))}
           </PdpScrollCarousel>

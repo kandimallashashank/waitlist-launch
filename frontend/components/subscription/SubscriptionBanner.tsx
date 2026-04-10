@@ -29,7 +29,7 @@ export default function SubscriptionBanner({ variant = 'full' }: SubscriptionBan
 
   useEffect(() => {
     set_is_hydrated(true);
-    void fetchSubscriptionTierPricing(API_BASE).then(setTiers);
+    // Use hardcoded defaults — no FastAPI in waitlist
   }, []);
 
   const computedStart = tiers.reduce(

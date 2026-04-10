@@ -33,7 +33,7 @@ export const PRODUCT_CARD_BRAND_CLASS =
   "font-sans truncate text-[10px] text-neutral-400 sm:text-xs";
 
 /**
- * Product title on compact cards (carousel, PDP similar / recently viewed).
+ * Product title on compact cards (carousel, PDP similar rows).
  * Avoid ``group-hover`` so nested tiles are not tinted when a parent carousel uses ``group``.
  */
 export const PRODUCT_CARD_TITLE_COMPACT_CLASS =

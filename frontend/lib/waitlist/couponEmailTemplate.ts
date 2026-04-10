@@ -244,6 +244,46 @@ export function buildWaitlistCouponEmailHtml(
                     </p>
                   </td>
                 </tr>
+                <!-- Coupon — shown early so it's the first thing after the greeting -->
+                <tr>
+                  <td align="center" style="padding:24px 0 4px;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%" class="coupon-shell" role="presentation" style="max-width:520px;border:2px solid #B85A3A;border-radius:16px;background-color:#B85A3A;padding:2px;">
+                      <tr>
+                        <td class="coupon-inner" style="background-color:#fdf6f3;border-radius:14px;overflow:hidden;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
+                            <tr>
+                              <td class="coupon-gold" height="3" bgcolor="#D4A574" style="height:3px;background-color:#D4A574;font-size:0;line-height:0;">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td align="center" style="padding:24px 20px 22px;">
+                                <p style="margin:0;font-family:${fontSans};font-size:10px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:#B85A3A;">Your early-access code</p>
+                                <p class="coupon-code" style="margin:12px 0 0;font-family:${fontSans};font-size:26px;font-weight:700;letter-spacing:0.06em;color:#14120F;font-variant-numeric:tabular-nums;">
+                                  ${safeCode}
+                                </p>
+                                <p style="margin:14px 0 0;font-family:${fontSans};font-size:13px;line-height:20px;color:#4a4540;">
+                                  <strong style="color:#B85A3A;font-weight:600;">${discountPercent}% off</strong> first order &middot; one use &middot; this email
+                                </p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="left" style="padding:0 0 4px;">
+                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-radius:999px;background-color:#B85A3A;" bgcolor="#B85A3A">
+                      <tr>
+                        <td align="center" style="padding:0;">
+                          <a href="${storeHref("/")}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:15px 36px;color:#ffffff;text-decoration:none;font-family:${fontSans};font-size:14px;font-weight:600;letter-spacing:0.04em;border-radius:999px;" aria-label="Visit ScentRev">
+                            Visit ScentRev
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
                 <!-- Trust chips (hero-aligned) -->
                 <tr>
                   <td align="left" style="padding-top:20px;">
@@ -401,46 +441,6 @@ export function buildWaitlistCouponEmailHtml(
                       <a href="${storeHref("/quiz")}" target="_blank" rel="noopener noreferrer" style="color:#B85A3A;font-weight:600;text-decoration:underline;">Quiz</a> &middot;
                       <a href="${storeHref("/subscription")}" target="_blank" rel="noopener noreferrer" style="color:#B85A3A;font-weight:600;text-decoration:underline;">Club</a>
                     </p>
-                  </td>
-                </tr>
-                <!-- Coupon -->
-                <tr>
-                  <td align="center" style="padding:28px 0 20px;">
-                    <table border="0" cellpadding="0" cellspacing="0" width="100%" class="coupon-shell" role="presentation" style="max-width:520px;border:2px solid #B85A3A;border-radius:16px;background-color:#B85A3A;padding:2px;">
-                      <tr>
-                        <td class="coupon-inner" style="background-color:#fdf6f3;border-radius:14px;overflow:hidden;">
-                          <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
-                            <tr>
-                              <td class="coupon-gold" height="3" bgcolor="#D4A574" style="height:3px;background-color:#D4A574;font-size:0;line-height:0;">&nbsp;</td>
-                            </tr>
-                            <tr>
-                              <td align="center" style="padding:24px 20px 22px;">
-                                <p style="margin:0;font-family:${fontSans};font-size:10px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:#B85A3A;">Your code</p>
-                                <p class="coupon-code" style="margin:12px 0 0;font-family:${fontSans};font-size:26px;font-weight:700;letter-spacing:0.06em;color:#14120F;font-variant-numeric:tabular-nums;">
-                                  ${safeCode}
-                                </p>
-                                <p style="margin:14px 0 0;font-family:${fontSans};font-size:13px;line-height:20px;color:#4a4540;">
-                                  <strong style="color:#B85A3A;font-weight:600;">${discountPercent}% off</strong> first order &middot; one use &middot; this email
-                                </p>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td align="left" style="padding:0;">
-                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-radius:999px;background-color:#B85A3A;" bgcolor="#B85A3A">
-                      <tr>
-                        <td align="center" style="padding:0;">
-                          <a href="${storeHref("/")}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:15px 36px;color:#ffffff;text-decoration:none;font-family:${fontSans};font-size:14px;font-weight:600;letter-spacing:0.04em;border-radius:999px;" aria-label="Visit ScentRev">
-                            Visit ScentRev
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
                   </td>
                 </tr>
               </table>

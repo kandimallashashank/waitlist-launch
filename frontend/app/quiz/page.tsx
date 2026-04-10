@@ -1,10 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { WaitlistQuizSuccessPayload } from "@/components/for-you/ForYouWizard";
 import { QuizBrandSpinner } from "@/components/quiz/QuizBrandSpinner";
+import { QuizPilotSurveyModal } from "@/components/quiz/QuizPilotSurveyModal";
 import { getPreviewAuthHeaders } from "@/lib/waitlist/previewSessionClient";
 import { WaitlistGate } from "@/components/waitlist/WaitlistGate";
 
@@ -40,6 +41,9 @@ export default function WaitlistQuizPage() {
   const [bootstrapping, setBootstrapping] = useState(true);
   /** Mirrors session endpoint success so WaitlistGate can skip a second /session fetch. */
   const [verifiedHasSession, setVerifiedHasSession] = useState(false);
+  /** Pilot survey must mount here: ``ForYouWizard`` unmounts when results render. */
+  const [pilotSurveyOpen, setPilotSurveyOpen] = useState(false);
+  const pilotSurveyTimerRef = useRef<number | undefined>(undefined);
 
   const refreshSession = useCallback(
     async (options?: { showBootstrapping?: boolean }) => {
@@ -101,12 +105,43 @@ export default function WaitlistQuizPage() {
     };
   }, [refreshSession]);
 
-  const handleSuccess = useCallback((payload: WaitlistQuizSuccessPayload) => {
-    setResult(payload);
+  useEffect(() => {
+    return () => {
+      if (pilotSurveyTimerRef.current !== undefined) {
+        window.clearTimeout(pilotSurveyTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleSuccess = useCallback(
+    (payload: WaitlistQuizSuccessPayload, meta?: { openPilotSurveyAfterMs?: number }) => {
+      setResult(payload);
+      if (pilotSurveyTimerRef.current !== undefined) {
+        window.clearTimeout(pilotSurveyTimerRef.current);
+        pilotSurveyTimerRef.current = undefined;
+      }
+      setPilotSurveyOpen(false);
+      if (meta?.openPilotSurveyAfterMs != null) {
+        pilotSurveyTimerRef.current = window.setTimeout(() => {
+          pilotSurveyTimerRef.current = undefined;
+          setPilotSurveyOpen(true);
+        }, meta.openPilotSurveyAfterMs);
+      }
+    },
+    [],
+  );
+
+  const handlePilotSurveyFinished = useCallback(() => {
+    setPilotSurveyOpen(false);
   }, []);
 
   const handleRetake = useCallback(() => {
     setResult(null);
+    setPilotSurveyOpen(false);
+    if (pilotSurveyTimerRef.current !== undefined) {
+      window.clearTimeout(pilotSurveyTimerRef.current);
+      pilotSurveyTimerRef.current = undefined;
+    }
   }, []);
 
   if (bootstrapping) {
@@ -123,13 +158,18 @@ export default function WaitlistQuizPage() {
 
   if (result) {
     return (
-      <QuizPilotResultsPanel
-        recommendations={result.recommendations}
-        answers={result.answers}
-        preference_analytics={result.preference_analytics}
-        scent_profile={result.scent_profile}
-        onRetakeQuiz={handleRetake}
-      />
+      <>
+        <QuizPilotResultsPanel
+          recommendations={result.recommendations}
+          answers={result.answers}
+          preference_analytics={result.preference_analytics}
+          scent_profile={result.scent_profile}
+          onRetakeQuiz={handleRetake}
+        />
+        {pilotSurveyOpen ? (
+          <QuizPilotSurveyModal onFinished={handlePilotSurveyFinished} />
+        ) : null}
+      </>
     );
   }
 

@@ -1,10 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Pilot site: fragrance CDN URLs vary; avoid per-host allowlist churn.
-  images: { unoptimized: true },
+  images: {
+    // Allow any remote hostname (pilot: CDN URLs vary) but keep optimization ON
+    // so Next.js serves WebP/AVIF and resizes for the LCP image.
+    remotePatterns: [
+      { protocol: "https", hostname: "**" },
+      { protocol: "http", hostname: "**" },
+    ],
+    // Serve modern formats — biggest LCP win
+    formats: ["image/avif", "image/webp"],
+  },
   experimental: {
-    // Next 14: keep native ONNX / sharp deps out of the server bundle (quiz embeddings).
     serverComponentsExternalPackages: [
       "@xenova/transformers",
       "onnxruntime-node",

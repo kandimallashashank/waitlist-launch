@@ -5,7 +5,9 @@
  * Supports edge anchors so lines connect to node tops/bottoms, not only centers.
  */
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+
+import { useHydrationSafeReducedMotion } from "@/hooks/useHydrationSafeReducedMotion";
 import { type ReactElement, type RefObject, useEffect, useId, useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -69,7 +71,7 @@ export function AnimatedBeam({
   const rawId = useId().replace(/:/g, "");
   const [d, setD] = useState("");
   const [svgSize, setSvgSize] = useState({ w: 320, h: 280 });
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useHydrationSafeReducedMotion();
   const pad = 3;
 
   useEffect(() => {

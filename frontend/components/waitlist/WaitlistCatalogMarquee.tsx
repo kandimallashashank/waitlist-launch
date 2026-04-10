@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useReducedMotion } from 'framer-motion';
+import { useHydrationSafeReducedMotion } from '@/hooks/useHydrationSafeReducedMotion';
 import { Sparkles } from 'lucide-react';
 import type { WaitlistMarqueePick } from '@/types/waitlistCatalog';
 import { getProxiedImageUrl } from '@/lib/imageProxy';
@@ -16,7 +16,7 @@ import { storeUrl } from '@/lib/storeUrl';
 const CATALOG_IMAGE_AREA_CLASS =
   'relative w-full aspect-[4/3] overflow-hidden flex flex-col items-center justify-end bg-gradient-to-br from-[#FDF6F3] to-[#E8E0D8]/80 pb-2 pt-2';
 const CATALOG_BOTTLE_IMG_CLASS =
-  'w-[64%] max-h-[86%] min-h-0 object-contain object-bottom scale-110 origin-bottom [@media(prefers-reduced-motion:reduce)]:scale-100';
+  'w-[68%] max-h-[88%] min-h-0 object-contain object-bottom scale-110 origin-bottom [@media(prefers-reduced-motion:reduce)]:scale-100';
 
 function pickShowcase<T extends { primary_image_url?: string }>(all: T[], n: number): T[] {
   const withImg = all.filter((p) => (p.primary_image_url ?? '').trim().length > 0);
@@ -54,7 +54,7 @@ export default function WaitlistCatalogMarquee(
     showcaseFromPool(sharedCatalog),
   );
   const waitlistOnly = process.env.NEXT_PUBLIC_WAITLIST_ONLY === 'true';
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = useHydrationSafeReducedMotion();
 
   useEffect(() => {
     setProducts(showcaseFromPool(sharedCatalog));
@@ -89,7 +89,7 @@ export default function WaitlistCatalogMarquee(
             {[1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
-                className="h-[176px] w-[160px] shrink-0 animate-pulse rounded-xl bg-white/10"
+                className="h-[260px] w-[260px] shrink-0 animate-pulse rounded-xl bg-white/10"
               />
             ))}
           </div>
@@ -97,7 +97,7 @@ export default function WaitlistCatalogMarquee(
           <div className="flex gap-4 overflow-x-auto pb-2">
             {products.slice(0, 12).map((p, imgIndex) => {
               const card = (
-                <div className="w-[176px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white shadow-xl">
+                <div className="w-[260px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white shadow-xl">
                   <div className={CATALOG_IMAGE_AREA_CLASS}>
                     {p.primary_image_url ? (
                       <img
@@ -140,12 +140,12 @@ export default function WaitlistCatalogMarquee(
           <div className="overflow-hidden">
             <div
               className="waitlist-marquee-track gap-5"
-              style={{ ['--waitlist-marquee-duration' as string]: '52s' }}
+              style={{ ['--waitlist-marquee-duration' as string]: '75s' }}
             >
               {loop.map((p, index) => {
                 const eagerAboveFold = index < 4;
                 const inner = (
-                  <div className="waitlist-catalog-card w-[176px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white shadow-xl">
+                  <div className="waitlist-catalog-card w-[260px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white shadow-xl">
                     <div className={CATALOG_IMAGE_AREA_CLASS}>
                       {p.primary_image_url ? (
                         <img
