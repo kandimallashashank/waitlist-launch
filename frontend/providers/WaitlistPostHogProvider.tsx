@@ -5,11 +5,13 @@
  */
 
 import { PostHogProvider as PHProvider } from "posthog-js/react";
-import { Suspense, useEffect, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, type ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import type { PostHogConfig } from "posthog-js";
 
 import { getPreviewAuthHeaders } from "@/lib/waitlist/previewSessionClient";
 import {
+  getWaitlistPosthogInitOptions,
   initWaitlistPosthogClient,
   posthog,
   WAITLIST_POSTHOG_KEY,
@@ -108,8 +110,23 @@ function WaitlistPostHogIdentify() {
 }
 
 export function WaitlistPostHogProvider({ children }: { children: ReactNode }) {
+  const posthogOptions = useMemo((): Partial<PostHogConfig> => {
+    return {
+      ...getWaitlistPosthogInitOptions(),
+      loaded: (ph) => {
+        if (process.env.NEXT_PUBLIC_WAITLIST_POSTHOG_DEBUG === "true") {
+          ph.debug();
+        }
+      },
+    };
+  }, []);
+
+  if (!WAITLIST_POSTHOG_KEY) {
+    return <>{children}</>;
+  }
+
   return (
-    <PHProvider client={posthog}>
+    <PHProvider apiKey={WAITLIST_POSTHOG_KEY} options={posthogOptions}>
       <WaitlistPostHogIdentify />
       <Suspense fallback={null}>
         <WaitlistPostHogPageView />

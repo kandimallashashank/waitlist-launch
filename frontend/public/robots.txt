@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://scentrev.com
+
+# Sitemaps
+Sitemap: https://scentrev.com/sitemap.xml
