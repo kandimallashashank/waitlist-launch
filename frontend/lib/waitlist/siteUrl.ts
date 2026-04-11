@@ -1,6 +1,6 @@
 /**
  * Canonical public origin for Open Graph, Twitter cards, and other absolute URLs.
- * Logic mirrors ``next-sitemap.config.js`` ``getSiteUrl()`` — update both if rules change.
+ * ``next-sitemap.config.js`` uses a fixed production ``siteUrl``; runtime metadata still uses env + this helper.
  */
 
 /**

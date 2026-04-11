@@ -9,28 +9,10 @@ const {
   trimTrailingSlash,
 } = require('./lib/sitemap/nextSitemapCatalogPaths.js')
 
-/**
- * Public origin for absolute URLs in the sitemap.
- *
- * @returns {string}
- */
-function getSiteUrl() {
-  const explicit = process.env.NEXT_PUBLIC_APP_URL?.trim()
-  if (explicit) return trimTrailingSlash(explicit)
-  const vercel = process.env.VERCEL_URL?.trim()
-  if (vercel) {
-    const host = vercel.replace(/^https?:\/\//, '')
-    return `https://${host}`
-  }
-  const store = process.env.NEXT_PUBLIC_STORE_URL?.trim()
-  if (store) return trimTrailingSlash(store)
-  return 'https://scentrev.com'
-}
-
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: getSiteUrl(),
-  generateRobotsTxt: false,
+  siteUrl: 'https://scentrev.com',
+  generateRobotsTxt: true,
   sitemapSize: 45_000,
   generateIndexSitemap: true,
   autoLastmod: true,
