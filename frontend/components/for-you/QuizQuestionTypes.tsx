@@ -122,7 +122,9 @@ export function TypeA({ options, selected, onSelect }: TypeAProps) {
                 {opt.label}
               </span>
               {opt.subline && (
-                <p className="text-white/70 text-xs mt-0.5 leading-snug">{opt.subline}</p>
+                <p className="text-white/70 text-xs mt-0.5 leading-snug max-sm:line-clamp-2 max-sm:text-[11px]">
+                  {opt.subline}
+                </p>
               )}
             </div>
 

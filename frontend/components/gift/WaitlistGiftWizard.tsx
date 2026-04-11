@@ -91,32 +91,27 @@ const RECIPIENT_AGE_BAND_OPTIONS: QuizOption[] = [
   {
     value: "under_18",
     label: "Under 18",
-    subline:
-      "Teens and younger: cheerful, school-safe picks; easy fruits, soft musk, light gourmand if they like sweet",
+    subline: "Light, playful, age-appropriate",
   },
   {
     value: "age_18_24",
     label: "18–25",
-    subline:
-      "College and early career: trendy fresh, playful gourmand, or clean woods; sweet is common but not universal",
+    subline: "Fresh & on-trend",
   },
   {
     value: "age_25_34",
     label: "25–34",
-    subline:
-      "Full versatility: office-safe citrus, soft florals, polished woods; gourmand when it fits their style",
+    subline: "Versatile day to night",
   },
   {
     value: "age_35_44",
     label: "35–44",
-    subline:
-      "Often leans refined: elegant woods, iris, subtle spice, mature florals; reserve loud candy-sweet for clear signals",
+    subline: "Polished & refined",
   },
   {
     value: "age_45_plus",
     label: "45 or older",
-    subline:
-      "Timeless and assured: classic woods, vetiver, iris, elegant musk, soft leather; let anchors and style cards override any stereotype",
+    subline: "Classic, timeless notes",
   },
 ];
 
@@ -426,7 +421,7 @@ function getStepMeta(step: GiftStepKey): { title: string; subtitle: string } {
       return {
         title: "How old is the recipient?",
         subtitle:
-          "Age nudges taste. Many younger shoppers enjoy sweeter or trendier scents; later brackets often prefer refined woods, florals, or subtle spice. We still follow their gender and style cards. Recommendations only, not ads.",
+          "Rough age helps us tune the match. Your style picks and anchors matter more.",
       };
     case "recipient_gender":
       return {
