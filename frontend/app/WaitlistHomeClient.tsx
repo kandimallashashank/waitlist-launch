@@ -97,7 +97,7 @@ const BADGE_LINES = [
 const HERO_EXPLORE_LINKS = [
   {
     name: 'Scent quiz',
-    t: 'Your scent match',
+    t: 'Find your scent match',
     a: 'Escape "I smell… fine?" in under three minutes',
     href: '/quiz',
     Icon: Wand2,

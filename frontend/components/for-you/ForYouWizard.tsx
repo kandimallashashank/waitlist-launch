@@ -970,7 +970,9 @@ export function ForYouWizard({
           className="flex h-full min-h-0 flex-1 flex-col overflow-hidden"
         >
           <QuizStepFrame
-            bodyLayout={stepKey === "anchorPerfumes" ? "fill" : "default"}
+            bodyLayout={
+              stepKey === "anchorPerfumes" || stepKey === "age" ? "fill" : "default"
+            }
             denseHeader={stepKey === "anchorPerfumes"}
             canContinue={canContinue(stepKey, answers)}
             continueLabel={stepIndex === TOTAL_STEPS - 1 ? "SEE MY MATCHES" : "CONTINUE"}
@@ -1256,9 +1258,9 @@ function QuizStepFrame({
           <div className={fill ? "contents" : "pb-3"}>{children}</div>
         </div>
 
-        {/* Bottom actions */}
+        {/* Bottom actions — extra pb: Android nav/gesture bar often has inset 0 in env(safe-area). */}
         <div
-          className={`flex shrink-0 flex-col items-center gap-2 border-t border-transparent pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-3 sm:gap-3 sm:pt-4 ${
+          className={`flex shrink-0 flex-col items-center gap-2 border-t border-transparent pb-[calc(1.125rem+env(safe-area-inset-bottom,0px))] pt-3 sm:gap-3 sm:pt-4 ${
             fill ? "bg-gradient-to-t from-[#F6F1EC] via-[#F6F1EC] to-transparent" : "bg-gradient-to-t from-[#F0E9E2]/95 via-[#F4F0EC]/90 to-transparent"
           }`}
         >

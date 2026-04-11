@@ -166,10 +166,16 @@ export default function WaitlistQuizPage() {
   return (
     <WaitlistGate featureName="the Quiz" verifiedHasSession>
       {/*
-        Bounded column height so step 2 (anchor grid) gets flex-1 + min-h-0 scroll on iOS Safari.
-        Slightly taller column on small screens (6.75rem offset) for more picker viewport; sm+ uses 8rem.
+        Fill space below nav + pilot banner via root `<main className="flex-1">` (no fragile
+        `100dvh - Nrem` on Android where banner height / chrome UI varies).
       */}
-      <div className="box-border flex h-[calc(100dvh-5.5rem)] min-h-0 flex-col overscroll-none pt-2 max-sm:h-[calc(100dvh-5rem)] max-sm:pt-1.5 sm:h-[calc(100dvh-7.5rem)] sm:min-h-[20rem] sm:pt-3">
+      {/*
+        Cap height on small screens: ``100svh`` is full viewport, but this UI sits below nav +
+        pilot banner — using it alone can push the Continue row off-screen on Android Chrome. Use
+        ``100dvh`` minus an approximate chrome stack (nav + banner + margin) so the wizard flex
+        column matches the visible stack and the footer stays in view.
+      */}
+      <div className="box-border flex min-h-0 flex-1 basis-0 flex-col overscroll-none pt-2 max-sm:max-h-[calc(100dvh-9rem-env(safe-area-inset-top,0px))] max-sm:pt-1.5 sm:min-h-[20rem] sm:max-h-none sm:pt-3">
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <ForYouWizard
             waitlistMode

@@ -234,7 +234,7 @@ export default function WaitlistGiftPage() {
 
   return (
     <WaitlistGate featureName="the Gift finder" verifiedHasSession>
-      <div className="box-border flex h-[calc(100dvh-5.5rem)] min-h-0 flex-col overscroll-none pt-2 max-sm:h-[calc(100dvh-5rem)] max-sm:pt-1.5 sm:h-[calc(100dvh-7.5rem)] sm:min-h-[20rem] sm:pt-3">
+      <div className="box-border flex min-h-0 flex-1 basis-0 flex-col overscroll-none pt-2 max-sm:max-h-[calc(100dvh-9rem-env(safe-area-inset-top,0px))] max-sm:pt-1.5 sm:min-h-[20rem] sm:max-h-none sm:pt-3">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <WaitlistGiftWizard onSuccess={handleSuccess} />
         </div>

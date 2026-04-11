@@ -25,7 +25,7 @@ const poppins = Poppins({
   preload: true,
 });
 
-const defaultTitle = "Perfume samples & discovery waitlist – ScentRev";
+const defaultTitle = "Buy Perfume Samples in India | ScentRev";
 const defaultDescription =
   "Join ScentRev’s India waitlist: authentic micro-samples, full bottles, and a launch discount. Try scents that suit Indian weather before you buy.";
 
@@ -71,6 +71,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  /** Enables `env(safe-area-inset-*)` for notched Android / iOS devices. */
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#FAF7F4" },
     { media: "(prefers-color-scheme: dark)", color: "#14120F" },
@@ -84,12 +86,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en-IN" className={`${inter.variable} ${poppins.variable}`}>
-      <body className="antialiased font-sans overflow-x-hidden">
+      <body className="flex min-h-[100dvh] flex-col overflow-x-hidden antialiased font-sans">
         <AppProvider>
           <WaitlistPostHogProvider>
             <WaitlistPreviewNav />
             <PilotPreviewDataNotice />
-            {children}
+            <main className="flex min-h-0 w-full flex-1 flex-col">{children}</main>
             <Toaster richColors position="top-center" />
           </WaitlistPostHogProvider>
         </AppProvider>

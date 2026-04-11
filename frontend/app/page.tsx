@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import WaitlistHomeClient from "./WaitlistHomeClient";
 
-const title = "Perfume samples & discovery waitlist – ScentRev";
+const title = "Buy Perfume Samples in India | ScentRev";
 const description =
   "Join ScentRev’s India waitlist: authentic micro-samples, full bottles, and a launch discount. Try scents that suit Indian weather before you buy.";
 

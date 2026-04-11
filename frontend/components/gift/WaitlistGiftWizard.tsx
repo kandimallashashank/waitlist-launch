@@ -973,7 +973,7 @@ export function WaitlistGiftWizard({ onSuccess }: WaitlistGiftWizardProps) {
 
   if (view === "intro") {
     return (
-      <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 pb-8 pt-4 sm:px-8">
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4 pb-[max(2rem,env(safe-area-inset-bottom,0px))] pt-4 sm:px-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1103,7 +1103,7 @@ export function WaitlistGiftWizard({ onSuccess }: WaitlistGiftWizardProps) {
             </AnimatePresence>
           </div>
 
-          <div className="shrink-0 flex flex-col items-center gap-2 border-t border-[#EDE0D8]/80 bg-[linear-gradient(to_top,#FAF7F4,transparent)] pt-3 pb-1">
+          <div className="flex shrink-0 flex-col items-center gap-2 border-t border-[#EDE0D8]/80 bg-[linear-gradient(to_top,#FAF7F4,transparent)] pb-[calc(1.125rem+env(safe-area-inset-bottom,0px))] pt-3">
             <button
               type="button"
               onClick={onContinue}
