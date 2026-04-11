@@ -244,7 +244,7 @@ export function buildWaitlistCouponEmailHtml(
                     </p>
                   </td>
                 </tr>
-                <!-- Coupon — shown early so it's the first thing after the greeting -->
+                <!-- Coupon - shown early so it's the first thing after the greeting -->
                 <tr>
                   <td align="center" style="padding:24px 0 4px;">
                     <table border="0" cellpadding="0" cellspacing="0" width="100%" class="coupon-shell" role="presentation" style="max-width:520px;border:2px solid #B85A3A;border-radius:16px;background-color:#B85A3A;padding:2px;">
@@ -370,7 +370,7 @@ export function buildWaitlistCouponEmailHtml(
                                 </td>
                                 <td valign="top" style="padding:12px 12px 12px 6px;">
                                   <p class="mvp-copy" style="margin:0;font-family:${fontSans};font-size:15px;line-height:23px;color:#14120F;">
-                                    <strong style="font-weight:600;">Blind Buy Score (0-5).</strong> Chatter from Reddit, Facebook, and the open web, fused with perfume metrics in one weighted pipeline: 0 is a weak blind buy, 5 is a strong one, so you spend less time searching.
+                                    <strong style="font-weight:600;">Blind Buy Score (0-5).</strong> Chatter from Reddit, Facebook (incl. Marketplace), and the open web, fused with perfume metrics in one weighted pipeline; not a verdict on whether a scent is bad: lower means often not for everyone unsniffed (buy with care), higher means a stronger unsniffed fit, India heat and humidity in the mix.
                                   </p>
                                 </td>
                               </tr></table></td>
@@ -542,7 +542,7 @@ Trust signals: 450+ fragrances (samples & full bottles) · From ₹199 micro sam
 
 WHAT WE'RE BUILDING (MVP)
 • Micro vials (3ml–10ml), India-first.
-• Blind Buy Score 0-5: Reddit, Facebook, web + perfume metrics (weighted pipeline; 0 weak, 5 strong blind buy).
+• Blind Buy Score 0-5: Reddit, Facebook, web + perfume metrics (not a quality grade; low = buy with care / not for everyone unsniffed, high = stronger unsniffed fit; India-weighted).
 • Climate-aware picks.
 • Quiz: your taste profile; Club auto-select uses it only when you enable it.
 • Layering Lab (AI/ML-ranked combos): ${storeUrl}/layering-lab

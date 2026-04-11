@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import { QuizBrandSpinner } from "@/components/quiz/QuizBrandSpinner";
 import { Sparkles, Lock } from "lucide-react";
 import { usePreviewSession } from "@/lib/waitlist/usePreviewSession";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 interface WaitlistGateBodyProps {
   children: React.ReactNode;
@@ -19,6 +20,18 @@ function WaitlistGateBody({
   ready,
   hasSession,
 }: WaitlistGateBodyProps) {
+  const analytics = useAnalytics();
+  const prevLockedRef = useRef<boolean | null>(null);
+
+  useEffect(() => {
+    if (!ready) return;
+    const locked = !hasSession;
+    if (locked && prevLockedRef.current !== true) {
+      analytics.waitlistGateShown(featureName);
+    }
+    prevLockedRef.current = locked;
+  }, [ready, hasSession, featureName, analytics]);
+
   if (!ready) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-gradient-to-b from-[#FAF7F4] to-[#F0E9E2]">
@@ -40,14 +53,15 @@ function WaitlistGateBody({
         <h1 className="font-display text-2xl font-semibold text-[#14120F] sm:text-3xl">
           Join the waitlist to unlock {featureName}.
         </h1>
-        <p className="mt-3 max-w-sm text-sm leading-relaxed text-[#5F5C57]">
-          The quiz, Layering Lab, catalog, and subscription are available to waitlist members during the pilot.
+        <p className="mt-3 max-w-sm text-sm leading-relaxed text-[#3A342E]">
+          The quiz, gift finder, Layering Lab, catalog, and subscription are available to waitlist members during the pilot.
           Sign up takes 10 seconds.
         </p>
 
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
           <Link
             href="/#waitlist-form"
+            scroll={false}
             className="inline-flex items-center gap-2 rounded-xl bg-[#B85A3A] px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#A04D2F]"
           >
             <Sparkles className="h-4 w-4" aria-hidden />

@@ -151,7 +151,7 @@ function PerfumeTile({
         Taller than 5/6 so tall bottle assets are not visually cropped; flex + object-bottom
         keeps the base of the bottle in-frame (grid row stretch no longer squashes tiles).
       */}
-      <div className="relative flex aspect-[5/6] w-full shrink-0 items-end justify-center overflow-hidden bg-gradient-to-br from-[#FCF4EF] via-[#FAF4EF] to-[#F1E3DA] px-0.5 pb-1 pt-0.5 sm:px-1 sm:pb-1.5 sm:pt-1">
+      <div className="relative flex aspect-[3/4] max-sm:max-h-[102px] w-full shrink-0 items-end justify-center overflow-hidden bg-gradient-to-br from-[#FCF4EF] via-[#FAF4EF] to-[#F1E3DA] px-0.5 pb-1 pt-0.5 sm:aspect-[5/6] sm:max-h-none sm:px-1 sm:pb-1.5 sm:pt-1">
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -572,7 +572,7 @@ export function QuizAnchorPerfumePicker({
         className={cn(
           "min-h-0 w-full flex-1 touch-pan-y overflow-y-auto overflow-x-hidden overscroll-contain pr-0.5 [-webkit-overflow-scrolling:touch] scrollbar-hide sm:pr-1",
           /* ~1.5× prior min-heights: larger selection viewport, smaller tiles above */
-          "max-sm:min-h-[min(84dvh,42rem)]",
+          "max-sm:min-h-[min(48dvh,22rem)]",
           !compactList &&
             "sm:min-h-[min(63dvh,840px)] lg:min-h-[min(66dvh,900px)]",
           loadMoreActive && "pb-16",

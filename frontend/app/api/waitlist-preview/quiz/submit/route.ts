@@ -7,6 +7,8 @@ import { touchPilotQuizCompleted } from "@/lib/waitlist/pilotFollowupState";
 import { saveWaitlistQuizPreferences } from "@/lib/waitlist/quizPreferencesDb";
 import { runWaitlistQuizSupabasePipeline } from "@/lib/waitlist/quizSupabaseVectorPipeline";
 import type { QuizAnswersPayload } from "@/lib/waitlist/quizPipeline";
+import { waitlistQuizAnswersPayloadEqual } from "@/lib/waitlist/quizSubmitIdempotency";
+import { normalizeWaitlistEmail } from "@/lib/waitlist/emailValidation";
 import {
   getWaitlistEmailFromRequest,
   isEmailOnWaitlist,
@@ -23,7 +25,8 @@ export const maxDuration = 120;
  */
 export async function POST(req: Request) {
   try {
-    const email = await getWaitlistEmailFromRequest(req);
+    const sessionEmail = await getWaitlistEmailFromRequest(req);
+    const email = sessionEmail ? normalizeWaitlistEmail(sessionEmail) : null;
     if (!email) {
       return NextResponse.json(
         { detail: "Waitlist session required", code: "UNAUTHORIZED" },
@@ -61,7 +64,8 @@ export async function POST(req: Request) {
 
     const answers = body.answers as QuizAnswersPayload;
 
-    // ── Idempotency: if this email already has results, return them directly ──
+    // ── Idempotency: same answers + existing snapshot → return cache (retries).
+    // Different answers (retake / changed quiz) → re-run pipeline and update the row.
     const { data: existingRows } = await supabase
       .from("waitlist_quiz_preferences")
       .select("answers, recommendation_snapshot, scent_profile, preference_analytics")
@@ -73,7 +77,10 @@ export async function POST(req: Request) {
       | { answers?: unknown; recommendation_snapshot?: unknown; scent_profile?: unknown; preference_analytics?: unknown }
       | undefined;
 
-    if (existingRow?.recommendation_snapshot) {
+    if (
+      existingRow?.recommendation_snapshot &&
+      waitlistQuizAnswersPayloadEqual(existingRow.answers, body.answers)
+    ) {
       const snap = existingRow.recommendation_snapshot;
       const recommendations = Array.isArray(snap)
         ? snap.slice(0, 12).map((r: Record<string, unknown>) => ({
@@ -87,6 +94,7 @@ export async function POST(req: Request) {
         : [];
       return NextResponse.json({
         recommendations,
+        answers: existingRow.answers ?? body.answers,
         preference_analytics: existingRow.preference_analytics ?? null,
         scent_profile: existingRow.scent_profile ?? null,
         pipeline: "cached",
@@ -131,6 +139,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       recommendations,
+      answers: body.answers,
       preference_analytics,
       scent_profile,
       pipeline: "next_supabase_vector",

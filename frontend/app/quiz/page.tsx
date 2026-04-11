@@ -1,13 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import type { WaitlistQuizSuccessPayload } from "@/components/for-you/ForYouWizard";
 import { QuizBrandSpinner } from "@/components/quiz/QuizBrandSpinner";
-import { QuizPilotSurveyModal } from "@/components/quiz/QuizPilotSurveyModal";
 import { getPreviewAuthHeaders } from "@/lib/waitlist/previewSessionClient";
 import { WaitlistGate } from "@/components/waitlist/WaitlistGate";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 const ForYouWizard = dynamic(
   () =>
@@ -34,16 +34,16 @@ const QuizPilotResultsPanel = dynamic(
 
 /**
  * Waitlist pilot scent quiz: restore saved results from session API, or run wizard.
- * Submit uses ``/api/waitlist-preview/quiz/submit``; results show matches, KPIs, and DNA.
+ * Submit uses ``/api/waitlist-preview/quiz/submit``; results show matches, why-copy, and scent chart.
  */
 export default function WaitlistQuizPage() {
+  const analytics = useAnalytics();
   const [result, setResult] = useState<WaitlistQuizSuccessPayload | null>(null);
+  /** From waitlist row ``full_name`` (session API) for share card + greetings. */
+  const [sessionDisplayName, setSessionDisplayName] = useState<string | null>(null);
   const [bootstrapping, setBootstrapping] = useState(true);
   /** Mirrors session endpoint success so WaitlistGate can skip a second /session fetch. */
   const [verifiedHasSession, setVerifiedHasSession] = useState(false);
-  /** Pilot survey must mount here: ``ForYouWizard`` unmounts when results render. */
-  const [pilotSurveyOpen, setPilotSurveyOpen] = useState(false);
-  const pilotSurveyTimerRef = useRef<number | undefined>(undefined);
 
   const refreshSession = useCallback(
     async (options?: { showBootstrapping?: boolean }) => {
@@ -60,14 +60,23 @@ export default function WaitlistQuizPage() {
         setVerifiedHasSession(res.ok);
         if (!res.ok) {
           setResult(null);
+          setSessionDisplayName(null);
           return;
         }
         const data = (await res.json()) as {
           quiz_result?: WaitlistQuizSuccessPayload | null;
+          display_name?: string;
         };
         setResult(data.quiz_result ?? null);
+        setSessionDisplayName(
+          typeof data.display_name === "string" && data.display_name.trim()
+            ? data.display_name.trim()
+            : null,
+        );
       } catch {
         setVerifiedHasSession(false);
+        setResult(null);
+        setSessionDisplayName(null);
       } finally {
         if (showBootstrapping) {
           setBootstrapping(false);
@@ -106,43 +115,20 @@ export default function WaitlistQuizPage() {
   }, [refreshSession]);
 
   useEffect(() => {
-    return () => {
-      if (pilotSurveyTimerRef.current !== undefined) {
-        window.clearTimeout(pilotSurveyTimerRef.current);
-      }
-    };
-  }, []);
+    if (!verifiedHasSession) {
+      setResult(null);
+      setSessionDisplayName(null);
+    }
+  }, [verifiedHasSession]);
 
-  const handleSuccess = useCallback(
-    (payload: WaitlistQuizSuccessPayload, meta?: { openPilotSurveyAfterMs?: number }) => {
-      setResult(payload);
-      if (pilotSurveyTimerRef.current !== undefined) {
-        window.clearTimeout(pilotSurveyTimerRef.current);
-        pilotSurveyTimerRef.current = undefined;
-      }
-      setPilotSurveyOpen(false);
-      if (meta?.openPilotSurveyAfterMs != null) {
-        pilotSurveyTimerRef.current = window.setTimeout(() => {
-          pilotSurveyTimerRef.current = undefined;
-          setPilotSurveyOpen(true);
-        }, meta.openPilotSurveyAfterMs);
-      }
-    },
-    [],
-  );
-
-  const handlePilotSurveyFinished = useCallback(() => {
-    setPilotSurveyOpen(false);
+  const handleSuccess = useCallback((payload: WaitlistQuizSuccessPayload) => {
+    setResult(payload);
   }, []);
 
   const handleRetake = useCallback(() => {
+    analytics.waitlistQuizRetaken("scent");
     setResult(null);
-    setPilotSurveyOpen(false);
-    if (pilotSurveyTimerRef.current !== undefined) {
-      window.clearTimeout(pilotSurveyTimerRef.current);
-      pilotSurveyTimerRef.current = undefined;
-    }
-  }, []);
+  }, [analytics]);
 
   if (bootstrapping) {
     return (
@@ -156,31 +142,35 @@ export default function WaitlistQuizPage() {
     );
   }
 
+  if (!verifiedHasSession) {
+    return (
+      <WaitlistGate featureName="the Quiz" verifiedHasSession={false}>
+        <span className="sr-only">Join the waitlist to use the quiz.</span>
+      </WaitlistGate>
+    );
+  }
+
   if (result) {
     return (
-      <>
-        <QuizPilotResultsPanel
-          recommendations={result.recommendations}
-          answers={result.answers}
-          preference_analytics={result.preference_analytics}
-          scent_profile={result.scent_profile}
-          onRetakeQuiz={handleRetake}
-        />
-        {pilotSurveyOpen ? (
-          <QuizPilotSurveyModal onFinished={handlePilotSurveyFinished} />
-        ) : null}
-      </>
+      <QuizPilotResultsPanel
+        recommendations={result.recommendations}
+        answers={result.answers}
+        preference_analytics={result.preference_analytics}
+        scent_profile={result.scent_profile}
+        onRetakeQuiz={handleRetake}
+        shareDisplayName={sessionDisplayName}
+      />
     );
   }
 
   return (
-    <WaitlistGate featureName="the Quiz" verifiedHasSession={verifiedHasSession}>
+    <WaitlistGate featureName="the Quiz" verifiedHasSession>
       {/*
         Bounded column height so step 2 (anchor grid) gets flex-1 + min-h-0 scroll on iOS Safari.
         Slightly taller column on small screens (6.75rem offset) for more picker viewport; sm+ uses 8rem.
       */}
-      <div className="box-border flex h-[calc(100dvh-6.75rem)] min-h-[18rem] flex-col overscroll-none pt-3 max-sm:pt-2 sm:h-[calc(100dvh-8rem)] sm:min-h-[22rem] sm:pt-4">
-        <div className="flex min-h-0 flex-1 flex-col">
+      <div className="box-border flex h-[calc(100dvh-5.5rem)] min-h-0 flex-col overscroll-none pt-2 max-sm:h-[calc(100dvh-5rem)] max-sm:pt-1.5 sm:h-[calc(100dvh-7.5rem)] sm:min-h-[20rem] sm:pt-3">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <ForYouWizard
             waitlistMode
             pilotSurveyAfterSubmit

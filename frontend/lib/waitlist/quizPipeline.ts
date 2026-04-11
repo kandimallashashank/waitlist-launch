@@ -34,6 +34,8 @@ export interface QuizRecommendation {
   name: string;
   image_url?: string | null;
   match_score: number;
+  /** Short overlap lines for results UI (notes, family, etc.). */
+  match_reasons?: string[];
 }
 
 /** Persisted row in ``waitlist_quiz_preferences.recommendation_snapshot`` (JSON array). */
@@ -44,6 +46,7 @@ export interface QuizRecommendationSnapshotRow {
   slug?: string | null;
   image_url?: string | null;
   match_score?: number;
+  match_reasons?: string[];
 }
 
 function serverApiBase(): string {

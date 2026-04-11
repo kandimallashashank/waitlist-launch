@@ -55,7 +55,7 @@ export function ProductDetailLoadingSkeleton({
         <div className="mt-5 grid gap-8 md:grid-cols-2 md:items-start lg:gap-12">
           <div className="space-y-4">
             <div
-              className="scentrev-skeleton-pulse aspect-[4/5] w-full max-w-xl mx-auto md:mx-0 rounded-2xl border border-[#F0EBE6] bg-gradient-to-b from-[#FAF7F4] to-[#F3EDE8] shadow-[0_8px_32px_-16px_rgba(26,26,26,0.08)]"
+              className="scentrev-skeleton-pulse mx-auto aspect-square w-full max-w-[min(260px,82vw)] rounded-2xl border border-[#F0EBE6] bg-gradient-to-b from-[#FAF7F4] to-[#F3EDE8] shadow-[0_8px_32px_-16px_rgba(26,26,26,0.08)] sm:mx-0 sm:aspect-[16/11] sm:max-w-none md:mx-0"
               style={pulse(0)}
             />
             <div className="flex justify-center gap-2 md:justify-start">

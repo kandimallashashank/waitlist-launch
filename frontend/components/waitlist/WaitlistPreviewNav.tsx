@@ -6,12 +6,15 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Menu } from "lucide-react";
 
+/** Subscribe near the middle; Corporate last (B2B). */
 const LINKS = [
   { href: "/", label: "Home" },
   { href: "/quiz", label: "Quiz" },
+  { href: "/gift", label: "Gifts" },
+  { href: "/subscribe", label: "Subscribe" },
   { href: "/layering-lab", label: "Layering Lab" },
   { href: "/catalog", label: "Catalog" },
-  { href: "/subscribe", label: "Subscribe" },
+  { href: "/corporate-gifting", label: "Corporate" },
 ] as const;
 
 export function WaitlistPreviewNav() {

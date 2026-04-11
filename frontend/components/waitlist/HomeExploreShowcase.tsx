@@ -40,7 +40,7 @@ export default function HomeExploreShowcase() {
           >
             Your nose deserves options.
           </h2>
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-[#5F5C57]">
+          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-[#3A342E]">
             Quiz, subscribe, browse, or blend. Pick your path into the world of fragrance.
           </p>
         </div>

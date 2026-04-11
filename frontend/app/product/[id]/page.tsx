@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { isCanonicalFragranceProductId } from '@/lib/productRouteAliases';
+import { clampWaitlistDescription } from '@/lib/seo/waitlistRouteMetadata';
 import { fetchNoStore } from '@/lib/waitlist/httpNoStore';
 import { getSupabaseAdmin } from '@/lib/waitlist/serverActions';
 import { fetchPdpDetailFromSupabase } from '@/lib/waitlist/supabasePdpDetail';
@@ -27,6 +28,17 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const fallback: Metadata = {
     title: 'Fragrance | ScentRev',
     description: 'Discover authentic fragrances tested for Indian weather.',
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
+      },
+    },
   };
 
   if (!productId) return fallback;
@@ -71,18 +83,31 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     const score = data.blind_buy_score
       ? `${Number(data.blind_buy_score).toFixed(1)}/5`
       : '';
-    const description = [
-      brand ? `${name} by ${brand}` : name,
-      price3ml ? `from ${price3ml}` : '',
-      score ? `Blind buy score: ${score}` : '',
-      'Authentic micro-fragrance samples tested for Indian weather.',
-    ]
-      .filter(Boolean)
-      .join(' · ');
+    const description = clampWaitlistDescription(
+      [
+        brand ? `${name} by ${brand}` : name,
+        price3ml ? `from ${price3ml}` : '',
+        score ? `Blind buy score: ${score}` : '',
+        'Authentic micro-fragrance samples tested for Indian weather.',
+      ]
+        .filter(Boolean)
+        .join(' · '),
+    );
 
     return {
       title: `${name}${brand ? ` by ${brand}` : ''} | ScentRev`,
       description,
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+          'max-video-preview': -1,
+        },
+      },
       alternates: {
         canonical: `/product/${productId}`,
       },

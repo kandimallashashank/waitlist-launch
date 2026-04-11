@@ -1,6 +1,6 @@
 /**
  * GET /api/fragrances/list-with-count
- * Combined PLP page + filtered total from Supabase — no FastAPI dependency.
+ * Combined PLP page + filtered total from Supabase - no FastAPI dependency.
  */
 import { NextResponse } from 'next/server';
 import { responseNoStoreHeaders } from '@/lib/waitlist/httpNoStore';

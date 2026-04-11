@@ -22,48 +22,35 @@ export default function YouMayAlsoLike({ fragranceId, fragranceName }: YouMayAls
 
     const headers = { ...getPreviewAuthHeaders() };
 
-    const run = async () => {
-      setLoadingDb(true);
-      setLoadingVector(true);
-      let similar: PdpCarouselFragrance[] = [];
-      try {
-        const simRes = await fetch(`/api/waitlist-preview/fragrances/${fragranceId}/similar?limit=10`, {
-          credentials: 'include',
-          headers,
-        });
-        similar = simRes.ok ? ((await simRes.json()) as PdpCarouselFragrance[]) : [];
-        if (!Array.isArray(similar)) similar = [];
-      } catch {
-        similar = [];
-      }
-      if (cancelled) return;
-      setDbSimilar(similar);
-      setLoadingDb(false);
+    // Smells Similar - DB similar_perfumes array
+    fetch(`/api/waitlist-preview/fragrances/${fragranceId}/similar?limit=10`, {
+      credentials: 'include',
+      headers,
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: PdpCarouselFragrance[]) => {
+        if (!cancelled) setDbSimilar(Array.isArray(data) ? data : []);
+      })
+      .catch(() => { if (!cancelled) setDbSimilar([]); })
+      .finally(() => { if (!cancelled) setLoadingDb(false); });
 
-      const excludeIds = [fragranceId, ...similar.map((f) => f.id)].filter(Boolean);
-      const excludeQs = excludeIds.map((id) => encodeURIComponent(id)).join(',');
-      try {
-        const recRes = await fetch(
-          `/api/fragrances/${fragranceId}/recommendations?limit=12&exclude=${excludeQs}`,
-          { credentials: 'include' },
-        );
-        const rec = recRes.ok ? ((await recRes.json()) as PdpCarouselFragrance[]) : [];
-        if (!cancelled) setVectorSimilar(Array.isArray(rec) ? rec : []);
-      } catch {
-        if (!cancelled) setVectorSimilar([]);
-      } finally {
-        if (!cancelled) setLoadingVector(false);
-      }
-    };
+    // You May Also Like - scent family recommendations
+    fetch(`/api/waitlist-preview/fragrances/${fragranceId}/recommendations?limit=12`, {
+      credentials: 'include',
+      headers,
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: PdpCarouselFragrance[]) => {
+        if (!cancelled) setVectorSimilar(Array.isArray(data) ? data : []);
+      })
+      .catch(() => { if (!cancelled) setVectorSimilar([]); })
+      .finally(() => { if (!cancelled) setLoadingVector(false); });
 
-    void run();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [fragranceId]);
 
-  const uniqueRecs = vectorSimilar.filter((f) => f.id !== fragranceId);
+  const dbIds = new Set(dbSimilar.map((f) => f.id));
+  const uniqueRecs = vectorSimilar.filter((f) => !dbIds.has(f.id) && f.id !== fragranceId);
   const hasDbSimilar = dbSimilar.length > 0;
   const hasRecs = uniqueRecs.length > 0;
 

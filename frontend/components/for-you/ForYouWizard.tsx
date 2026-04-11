@@ -1,6 +1,7 @@
 "use client";
 
 import { QuizBrandSpinner } from "@/components/quiz/QuizBrandSpinner";
+import { QuizPilotSurveyModal } from "@/components/quiz/QuizPilotSurveyModal";
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Leaf, Star, Gem, Trophy } from "lucide-react";
@@ -15,6 +16,7 @@ import {
 } from "react";
 
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { QuizLoadingScreen, type QuizLoadingPerfumeImage } from "./QuizLoadingScreen";
 import {
   TypeA,
@@ -29,6 +31,7 @@ import {
   deriveQuizFromAnchorPerfumes,
   type QuizCatalogPerfume,
 } from "@/lib/quizAnchorDerivation";
+import { QUIZ_NOTE_GROUP_OPTIONS } from "@/lib/waitlist/quizNoteGroupOptions";
 import type { QuizAnswersPayload } from "@/lib/waitlist/quizPipeline";
 import type { PreferenceAnalyticsData } from "@/components/preferences/PreferenceAnalyticsCollapsible";
 import { getPublicApiBaseUrl } from "@/lib/publicApiBase";
@@ -36,11 +39,10 @@ import {
   formatWaitlistPreviewApiError,
   getPreviewAuthHeaders,
 } from "@/lib/waitlist/previewSessionClient";
-import { QuizPilotSurveyModal } from "@/components/quiz/QuizPilotSurveyModal";
 
 const API_BASE = getPublicApiBaseUrl();
 const QUIZ_SUBMIT_TIMEOUT_MS = 60_000;
-/** Pause after quiz completes before showing the pilot survey — long enough for user to see perfumes. */
+/** Pause after quiz completes before showing the pilot survey - long enough for user to see perfumes. */
 const PILOT_SURVEY_AFTER_QUIZ_DELAY_MS = 10_000;
 const MIN_LOADING_MS = 450;
 const SLOW_LOADING_MS = 6500;
@@ -107,6 +109,8 @@ interface QuizRecommendation {
 
 interface QuizResultResponse {
   recommendations: QuizRecommendation[];
+  /** Present on waitlist submit API when server persisted answers. */
+  answers?: QuizAnswersPayload;
 }
 
 /** Payload passed to ``onWaitlistSubmitSuccess`` after a successful pilot quiz submit. */
@@ -135,14 +139,8 @@ interface ForYouWizardProps {
   /**
    * Waitlist: after loading screen, show results on the parent instead of navigating.
    * Omit ``afterSubmitHref`` when using this (full loading UX runs).
-   *
-   * When ``meta.openPilotSurveyAfterMs`` is set, the parent must schedule the pilot survey
-   * (the wizard unmounts once results render — do not open the survey from inside the wizard).
    */
-  onWaitlistSubmitSuccess?: (
-    payload: WaitlistQuizSuccessPayload,
-    meta?: { openPilotSurveyAfterMs?: number },
-  ) => void;
+  onWaitlistSubmitSuccess?: (payload: WaitlistQuizSuccessPayload) => void;
 }
 
 interface NoteGroupOption extends QuizOption {
@@ -201,59 +199,7 @@ const SCENT_FAMILY_OPTIONS: QuizOption[] = [
   { value: "aldehydic", label: "Aldehydic / soapy" },
 ];
 
-/**
- * Note slug values align with backend ``QuizAnswers`` / note pyramid fields.
- */
-const NOTE_GROUP_OPTIONS: NoteGroupOption[] = [
-  // Top
-  { value: "bergamot", label: "Bergamot", noteCategory: "top" },
-  { value: "lemon", label: "Lemon", noteCategory: "top" },
-  { value: "grapefruit", label: "Grapefruit", noteCategory: "top" },
-  { value: "orange", label: "Orange", noteCategory: "top" },
-  { value: "neroli", label: "Neroli", noteCategory: "top" },
-  { value: "mint", label: "Mint", noteCategory: "top" },
-  { value: "lavender", label: "Lavender", noteCategory: "top" },
-  { value: "cardamom", label: "Cardamom", noteCategory: "top" },
-  { value: "pink_pepper", label: "Pink Pepper", noteCategory: "top" },
-  { value: "ginger", label: "Ginger", noteCategory: "top" },
-  { value: "apple", label: "Apple", noteCategory: "top" },
-  { value: "pear", label: "Pear", noteCategory: "top" },
-  { value: "blackcurrant", label: "Blackcurrant", noteCategory: "top" },
-  { value: "marine", label: "Marine / Aquatic", noteCategory: "top" },
-  { value: "aldehydes", label: "Aldehydes", noteCategory: "top" },
-  // Middle
-  { value: "rose", label: "Rose", noteCategory: "middle" },
-  { value: "jasmine", label: "Jasmine", noteCategory: "middle" },
-  { value: "iris", label: "Iris / Orris", noteCategory: "middle" },
-  { value: "lily", label: "Lily of the Valley", noteCategory: "middle" },
-  { value: "tuberose", label: "Tuberose", noteCategory: "middle" },
-  { value: "ylang_ylang", label: "Ylang Ylang", noteCategory: "middle" },
-  { value: "geranium", label: "Geranium", noteCategory: "middle" },
-  { value: "cinnamon", label: "Cinnamon", noteCategory: "middle" },
-  { value: "nutmeg", label: "Nutmeg", noteCategory: "middle" },
-  { value: "clove", label: "Clove", noteCategory: "middle" },
-  { value: "peach", label: "Peach", noteCategory: "middle" },
-  { value: "raspberry", label: "Raspberry", noteCategory: "middle" },
-  { value: "violet", label: "Violet", noteCategory: "middle" },
-  { value: "saffron", label: "Saffron", noteCategory: "middle" },
-  { value: "oud", label: "Oud", noteCategory: "middle" },
-  // Base
-  { value: "sandalwood", label: "Sandalwood", noteCategory: "base" },
-  { value: "cedar", label: "Cedar", noteCategory: "base" },
-  { value: "vetiver", label: "Vetiver", noteCategory: "base" },
-  { value: "patchouli", label: "Patchouli", noteCategory: "base" },
-  { value: "vanilla", label: "Vanilla", noteCategory: "base" },
-  { value: "amber", label: "Amber", noteCategory: "base" },
-  { value: "musk", label: "Musk", noteCategory: "base" },
-  { value: "tonka", label: "Tonka Bean", noteCategory: "base" },
-  { value: "leather", label: "Leather", noteCategory: "base" },
-  { value: "tobacco", label: "Tobacco", noteCategory: "base" },
-  { value: "benzoin", label: "Benzoin", noteCategory: "base" },
-  { value: "incense", label: "Incense", noteCategory: "base" },
-  { value: "oakmoss", label: "Oakmoss", noteCategory: "base" },
-  { value: "labdanum", label: "Labdanum", noteCategory: "base" },
-  { value: "cashmeran", label: "Cashmeran", noteCategory: "base" },
-];
+const NOTE_GROUP_OPTIONS: NoteGroupOption[] = [...QUIZ_NOTE_GROUP_OPTIONS];
 
 const SCENT_STYLE_OPTIONS: QuizOption[] = [
   {
@@ -364,7 +310,7 @@ const AUTO_ADVANCE_STEPS = new Set<StepKey>([
   "intensity",
 ]);
 
-/** Delay before auto-advancing on single-select — long enough to see the selection highlight. */
+/** Delay before auto-advancing on single-select - long enough to see the selection highlight. */
 const AUTO_ADVANCE_SINGLE_MS = 820;
 /** Delay before goNext after multi-select hits max (stacked after chip/card delay in QuizQuestionTypes). */
 const AUTO_ADVANCE_MULTI_MS = 900;
@@ -516,6 +462,7 @@ export function ForYouWizard({
 }: ForYouWizardProps) {
   const router = useRouter();
   const { getToken } = useSupabaseAuth();
+  const analytics = useAnalytics();
 
   const [answers, setAnswers] = useState<ForYouAnswers>(INITIAL_ANSWERS);
   const [stepIndex, setStepIndex] = useState(0);
@@ -535,7 +482,10 @@ export function ForYouWizard({
   }>({ waitlist: null, navigate: null });
   const [anchorCatalog, setAnchorCatalog] = useState<QuizCatalogPerfume[]>([]);
   const prevAnchorGenderRef = useRef<string | null>(null);
+  /** Prevents double submit before ``loading`` / ``quickSubmitting`` state updates (mobile double-tap). */
+  const quizSubmitInFlightRef = useRef(false);
   const goNextRef = useRef<() => void>(() => {});
+  const waitlistQuizStartedRef = useRef(false);
 
   const finalizePilotSurvey = useCallback(() => {
     const { waitlist, navigate } = pilotSurveyPendingRef.current;
@@ -581,6 +531,13 @@ export function ForYouWizard({
     }));
   }, [answers.preferredGender]);
 
+  useEffect(() => {
+    if (!waitlistMode) return;
+    if (waitlistQuizStartedRef.current) return;
+    waitlistQuizStartedRef.current = true;
+    analytics.waitlistQuizStarted("scent");
+  }, [waitlistMode, analytics]);
+
   const experienceOptions: QuizOption[] = useMemo(() => [
     { value: "beginner", label: "New to fragrance", subline: "Easy wins and confident first picks", icon: <Leaf className="w-9 h-9 text-green-500" /> },
     { value: "intermediate", label: "Know what I like", subline: "Already have a few go-to bottles", icon: <Star className="w-9 h-9 fill-amber-400 text-amber-400" /> },
@@ -589,6 +546,25 @@ export function ForYouWizard({
   ], []);
 
   const stepKey = STEP_ORDER[stepIndex];
+
+  useEffect(() => {
+    if (!waitlistMode) return;
+    if (loading || quickSubmitting || pilotSurveyOpen) return;
+    analytics.waitlistQuizStepViewed({
+      step_id: stepKey,
+      step_index: stepIndex,
+      total_steps: TOTAL_STEPS,
+      flow: "scent",
+    });
+  }, [
+    waitlistMode,
+    stepKey,
+    stepIndex,
+    loading,
+    quickSubmitting,
+    pilotSurveyOpen,
+    analytics,
+  ]);
 
   const progressLabel = useMemo(() => `${stepIndex + 1} OF ${TOTAL_STEPS}`, [stepIndex]);
 
@@ -670,11 +646,15 @@ export function ForYouWizard({
       return;
     }
 
+    if (quizSubmitInFlightRef.current) return;
+    quizSubmitInFlightRef.current = true;
+
     const isWaitlist = Boolean(waitlistMode);
     let token: string | null = null;
     if (!isWaitlist) {
       token = await getToken();
       if (!token) {
+        quizSubmitInFlightRef.current = false;
         setSubmitError("Please sign in again before submitting your quiz.");
         return;
       }
@@ -683,7 +663,7 @@ export function ForYouWizard({
     const redirectHref = afterSubmitHref?.trim();
     const submitUrl = isWaitlist
       ? "/api/waitlist-preview/quiz/submit"
-      : "/api/waitlist-preview/quiz/submit"; // waitlist app only — no FastAPI
+      : "/api/waitlist-preview/quiz/submit"; // waitlist app only - no FastAPI
 
     const buildRequestInit = (): RequestInit => {
       const headers: Record<string, string> = {
@@ -711,41 +691,54 @@ export function ForYouWizard({
       setQuickSubmitting(true);
       setSubmitError(null);
       try {
-        const response = await fetch(submitUrl, buildRequestInit());
+        try {
+          const response = await fetch(submitUrl, buildRequestInit());
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          const message = isWaitlist
-            ? formatWaitlistPreviewApiError(errorText, response.status)
-            : errorText || "We couldn't save your quiz right now.";
-          throw new Error(message);
-        }
-
-        const result = (await response.json()) as QuizResultResponse;
-        onComplete?.(result);
-        if (pilotSurveyAfterSubmit && isWaitlist) {
-          const surveyDone = await fetchWaitlistQuizSurveyCompleted();
-          if (!surveyDone) {
-            pilotSurveyPendingRef.current = {
-              waitlist: null,
-              navigate: redirectHref,
-            };
-            await delay(PILOT_SURVEY_AFTER_QUIZ_DELAY_MS);
-            setPilotSurveyOpen(true);
-            setQuickSubmitting(false);
-            return;
+          if (!response.ok) {
+            const errorText = await response.text();
+            const message = isWaitlist
+              ? formatWaitlistPreviewApiError(errorText, response.status)
+              : errorText || "We couldn't save your quiz right now.";
+            throw new Error(message);
           }
+
+          const result = (await response.json()) as QuizResultResponse;
+          if (isWaitlist) {
+            analytics.waitlistQuizCompleted(
+              "scent",
+              result.recommendations?.length ?? 0,
+            );
+          }
+          onComplete?.(result);
+          if (pilotSurveyAfterSubmit && isWaitlist) {
+            const surveyDone = await fetchWaitlistQuizSurveyCompleted();
+            if (!surveyDone) {
+              pilotSurveyPendingRef.current = {
+                waitlist: null,
+                navigate: redirectHref,
+              };
+              await delay(PILOT_SURVEY_AFTER_QUIZ_DELAY_MS);
+              setPilotSurveyOpen(true);
+              setQuickSubmitting(false);
+              return;
+            }
+          }
+          router.replace(redirectHref);
+        } catch (error) {
+          setQuickSubmitting(false);
+          const message =
+            error instanceof DOMException && error.name === "AbortError"
+              ? "Request timed out check your connection and try again."
+              : error instanceof Error
+                ? error.message
+                : "We couldn't submit your quiz. Please try again.";
+          if (isWaitlist) {
+            analytics.waitlistQuizSubmitFailed("scent", message);
+          }
+          setSubmitError(message);
         }
-        router.replace(redirectHref);
-      } catch (error) {
-        setQuickSubmitting(false);
-        const message =
-          error instanceof DOMException && error.name === "AbortError"
-            ? "Request timed out check your connection and try again."
-            : error instanceof Error
-              ? error.message
-              : "We couldn't submit your quiz. Please try again.";
-        setSubmitError(message);
+      } finally {
+        quizSubmitInFlightRef.current = false;
       }
       return;
     }
@@ -774,97 +767,121 @@ export function ForYouWizard({
     let navFallbackTimer: number | undefined;
 
     try {
-      const response = await fetch(submitUrl, buildRequestInit());
+      try {
+        const response = await fetch(submitUrl, buildRequestInit());
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        const message = isWaitlist
-          ? formatWaitlistPreviewApiError(errorText, response.status)
-          : errorText || "We couldn't save your quiz right now.";
-        throw new Error(message);
-      }
+        if (!response.ok) {
+          const errorText = await response.text();
+          const message = isWaitlist
+            ? formatWaitlistPreviewApiError(errorText, response.status)
+            : errorText || "We couldn't save your quiz right now.";
+          throw new Error(message);
+        }
 
-      const result = (await response.json()) as QuizResultResponse;
-      setLoadingImages(mapLoadingImages(result));
+        const result = (await response.json()) as QuizResultResponse;
+        if (isWaitlist) {
+          analytics.waitlistQuizCompleted(
+            "scent",
+            result.recommendations?.length ?? 0,
+          );
+        }
+        setLoadingImages(mapLoadingImages(result));
 
-      const remainingDelay = Math.max(MIN_LOADING_MS - (Date.now() - startedAt), 0);
-      if (remainingDelay > 0) {
-        await delay(remainingDelay);
-      }
+        const remainingDelay = Math.max(MIN_LOADING_MS - (Date.now() - startedAt), 0);
+        if (remainingDelay > 0) {
+          await delay(remainingDelay);
+        }
 
-      window.clearInterval(progressTimer);
-      window.clearTimeout(slowTimer);
-      setLoadingProgress(100);
-      onComplete?.(result);
+        window.clearInterval(progressTimer);
+        window.clearTimeout(slowTimer);
+        setLoadingProgress(100);
+        onComplete?.(result);
 
-      if (isWaitlist && onWaitlistSubmitSuccess) {
-        const raw = result as QuizResultResponse & {
-          preference_analytics?: PreferenceAnalyticsData | null;
-          scent_profile?: WaitlistQuizSuccessPayload["scent_profile"];
-        };
-        const payload: WaitlistQuizSuccessPayload = {
-          recommendations: raw.recommendations ?? [],
-          answers: buildPayload(answers).answers,
-          preference_analytics: raw.preference_analytics ?? null,
-          scent_profile: raw.scent_profile ?? null,
-        };
-        if (pilotSurveyAfterSubmit) {
+        if (isWaitlist && onWaitlistSubmitSuccess) {
+          const raw = result as QuizResultResponse & {
+            preference_analytics?: PreferenceAnalyticsData | null;
+            scent_profile?: WaitlistQuizSuccessPayload["scent_profile"];
+          };
+          const payloadAnswers =
+            raw.answers && typeof raw.answers === "object"
+              ? raw.answers
+              : buildPayload(answers).answers;
+          const payload: WaitlistQuizSuccessPayload = {
+            recommendations: raw.recommendations ?? [],
+            answers: payloadAnswers,
+            preference_analytics: raw.preference_analytics ?? null,
+            scent_profile: raw.scent_profile ?? null,
+          };
+          if (pilotSurveyAfterSubmit) {
+            const surveyDone = await fetchWaitlistQuizSurveyCompleted();
+            if (!surveyDone) {
+              pilotSurveyPendingRef.current = {
+                waitlist: payload,
+                navigate: null,
+              };
+              // Show results immediately, survey fires after 5s via setTimeout
+              onWaitlistSubmitSuccess(payload);
+              setLoading(false);
+              setLoadingSlow(false);
+              window.setTimeout(() => {
+                setPilotSurveyOpen(true);
+              }, 5_000);
+              return;
+            }
+          }
+          onWaitlistSubmitSuccess(payload);
+          setLoading(false);
+          setLoadingSlow(false);
+          return;
+        }
+
+        const nextHref = afterSubmitHref ?? "/for-you";
+        if (pilotSurveyAfterSubmit && isWaitlist) {
           const surveyDone = await fetchWaitlistQuizSurveyCompleted();
           if (!surveyDone) {
-            pilotSurveyPendingRef.current = { waitlist: null, navigate: null };
-            onWaitlistSubmitSuccess(payload, { openPilotSurveyAfterMs: 5_000 });
+            pilotSurveyPendingRef.current = {
+              waitlist: null,
+              navigate: nextHref,
+            };
+            await delay(PILOT_SURVEY_AFTER_QUIZ_DELAY_MS);
             setLoading(false);
             setLoadingSlow(false);
+            setPilotSurveyOpen(true);
             return;
           }
         }
-        onWaitlistSubmitSuccess(payload);
+        window.setTimeout(() => {
+          router.replace(nextHref);
+        }, 380);
+        // Client transitions can stall when the destination RSC tree is heavy; full navigation
+        // guarantees exit from this loading shell (fixes "stuck at 100%").
+        navFallbackTimer = window.setTimeout(() => {
+          if (window.location.pathname.endsWith("/quiz")) {
+            window.location.assign(nextHref);
+          }
+        }, 5000);
+      } catch (error) {
+        if (navFallbackTimer !== undefined) {
+          window.clearTimeout(navFallbackTimer);
+        }
+        window.clearInterval(progressTimer);
+        window.clearTimeout(slowTimer);
         setLoading(false);
         setLoadingSlow(false);
-        return;
-      }
-
-      const nextHref = afterSubmitHref ?? "/for-you";
-      if (pilotSurveyAfterSubmit && isWaitlist) {
-        const surveyDone = await fetchWaitlistQuizSurveyCompleted();
-        if (!surveyDone) {
-          pilotSurveyPendingRef.current = {
-            waitlist: null,
-            navigate: nextHref,
-          };
-          await delay(PILOT_SURVEY_AFTER_QUIZ_DELAY_MS);
-          setLoading(false);
-          setLoadingSlow(false);
-          setPilotSurveyOpen(true);
-          return;
+        setLoadingProgress(7);
+        const message =
+          error instanceof DOMException && error.name === "AbortError"
+            ? "Request timed out check your connection and try again."
+            : error instanceof Error
+              ? error.message
+              : "We couldn't submit your quiz. Please try again.";
+        if (isWaitlist) {
+          analytics.waitlistQuizSubmitFailed("scent", message);
         }
+        setSubmitError(message);
       }
-      window.setTimeout(() => {
-        router.replace(nextHref);
-      }, 380);
-      // Client transitions can stall when the destination RSC tree is heavy; full navigation
-      // guarantees exit from this loading shell (fixes "stuck at 100%").
-      navFallbackTimer = window.setTimeout(() => {
-        if (window.location.pathname.endsWith("/quiz")) {
-          window.location.assign(nextHref);
-        }
-      }, 5000);
-    } catch (error) {
-      if (navFallbackTimer !== undefined) {
-        window.clearTimeout(navFallbackTimer);
-      }
-      window.clearInterval(progressTimer);
-      window.clearTimeout(slowTimer);
-      setLoading(false);
-      setLoadingSlow(false);
-      setLoadingProgress(7);
-      const message =
-        error instanceof DOMException && error.name === "AbortError"
-          ? "Request timed out check your connection and try again."
-          : error instanceof Error
-            ? error.message
-            : "We couldn't submit your quiz. Please try again.";
-      setSubmitError(message);
+    } finally {
+      quizSubmitInFlightRef.current = false;
     }
   };
 
@@ -921,7 +938,10 @@ export function ForYouWizard({
   if (pilotSurveyOpen) {
     return (
       <div className="flex min-h-[100dvh] w-full items-center justify-center bg-gradient-to-b from-[#FAF7F4] via-[#F6F1EC] to-[#F0E9E2] p-4">
-        <QuizPilotSurveyModal onFinished={finalizePilotSurvey} />
+        <QuizPilotSurveyModal
+          onFinished={finalizePilotSurvey}
+          pilotSurveyKind="scent_quiz"
+        />
       </div>
     );
   }
@@ -939,15 +959,15 @@ export function ForYouWizard({
           key={stepKey}
           custom={direction}
           variants={{
-            enter: (d: number) => ({ opacity: 0, x: d > 0 ? 40 : -40 }),
+            enter: (d: number) => ({ opacity: 0, x: d > 0 ? 18 : -18 }),
             center: { opacity: 1, x: 0 },
-            exit: (d: number) => ({ opacity: 0, x: d > 0 ? -40 : 40 }),
+            exit: (d: number) => ({ opacity: 0, x: d > 0 ? -14 : 14 }),
           }}
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.28, ease: [0.32, 0, 0.18, 1] }}
-          className="flex h-full min-h-0 flex-1 flex-col"
+          transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+          className="flex h-full min-h-0 flex-1 flex-col overflow-hidden"
         >
           <QuizStepFrame
             bodyLayout={stepKey === "anchorPerfumes" ? "fill" : "default"}
@@ -964,13 +984,13 @@ export function ForYouWizard({
             submitError={submitError}
             subtitle={
               stepKey === "gender" ? (
-                <div className="space-y-4 text-center">
-                  <p className="font-display text-lg leading-snug text-[#1A1A1A] sm:text-xl">
+                <div className="mx-auto max-w-xl space-y-2.5 text-center sm:space-y-4">
+                  <p className="font-display text-base leading-snug text-[#1A1A1A] sm:text-xl">
                     Your ex forgot your preferences.
                     <br />
                     <span className="text-[#B85A3A]">We never will.</span>
                   </p>
-                  <p className="text-[15px] leading-relaxed text-[#5F5C57]">
+                  <p className="text-[13px] leading-relaxed text-[#5F5C57] sm:text-[15px]">
                     The internet has opinions. Your skin has answers. Tell us how you live. We match
                     you to a fragrance that belongs on you, not just on a shelf. No influencer. No
                     guesswork. Just data from people who actually wear it.
@@ -1156,10 +1176,8 @@ function QuizStepFrame({
   const tightTop = fill && denseHeader;
   return (
     <section
-      className={`relative mx-auto flex w-full max-w-6xl flex-col px-4 pt-5 sm:px-8 sm:pt-7 ${
-        fill
-          ? "min-h-0 flex-1 overflow-hidden pb-4"
-          : "min-h-[calc(100svh-5rem)] pb-8"
+      className={`relative mx-auto flex h-full min-h-0 w-full max-w-6xl flex-col overflow-hidden px-3 pt-3 sm:px-8 sm:pt-6 ${
+        fill ? "min-h-0 flex-1 pb-2 sm:pb-3" : "flex-1 pb-2 sm:pb-3"
       }`}
     >
       {/* ─── Top bar ─── */}
@@ -1179,21 +1197,19 @@ function QuizStepFrame({
         <div className="flex flex-1 flex-col gap-1.5">
           <div className="h-[3px] w-full overflow-hidden rounded-full bg-[#EDE0D8]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-[#B85A3A] to-[#D4845E] transition-[width] duration-300 ease-out"
+              className="h-full rounded-full bg-gradient-to-r from-[#B85A3A] to-[#D4845E] transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
         </div>
 
-        <div className="rounded-full border border-[#E8D4C4] bg-white/80 px-3 py-1 text-[10px] font-bold tracking-[0.18em] text-[#8A6A5D] backdrop-blur-sm">
+        <div className="max-w-[5.5rem] truncate rounded-full border border-[#E8D4C4] bg-white/80 px-2 py-1 text-[9px] font-bold tracking-[0.14em] text-[#8A6A5D] backdrop-blur-sm sm:max-w-none sm:px-3 sm:text-[10px] sm:tracking-[0.18em]">
           {progressLabel}
         </div>
       </div>
 
-      {/* ─── Content area ─── */}
-      <div
-        className={`flex flex-col ${fill ? "min-h-0 flex-1 overflow-hidden" : "flex-1"}`}
-      >
+      {/* ─── Content area: scroll middle, fixed footer (smooth mobile UX) ─── */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {/* Title block */}
         <div
           className={`shrink-0 ${
@@ -1201,7 +1217,7 @@ function QuizStepFrame({
               ? "pb-1 pt-1 sm:pb-2 sm:pt-2.5"
               : fill
                 ? "pb-2 pt-2.5 sm:pb-4 sm:pt-5"
-                : "pb-5 pt-7 sm:pb-6 sm:pt-9"
+                : "pb-3 pt-4 sm:pb-5 sm:pt-7"
           }`}
         >
           <div
@@ -1215,7 +1231,7 @@ function QuizStepFrame({
                   ? "text-[1.15rem] sm:text-[1.65rem]"
                   : fill
                     ? "text-[1.35rem] sm:text-[2.1rem]"
-                    : "text-[1.6rem] sm:text-[2.1rem]"
+                    : "text-[1.35rem] sm:text-[1.85rem] md:text-[2.1rem]"
               }`}
             >
               {title}
@@ -1229,28 +1245,28 @@ function QuizStepFrame({
           </div>
         </div>
 
-        {/* Question component */}
+        {/* Question component: scroll when tall; anchor step keeps internal scroll */}
         <div
           className={
             fill
               ? "flex min-h-0 flex-1 flex-col overflow-hidden"
-              : "w-full shrink-0"
+              : "min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] [scrollbar-gutter:stable]"
           }
         >
-          {children}
+          <div className={fill ? "contents" : "pb-3"}>{children}</div>
         </div>
-
-        {!fill ? <div className="min-h-6 flex-1" /> : null}
 
         {/* Bottom actions */}
         <div
-          className={`flex shrink-0 flex-col items-center gap-3 pb-2 ${fill ? "pt-3" : "pt-6"}`}
+          className={`flex shrink-0 flex-col items-center gap-2 border-t border-transparent pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-3 sm:gap-3 sm:pt-4 ${
+            fill ? "bg-gradient-to-t from-[#F6F1EC] via-[#F6F1EC] to-transparent" : "bg-gradient-to-t from-[#F0E9E2]/95 via-[#F4F0EC]/90 to-transparent"
+          }`}
         >
           <button
             type="button"
             onClick={onContinue}
             disabled={!canContinue}
-            className="w-full max-w-xs rounded-2xl bg-[#1A1A1A] px-6 py-4 text-[13px] font-bold tracking-[0.18em] text-white shadow-md transition-colors hover:bg-[#B85A3A] hover:shadow-[0_8px_24px_rgba(184,90,58,0.3)] disabled:cursor-not-allowed disabled:bg-[#D3D0CD] disabled:shadow-none"
+            className="w-full max-w-xs rounded-2xl bg-[#1A1A1A] px-5 py-3.5 text-[12px] font-bold tracking-[0.16em] text-white shadow-md transition-colors active:scale-[0.99] sm:px-6 sm:py-4 sm:text-[13px] sm:tracking-[0.18em] hover:bg-[#B85A3A] hover:shadow-[0_8px_24px_rgba(184,90,58,0.3)] disabled:cursor-not-allowed disabled:bg-[#D3D0CD] disabled:shadow-none"
           >
             {continueLabel}
           </button>

@@ -56,7 +56,7 @@ export function SubscribePilotPage(): React.ReactElement {
   const [tierPricing, setTierPricing] = useState(DEFAULT_TIER_PRICING);
 
   useEffect(() => {
-    // Subscription plan pricing is hardcoded for the waitlist pilot — no live API needed.
+    // Subscription plan pricing is hardcoded for the waitlist pilot - no live API needed.
   }, []);
 
   const startingMonthly = useMemo(() => Math.min(...Object.values(tierPricing).map((p) => p.monthly)), [tierPricing]);

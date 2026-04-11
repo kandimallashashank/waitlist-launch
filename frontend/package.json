@@ -6,6 +6,7 @@
     "dev": "next dev",
     "dev:clean": "node -e \"try{require('fs').rmSync('.next',{recursive:true,force:true})}catch(e){}\" && next dev",
     "build": "next build",
+    "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "next lint"
   },
@@ -21,9 +22,11 @@
     "clsx": "^2.0.0",
     "framer-motion": "^10.16.0",
     "gsap": "^3.13.0",
+    "html-to-image": "^1.11.13",
     "jose": "^5.9.6",
     "lucide-react": "^0.294.0",
     "next": "14.2.18",
+    "posthog-js": "^1.367.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^2.15.0",
@@ -38,6 +41,7 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
     "eslint-config-next": "14.2.18",
+    "next-sitemap": "^4.2.3",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
     "typescript": "^5.6.3"

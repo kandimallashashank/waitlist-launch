@@ -149,7 +149,7 @@ export function useFilterOptionsFromApi(
       if (brandSlug) params.set('brand_slug', brandSlug);
       if (gender) params.set('gender', gender);
       if (category) params.set('category', category);
-      // Always use the Next.js proxy — no FastAPI in waitlist
+      // Always use the Next.js proxy - no FastAPI in waitlist
       const directUrl = `/api/filters/options${params.toString() ? `?${params.toString()}` : ''}`;
       const res = await fetch(directUrl, { headers: { Accept: 'application/json' } });
       if (!res.ok) throw new Error(`Filters API ${res.status}`);

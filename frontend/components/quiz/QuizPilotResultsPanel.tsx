@@ -3,17 +3,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Check, Sparkles, ArrowRight, RotateCcw, FlaskConical, Info, X } from 'lucide-react';
+import { ChevronDown, Check, Sparkles, ArrowRight, RotateCcw, FlaskConical, Info, X, Share2 } from 'lucide-react';
 
+import { ScentDnaShareModal } from '@/components/share/ScentDnaShareModal';
 import ScentProfileChart from '@/components/profile/ScentProfileChart';
-import {
-  PreferenceAnalyticsCollapsible,
-  type PreferenceAnalyticsData,
-} from '@/components/preferences/PreferenceAnalyticsCollapsible';
+import type { PreferenceAnalyticsData } from '@/components/preferences/PreferenceAnalyticsCollapsible';
 import {
   pilotAnswersToScentChartPreferences,
   quizAnswersToPilotPreferences,
 } from '@/lib/waitlist/quizResultMappers';
+import { buildWhyThesePicksCopy } from '@/lib/waitlist/quizRecommendationWhyCopy';
+import { buildScentDnaCardData } from '@/lib/waitlist/scentDnaCardData';
 import type { QuizAnswersPayload } from '@/lib/waitlist/quizPipeline';
 import { createProductUrl } from '@/utils';
 import { getPerfumesAsync, getPerfumesSync } from '@/lib/perfumeData';
@@ -62,24 +62,10 @@ export interface QuizPilotResultsPanelProps {
   preference_analytics: PreferenceAnalyticsData | null;
   scent_profile: Record<string, unknown> | null;
   onRetakeQuiz: () => void;
-}
-
-function isValidPreferenceAnalytics(u: unknown): u is PreferenceAnalyticsData {
-  if (!u || typeof u !== 'object') return false;
-  const o = u as Record<string, unknown>;
-  const pyr = o.pyramid;
-  if (!pyr || typeof pyr !== 'object') return false;
-  const p = pyr as Record<string, unknown>;
-  return (
-    typeof o.archetype_focus_score === 'number' &&
-    typeof o.performance_appetite_score === 'number' &&
-    typeof p.dominant_layer === 'string'
-  );
-}
-
-function formatLabel(value: string | null | undefined): string {
-  if (value == null || value === '') return '-';
-  return value.replace(/_/g, ' ');
+  /** Gift finder uses recipient-oriented copy; default is the personal scent quiz. */
+  resultsVariant?: "quiz" | "gift";
+  /** Waitlist full name from session (first word used on share card). */
+  shareDisplayName?: string | null;
 }
 
 type PerfumeCardLike = {
@@ -185,7 +171,7 @@ function QuizResultProductCardImageArea({
   const showImg = Boolean(resolvedSrc && !imageFailed);
 
   return (
-    <div className="relative aspect-[3/4] w-full overflow-hidden bg-gradient-to-b from-[#F5EFE8] to-[#EDE6DF]">
+    <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-b from-[#F5EFE8] to-[#EDE6DF] sm:aspect-[3/4]">
       <span className="absolute left-2.5 top-2.5 z-20 flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-[#1A1A1A]/85 px-2 text-[10px] font-bold tabular-nums text-white shadow-md backdrop-blur-sm">
         #{rank}
       </span>
@@ -193,7 +179,7 @@ function QuizResultProductCardImageArea({
       {showImg && resolvedSrc ? (
         /* Light well only same as PLP card. Do not stack the dark gradient under the
          * image: mix-blend-mode multiply would blend against it and hide the bottle. */
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-b from-[#F8F4F0] to-[#EFE8E0] p-4">
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-b from-[#F8F4F0] to-[#EFE8E0] p-3 sm:p-4">
           <img
             src={resolvedSrc}
             alt={name}
@@ -220,11 +206,9 @@ function QuizResultProductCardImageArea({
 function QuizInfoCardInline({
   info_card,
   scent_family,
-  match_reasons,
 }: {
   info_card: NonNullable<QuizPilotRecommendation['info_card']>;
   scent_family?: string | null;
-  match_reasons?: string[];
 }) {
   const [open, setOpen] = useState(false);
 
@@ -236,7 +220,7 @@ function QuizInfoCardInline({
         className="inline-flex items-center gap-1 rounded-md bg-[#F5EFE8] px-2 py-0.5 text-[10px] font-semibold text-[#8A6A5D] transition-colors hover:bg-[#EDE4DA] hover:text-[#B85A3A]"
       >
         <Info className="h-3 w-3" />
-        {open ? 'Hide details' : 'Quick stats'}
+        {open ? 'Hide details' : 'Scent details'}
       </button>
 
       <AnimatePresence>
@@ -313,21 +297,6 @@ function QuizInfoCardInline({
                 )}
               </div>
 
-              {/* Match reasons */}
-              {match_reasons && match_reasons.length > 0 && (
-                <div className="border-t border-[#EDE0D8] pt-1.5">
-                  <span className="text-[10px] font-semibold text-[#B85A3A]">Why this match</span>
-                  <ul className="mt-0.5 space-y-0.5">
-                    {match_reasons.slice(0, 3).map((r, i) => (
-                      <li key={i} className="flex items-start gap-1 text-[10px] text-[#5C3A28]">
-                        <Check className="mt-0.5 h-2.5 w-2.5 shrink-0 text-[#8B9E7E]" />
-                        {r}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
               {/* Performance notes */}
               {info_card.performance_notes && (
                 <p className="text-[10px] italic text-[#8A7A72]">{info_card.performance_notes}</p>
@@ -340,14 +309,94 @@ function QuizInfoCardInline({
   );
 }
 
+const RESULTS_COPY = {
+  quiz: {
+    pill: "Curated for you",
+    title: "Your top picks",
+    subtitleAfterCount: "matches based on your quiz answers",
+    note: "Catalogue prices and blind buy scores elsewhere are pilot testing values; notes, accords, and brands are from our real data.",
+    statPills: [
+      { label: "Personalised", sub: "To your profile" },
+      { label: "Scent DNA", sub: "Mapped from quiz" },
+      { label: "Retake anytime", sub: "Refine results" },
+    ] as const,
+    empty: "No matches returned try retaking the quiz or check that the catalog API is configured.",
+    analysisTitle: "Your scent profile",
+    whyTitle: "Why we picked these for you",
+    prefsTitle: "Your preferences",
+    savedTitle: "Saved for this pilot",
+    savedBody:
+      "These preferences are stored with your waitlist session and power the matches above.",
+    retake: "Retake quiz",
+  },
+  gift: {
+    pill: "Gift shortlist",
+    title: "Their top gift picks",
+    subtitleAfterCount: "ideas based on how you described them",
+    note: "Pilot catalogue pricing is for testing; fragrance data is real. Your personal scent quiz profile stays separate.",
+    statPills: [
+      { label: "Tailored", sub: "From your answers" },
+      { label: "Scent DNA", sub: "Inferred profile" },
+      { label: "Try again", sub: "New recipient" },
+    ] as const,
+    empty: "No matches returned - try again with different answers or browse the catalog.",
+    analysisTitle: "Their scent profile",
+    whyTitle: "Why we think they'll like these",
+    prefsTitle: "What you told us",
+    savedTitle: "About this gift run",
+    savedBody:
+      "Gift answers are not saved as your personal quiz profile. Retake anytime for another recipient.",
+    retake: "Find another gift",
+  },
+} as const;
+
+/**
+ * Gift results hero copy by recipient gender (matches ``preferred_gender`` on API answers).
+ */
+function giftResultsHero(preferredGender: string | null | undefined): {
+  title: string;
+  subtitleAfterCount: string;
+  statTailoredSub: string;
+} {
+  const g = (preferredGender ?? "").toLowerCase().trim();
+  if (g === "men") {
+    return {
+      title: "His top gift picks",
+      subtitleAfterCount:
+        "masculine-leaning matches for him - your final shortlist from this gift run",
+      statTailoredSub: "Filtered for him",
+    };
+  }
+  if (g === "women") {
+    return {
+      title: "Her top gift picks",
+      subtitleAfterCount:
+        "feminine-leaning matches for her - your final shortlist from this gift run",
+      statTailoredSub: "Filtered for her",
+    };
+  }
+  return {
+    title: "Their top gift picks (unisex focus)",
+    subtitleAfterCount:
+      "unisex-friendly and versatile matches - wider net than him/her-only - your final shortlist",
+    statTailoredSub: "Unisex & versatile pool",
+  };
+}
+
 export function QuizPilotResultsPanel({
   recommendations,
   answers,
   preference_analytics,
   scent_profile,
   onRetakeQuiz,
+  resultsVariant = "quiz",
+  shareDisplayName = null,
 }: QuizPilotResultsPanelProps) {
+  const copy = RESULTS_COPY[resultsVariant];
+  const giftHero =
+    resultsVariant === "gift" ? giftResultsHero(answers.preferred_gender) : null;
   const [prefsOpen, setPrefsOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   /** Merged with PLP catalog so image URLs match ``/catalog`` when quiz payload omits them. */
   const [displayRecommendations, setDisplayRecommendations] =
     useState<QuizPilotRecommendation[]>(recommendations);
@@ -385,7 +434,22 @@ export function QuizPilotResultsPanel({
 
   const preferences = useMemo(() => quizAnswersToPilotPreferences(answers), [answers]);
   const scentChartPrefs = useMemo(() => pilotAnswersToScentChartPreferences(answers), [answers]);
-  const analyticsSafe = isValidPreferenceAnalytics(preference_analytics) ? preference_analytics : null;
+  const whyThesePicks = useMemo(
+    () => buildWhyThesePicksCopy(answers, resultsVariant),
+    [answers, resultsVariant],
+  );
+  const aiSummaryBlurb =
+    typeof preference_analytics?.ai_summary === "string"
+      ? preference_analytics.ai_summary.trim()
+      : "";
+  const whyThesePicksParagraph = (aiSummaryBlurb || whyThesePicks.paragraph).trim();
+
+  const dnaPayload = useMemo(
+    () => buildScentDnaCardData(preference_analytics, answers),
+    [preference_analytics, answers],
+  );
+  const shareFirstName =
+    (shareDisplayName ?? "").trim().split(/\s+/).filter(Boolean)[0] || "Friend";
 
   return (
     <div className="relative min-h-screen overflow-x-clip bg-[#F5F2EE] pb-24">
@@ -400,31 +464,37 @@ export function QuizPilotResultsPanel({
             <div>
               <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#B85A3A]/20 bg-[#B85A3A]/8 px-3 py-1">
                 <Sparkles className="h-3 w-3 text-[#B85A3A]" aria-hidden />
-                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B85A3A]">Curated for you</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B85A3A]">{copy.pill}</span>
               </div>
               <h1 className="font-display text-2xl font-bold leading-tight text-[#1A1A1A] sm:text-3xl">
-                Your top picks
+                {giftHero?.title ?? copy.title}
               </h1>
               <p className="mt-1 text-sm text-[#6B6560]">
-                <span className="font-semibold text-[#1A1A1A]">{displayRecommendations.length}</span> matches based on your quiz answers
+                <span className="font-semibold text-[#1A1A1A]">{displayRecommendations.length}</span>{" "}
+                {giftHero?.subtitleAfterCount ?? copy.subtitleAfterCount}
               </p>
               <p className="mt-3 max-w-2xl text-xs leading-relaxed text-[#6B6560]">
-                Catalogue prices and blind buy scores elsewhere are pilot testing values; notes, accords, and brands are from our real data.
+                {copy.note}
               </p>
             </div>
 
             {/* Stat pills */}
             <div className="flex flex-wrap gap-2">
-              {[
-                { label: 'Personalised', sub: 'To your profile' },
-                { label: 'Scent DNA', sub: 'Mapped from quiz' },
-                { label: 'Retake anytime', sub: 'Refine results' },
-              ].map(({ label, sub }) => (
-                <div key={label} className="rounded-xl border border-[#E4D9D0] bg-white/70 px-3 py-2 backdrop-blur-sm">
-                  <p className="text-xs font-semibold text-[#1A1A1A]">{label}</p>
-                  <p className="text-[10px] text-[#8A7A72]">{sub}</p>
-                </div>
-              ))}
+              {[...copy.statPills].map(({ label, sub }) => {
+                const subFinal =
+                  resultsVariant === "gift" && giftHero && label === "Tailored"
+                    ? giftHero.statTailoredSub
+                    : sub;
+                return (
+                  <div
+                    key={label}
+                    className="rounded-xl border border-[#E4D9D0] bg-white/70 px-3 py-2 backdrop-blur-sm"
+                  >
+                    <p className="text-xs font-semibold text-[#1A1A1A]">{label}</p>
+                    <p className="text-[10px] text-[#8A7A72]">{subFinal}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -432,13 +502,63 @@ export function QuizPilotResultsPanel({
 
       <div className="relative mx-auto max-w-6xl px-4 pt-8 sm:px-6">
 
+        {/* ── Share fragrance DNA (2:3 card, matches apps/web profile DNA card) ── */}
+        <section
+          className="mb-8 rounded-2xl border border-[#E8D4C4] bg-gradient-to-br from-white via-[#FFFBF8] to-[#F5EDE6] p-5 shadow-sm sm:p-6"
+          aria-labelledby="waitlist-share-dna-heading"
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#B85A3A]/90">
+                Share
+              </p>
+              <h2
+                id="waitlist-share-dna-heading"
+                className="mt-1 font-display text-lg font-bold text-[#1A1A1A] sm:text-xl"
+              >
+                Your fragrance DNA card
+              </h2>
+              <p className="mt-1 max-w-xl text-sm leading-relaxed text-[#6B6560]">
+                Save a share image that matches your ScentRev profile DNA card — warm
+                cream background, terracotta bars, and only what fits on the card.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShareOpen(true)}
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#1A1A1A] px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#2d2d2d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B85A3A]"
+            >
+              <Share2 className="h-4 w-4" aria-hidden />
+              Share DNA card
+            </button>
+          </div>
+        </section>
+
+        {/* ── Why these picks (plain language; no KPI scores) ── */}
+        <section
+          className="mb-10 rounded-2xl border border-[#E8D4C4] bg-white/90 p-5 shadow-sm sm:mb-12 sm:p-6"
+          aria-labelledby="waitlist-why-these-picks-heading"
+        >
+          <h2
+            id="waitlist-why-these-picks-heading"
+            className="font-display text-lg font-bold text-[#1A1A1A] sm:text-xl"
+          >
+            {copy.whyTitle}
+          </h2>
+          {whyThesePicksParagraph ? (
+            <p className="mt-3 border-l-2 border-[#B85A3A] pl-3 text-sm leading-relaxed text-[#404040]">
+              {whyThesePicksParagraph}
+            </p>
+          ) : null}
+        </section>
+
         {/* ── Recommendation grid ── */}
         <section className="mb-16 sm:mb-20">
           {displayRecommendations.length === 0 ? (
             <div className="rounded-3xl border border-[#E8D4C4] bg-white/80 p-12 text-center shadow-sm">
               <FlaskConical className="mx-auto mb-4 h-10 w-10 text-[#D4B8A4]" />
               <p className="text-sm leading-relaxed text-[#8A6A5D]">
-                No matches returned try retaking the quiz or check that the catalog API is configured.
+                {copy.empty}
               </p>
             </div>
           ) : (
@@ -467,21 +587,32 @@ export function QuizPilotResultsPanel({
                       <p className="mt-1 line-clamp-2 text-[13px] font-semibold leading-snug text-[#1A1A1A] sm:text-sm">
                         {r.name}
                       </p>
+                      {r.match_reasons && r.match_reasons.length > 0 && (
+                        <div className="mt-2 border-t border-[#F0E8E2] pt-2">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-[#B85A3A]">
+                            Why this match
+                          </p>
+                          <ul className="mt-1 space-y-1">
+                            {r.match_reasons.slice(0, 3).map((reason, ri) => (
+                              <li
+                                key={ri}
+                                className="flex gap-1.5 text-[11px] leading-snug text-[#5C3A28]"
+                              >
+                                <Check
+                                  className="mt-0.5 h-3 w-3 shrink-0 text-[#8B9E7E]"
+                                  aria-hidden
+                                />
+                                <span>{reason}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                       {r.info_card && (
                         <QuizInfoCardInline
                           info_card={r.info_card}
                           scent_family={r.scent_family}
-                          match_reasons={r.match_reasons}
                         />
-                      )}
-                      {!r.info_card && r.match_reasons && r.match_reasons.length > 0 && (
-                        <div className="mt-1.5 flex flex-wrap gap-1">
-                          {r.match_reasons.slice(0, 2).map((reason, ri) => (
-                            <span key={ri} className="rounded-full bg-[#F5EFE8] px-2 py-0.5 text-[10px] text-[#8A6A5D]">
-                              {reason}
-                            </span>
-                          ))}
-                        </div>
                       )}
                     </div>
                   </>
@@ -520,9 +651,8 @@ export function QuizPilotResultsPanel({
         >
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#B85A3A]/80">Analysis</p>
-            <h2 className="font-display text-xl font-bold text-[#1A1A1A] sm:text-2xl">Your scent profile</h2>
+            <h2 className="font-display text-xl font-bold text-[#1A1A1A] sm:text-2xl">{copy.analysisTitle}</h2>
           </div>
-          <PreferenceAnalyticsCollapsible analytics={analyticsSafe} defaultOpen variant="profile" />
           <ScentProfileChart preferences={scentChartPrefs} />
         </motion.section>
 
@@ -541,7 +671,7 @@ export function QuizPilotResultsPanel({
             aria-expanded={prefsOpen}
           >
             <span className="font-display text-base font-bold text-[#1A1A1A] sm:text-lg">
-              Your preferences
+              {copy.prefsTitle}
             </span>
             <motion.div animate={{ rotate: prefsOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
               <ChevronDown className="h-5 w-5 text-[#8A6A5D]" aria-hidden />
@@ -606,30 +736,15 @@ export function QuizPilotResultsPanel({
                     ))}
                   </div>
 
-                  {/* KPI grid */}
-                  <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    {([
-                      ['Intensity', preferences.preferred_intensity],
-                      ['Longevity', preferences.preferred_longevity],
-                      ['Style', preferences.preferred_gender],
-                      ['Experience', preferences.experience_level],
-                    ] as const).map(([label, value]) => (
-                      <div key={label} className="rounded-xl border border-[#EDE0D8] bg-[#FAF7F4] p-3 text-center">
-                        <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#A09088]">{label}</p>
-                        <p className="text-sm font-bold capitalize text-[#1A1A1A]">{formatLabel(value)}</p>
-                      </div>
-                    ))}
-                  </div>
-
                   {/* Saved note */}
                   <div className="flex items-start gap-3 rounded-xl border border-[#E8D4C4] bg-[#FDF6F3] p-4">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#B85A3A]">
                       <Check className="h-4 w-4 text-white" aria-hidden />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-[#1A1A1A]">Saved for this pilot</h4>
+                      <h4 className="text-sm font-bold text-[#1A1A1A]">{copy.savedTitle}</h4>
                       <p className="mt-0.5 text-xs leading-relaxed text-[#8A6A5D]">
-                        These preferences are stored with your waitlist session and power the matches above.
+                        {copy.savedBody}
                       </p>
                     </div>
                   </div>
@@ -660,10 +775,18 @@ export function QuizPilotResultsPanel({
             className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl border-2 border-[#1A1A1A]/15 bg-white px-8 py-3.5 text-sm font-bold text-[#1A1A1A] shadow-sm transition-all hover:border-[#B85A3A] hover:text-[#B85A3A] sm:w-auto"
           >
             <RotateCcw className="h-4 w-4" aria-hidden />
-            Retake quiz
+            {copy.retake}
           </button>
         </motion.div>
       </div>
+
+      <ScentDnaShareModal
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        data={dnaPayload}
+        variant={resultsVariant}
+        displayName={shareFirstName}
+      />
     </div>
   );
 }

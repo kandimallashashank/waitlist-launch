@@ -1,9 +1,18 @@
 /**
  * ScentRev waitlist pilot follow-up email.
- * Design mirrors the coupon email: warm canvas #F4F0E8, Inter + Poppins,
- * terracotta accent strip, ink footer. Includes recommendation images and
- * layering blend snapshot.
+ * Warm canvas #F4F0E8, Inter + Poppins, terracotta / sage accents.
+ * Fragrance DNA block first; blend snapshot; floating bottle cards at the end.
  */
+
+import type { ScentDnaCardData } from "@/lib/waitlist/scentDnaCardData";
+import {
+  buildFloatingPicksEmailBlock,
+  buildScentDnaEmailBlock,
+} from "@/lib/email/scentDnaEmailBlock";
+import {
+  buildScentDnaShareHeadline,
+  buildScentDnaShareTagline,
+} from "@/lib/waitlist/scentDnaShareCopy";
 
 interface QuizSnap {
   name?: string;
@@ -14,6 +23,10 @@ interface QuizSnap {
 interface BuildPilotEmailArgs {
   displayName: string;
   quizPicks: QuizSnap[];
+  /** KPI + answers snapshot for the DNA card (email + parity with share UI). */
+  scentDna: ScentDnaCardData | null;
+  /** Matches share-card tagline (quiz vs gift). */
+  scentDnaVariant?: "quiz" | "gift";
   layeringSummary: string | null;
   layeringScore: number | null;
   layeringLabel: string | null;
@@ -51,44 +64,22 @@ export function buildPilotFollowupEmail(args: BuildPilotEmailArgs): {
   html: string;
   text: string;
 } {
-  const subject = "Your ScentRev pilot snapshot";
+  const subject = "Your fragrance DNA + ScentRev pilot snapshot";
   const safeName = escapeHtml(args.displayName);
 
-  /* ── Recommendation cards ── */
-  const picksHtml =
-    args.quizPicks.length > 0
-      ? `
-        <tr>
-          <td align="left" style="padding:20px 0 6px;">
-            <p style="margin:0;font-family:${fontSans};font-size:11px;font-weight:600;letter-spacing:0.24em;text-transform:uppercase;color:#B85A3A;">Your top picks</p>
-          </td>
-        </tr>
-        <tr>
-          <td align="left" style="padding-bottom:4px;">
-            <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
-              <tr>
-                ${args.quizPicks
-                  .slice(0, 3)
-                  .map((p) => {
-                    const img = p.image_url
-                      ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name || "")}" width="72" height="72" style="width:72px;height:72px;object-fit:contain;display:block;border-radius:10px;background:#f4f0e8;" />`
-                      : `<div style="width:72px;height:72px;background:#ede8e0;border-radius:10px;"></div>`;
-                    return `<td valign="top" style="padding:0 10px 0 0;width:33%;">
-                      <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" style="border:1px solid #e8e0d8;border-radius:12px;background:#fffcfa;overflow:hidden;">
-                        <tr><td align="center" style="padding:10px 8px 6px;">${img}</td></tr>
-                        <tr><td align="center" style="padding:0 8px 10px;">
-                          <p style="margin:0;font-family:${fontSans};font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#B85A3A;">${escapeHtml(p.brand || "")}</p>
-                          <p style="margin:3px 0 0;font-family:${fontDisplay};font-size:12px;font-weight:600;color:#14120F;line-height:1.3;">${escapeHtml(p.name || "")}</p>
-                        </td></tr>
-                      </table>
-                    </td>`;
-                  })
-                  .join("")}
-              </tr>
-            </table>
-          </td>
-        </tr>`
+  const scentDnaHtml =
+    args.scentDna != null
+      ? buildScentDnaEmailBlock(args.scentDna, fontSans, fontDisplay, {
+          variant: args.scentDnaVariant ?? "quiz",
+          firstName: args.displayName,
+        })
       : "";
+
+  const floatingPicksHtml = buildFloatingPicksEmailBlock(
+    args.quizPicks,
+    fontSans,
+    fontDisplay,
+  );
 
   /* ── Layering blend snapshot ── */
   const layerImagesHtml =
@@ -258,12 +249,12 @@ export function buildPilotFollowupEmail(args: BuildPilotEmailArgs): {
                 <tr>
                   <td style="padding-top:14px;">
                     <p class="sub" style="margin:0;font-family:${fontSans};font-size:15px;line-height:24px;color:#4a4540;">
-                      Here&apos;s a snapshot of what we found for you on the waitlist preview. When we launch, the full app will build on this with richer picks, your saved account, and the complete shop flow.
+                      Here&apos;s your fragrance DNA card from the pilot, plus your blend snapshot if you tried layering. Your top bottle matches sit at the end, styled like our shop cards so you can picture them on the shelf.
                     </p>
                   </td>
                 </tr>
 
-                ${picksHtml}
+                ${scentDnaHtml}
                 ${layerHtml}
 
                 <!-- Divider -->
@@ -274,6 +265,8 @@ export function buildPilotFollowupEmail(args: BuildPilotEmailArgs): {
                     </table>
                   </td>
                 </tr>
+
+                ${floatingPicksHtml}
 
                 <!-- Footer note -->
                 <tr>
@@ -339,9 +332,25 @@ export function buildPilotFollowupEmail(args: BuildPilotEmailArgs): {
   const textLines = [
     `Thanks for testing the pilot, ${args.displayName}.`,
     "",
-    "Here's a snapshot from your waitlist preview:",
+    "Your fragrance DNA (from your quiz signals):",
     "",
   ];
+  if (args.scentDna) {
+    const d = args.scentDna;
+    const v = args.scentDnaVariant ?? "quiz";
+    textLines.push(`  In one line: ${buildScentDnaShareHeadline(d)}`);
+    textLines.push(`  ${buildScentDnaShareTagline(d, v)}`);
+    if (d.families.length) {
+      textLines.push(`  Your mix: ${d.families.join(", ")}`);
+    }
+    if (d.topNotes.length) {
+      textLines.push(`  Top notes: ${d.topNotes.join(", ")}`);
+    }
+    if (d.moods.length) {
+      textLines.push(`  Mood: ${d.moods.join(", ")}`);
+    }
+    textLines.push("");
+  }
   if (args.quizPicks.length) {
     textLines.push("Your top picks:");
     for (const p of args.quizPicks.slice(0, 3)) {
@@ -363,7 +372,7 @@ export function buildPilotFollowupEmail(args: BuildPilotEmailArgs): {
   textLines.push("You're still on the list. We'll email you when we open.");
   textLines.push("Questions? Email support@scentrev.com");
   textLines.push("");
-  textLines.push("— ScentRev team");
+  textLines.push("- ScentRev team");
 
   return { subject, html, text: textLines.join("\n") };
 }

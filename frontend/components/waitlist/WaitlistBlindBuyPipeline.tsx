@@ -67,26 +67,26 @@ export default function WaitlistBlindBuyPipeline(): React.ReactElement {
           >
             Blind Buy Score
           </h2>
-          <p className="mt-3 text-sm leading-snug text-[#4A4540] sm:text-[0.9375rem] sm:leading-relaxed">
+          <p className="mt-3 text-sm leading-snug text-[#3A342E] sm:text-[0.9375rem] sm:leading-relaxed">
             We collect what people actually say about each perfume across{' '}
             <span className="font-medium text-[#14120F]">Reddit</span>,{' '}
             <span className="font-medium text-[#14120F]">Facebook</span> (including Marketplace), and the{' '}
             <span className="font-medium text-[#14120F]">open web</span>, then feed it through an integrated pipeline
-            alongside hard metrics on the fragrance itself.
-          </p>
-          <p className="mt-3 text-sm leading-snug text-[#4A4540] sm:text-[0.9375rem] sm:leading-relaxed">
+            alongside hard metrics on the fragrance itself.{' '}
             <span className="font-semibold text-[#14120F]">Blind Buy Score</span> is a single number from{' '}
             <span className="font-semibold tabular-nums text-[#14120F]">0</span> to{' '}
-            <span className="font-semibold tabular-nums text-[#14120F]">5</span>:{' '}
-            <span className="font-medium text-[#14120F]">0</span> means a weak blind buy (high regret risk),{' '}
-            <span className="font-medium text-[#14120F]">5</span> means the crowd signal and the juice&apos;s profile
-            line up for buying unsniffed. It&apos;s a weighted blend so you spend less time hunting threads and more
-            time on scents worth trying, with India&apos;s heat and humidity in the mix.
+            <span className="font-semibold tabular-nums text-[#14120F]">5</span> for how well crowd signal and the
+            juice&apos;s profile line up if you buy unsniffed. It is{' '}
+            <span className="font-medium text-[#14120F]">not</span> a verdict on whether a fragrance is &quot;good&quot;
+            or &quot;bad.&quot; A lower score usually means more polarizing or context-dependent:{' '}
+            <span className="font-medium text-[#14120F]">not for everyone</span>, so buy with care; a higher score
+            suggests a safer unsniffed bet. It&apos;s a weighted blend, tuned for India&apos;s heat and humidity, so you
+            spend less time hunting threads and more time on scents worth trying.
           </p>
         </div>
 
         <div className="mx-auto mt-8 max-w-md sm:mt-9 sm:max-w-lg">
-          <p className="mb-5 text-center text-[9px] font-semibold uppercase tracking-[0.32em] text-[#8A8279] sm:mb-6 sm:text-[10px]">
+          <p className="mb-5 text-center text-[9px] font-semibold uppercase tracking-[0.32em] text-[#A04D2F] sm:mb-6 sm:text-[10px]">
             Signal flow
           </p>
 
@@ -135,9 +135,9 @@ export default function WaitlistBlindBuyPipeline(): React.ReactElement {
               <p className="font-display text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B85A3A] sm:text-[11px] sm:tracking-[0.22em]">
                 Blind Buy Score
               </p>
-              <p className="mt-1 text-[10px] leading-snug text-[#6B645C] sm:text-[11px]">
-                <span className="tabular-nums font-medium text-[#14120F]">0</span> weak blind buy ·{' '}
-                <span className="tabular-nums font-medium text-[#14120F]">5</span> strong blind buy
+              <p className="mt-1 text-[10px] leading-snug text-[#3A342E] sm:text-[11px]">
+                <span className="tabular-nums font-medium text-[#14120F]">0</span> buy with care unsniffed ·{' '}
+                <span className="tabular-nums font-medium text-[#14120F]">5</span> stronger unsniffed fit
               </p>
             </div>
 

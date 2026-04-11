@@ -25,7 +25,7 @@ export default function WaitlistValueTicker(): React.ReactElement {
 
   if (reduceMotion) {
     return (
-      <div className="w-full border-b border-[#D9CFC4] bg-[#EDE7DC] px-4 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-[#6B5A4E]">
+      <div className="w-full border-b border-[#D9CFC4] bg-[#EDE7DC] px-4 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-[#4A3D34]">
         <div className="mx-auto flex max-w-4xl flex-wrap justify-center gap-x-6 gap-y-2 text-center">
           {TICKER_ITEMS.map((label) => (
             <span key={label}>{label}</span>
@@ -37,7 +37,7 @@ export default function WaitlistValueTicker(): React.ReactElement {
 
   return (
     <div
-      className="relative w-full overflow-hidden border-b border-[#D9CFC4] bg-[#EDE7DC] py-2.5 text-[11px] font-medium uppercase tracking-[0.2em] text-[#6B5A4E]"
+      className="relative w-full overflow-hidden border-b border-[#D9CFC4] bg-[#EDE7DC] py-2.5 text-[11px] font-medium uppercase tracking-[0.2em] text-[#4A3D34]"
       aria-hidden
     >
       <div
@@ -47,7 +47,7 @@ export default function WaitlistValueTicker(): React.ReactElement {
         {loop.map((label, i) => (
           <span key={`${label}-${i}`} className="flex shrink-0 items-center gap-10 md:gap-14">
             <span>{label}</span>
-            <span className="text-[#B85A3A]/60" aria-hidden>
+            <span className="text-[#B85A3A]/90" aria-hidden>
               ·
             </span>
           </span>

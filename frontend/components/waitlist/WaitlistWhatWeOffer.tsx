@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Sparkles, FlaskConical, Star, Database } from "lucide-react";
+import { Sparkles, FlaskConical, Star, Database, Gift, Building2 } from "lucide-react";
 
 const FEATURES = [
   {
@@ -16,6 +16,24 @@ const FEATURES = [
   },
   {
     n: "02",
+    icon: Gift,
+    tag: "Gift finder",
+    headline: "Buying for someone else?\nWe’ll narrow it down.",
+    body: "Tell us who they are, optionally pick perfumes they already love (we use those notes like quiz step 2), then occasion and budget. Same vector matching as the quiz - plus an AI summary when Groq is configured.",
+    href: "/gift",
+    cta: "Find a gift",
+  },
+  {
+    n: "03",
+    icon: Building2,
+    tag: "Corporate",
+    headline: "Teams, clients,\nand company milestones.",
+    body: "We offer customized corporate gifting - curated decants and discovery sets, volume-friendly formats, and brand-forward packaging for Indian workplaces. Diwali, year-end thanks, or client programs.",
+    href: "/corporate-gifting",
+    cta: "Explore corporate gifting",
+  },
+  {
+    n: "04",
     icon: FlaskConical,
     tag: "Layering Lab",
     headline: "One scent is good.\nTwo can be something else entirely.",
@@ -24,16 +42,16 @@ const FEATURES = [
     cta: "Open Layering Lab",
   },
   {
-    n: "03",
+    n: "05",
     icon: Star,
     tag: "Blind Buy Score",
     headline: "Scared to buy without smelling it?\nWe did the research for you.",
-    body: "Every perfume gets a score from 0 to 5. Higher means safer to buy without smelling first. We pull from thousands of real reviews so you don't have to spend two hours on Reddit. (Scores are test placeholders on this pilot, real ones come at launch.)",
+    body: "We blend real chatter (Reddit, Facebook, the web) with hard perfume metrics into one 0–5 readout for buying unsniffed. A low number is not saying the juice is bad. It usually means polarizing or not for everyone, so buy with care; higher means crowd signal and profile align better for an unsniffed purchase, with India’s heat and humidity in the weighting. (Pilot scores are placeholders until launch.)",
     href: "/catalog",
     cta: "See scores",
   },
   {
-    n: "04",
+    n: "06",
     icon: Database,
     tag: "Perfume Data",
     headline: "The brand says it lasts 12 hours.\nYour skin says otherwise.",
@@ -83,7 +101,7 @@ export default function WaitlistWhatWeOffer(): React.ReactElement {
               </h3>
 
               {/* Body */}
-              <p className="flex-1 text-sm leading-relaxed text-[#3A3530]">{body}</p>
+              <p className="flex-1 text-sm leading-relaxed text-[#3A342E]">{body}</p>
 
               {/* CTA */}
               <div className="mt-5 flex items-center gap-1.5 text-xs font-semibold text-[#B85A3A]">
@@ -104,7 +122,7 @@ export default function WaitlistWhatWeOffer(): React.ReactElement {
             <h3 className="font-display text-lg font-semibold text-[#14120F] mb-1.5">
               Keep discovering. One new 8ml every month.
             </h3>
-            <p className="text-sm leading-relaxed text-[#3A3530] max-w-lg">
+            <p className="text-sm leading-relaxed text-[#3A342E] max-w-lg">
               Pick a tier. Get a new 8ml sample every month. Your quiz picks it, or you do. Cancel whenever.
             </p>
           </div>

@@ -1,6 +1,6 @@
 /**
  * GET /api/fragrances/[id]/live
- * Volatile PDP fields from Supabase — no FastAPI dependency.
+ * Volatile PDP fields from Supabase - no FastAPI dependency.
  */
 import { NextResponse } from 'next/server';
 import { responseNoStoreHeaders } from '@/lib/waitlist/httpNoStore';

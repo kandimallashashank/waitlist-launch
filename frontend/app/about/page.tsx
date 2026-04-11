@@ -7,7 +7,6 @@ import { Linkedin, Mail } from 'lucide-react';
 const founders = [
   {
     name: 'Shashank Kandimalla',
-    role: 'Founder & CEO',
     bio: 'Perfume collector and data scientist. Started mixing data with perfume in Feb 2026 to make discovery personal for everyone.',
     linkedin: 'https://www.linkedin.com/in/shashankkandimalla/',
     email: 'shashank@scentrev.com',
@@ -15,7 +14,6 @@ const founders = [
   },
   {
     name: 'Soumith Matta',
-    role: 'Co-founder',
     bio: 'Building ScentRev.',
     linkedin: 'https://linkedin.com',
     email: 'soumith@scentrev.com',
@@ -48,7 +46,7 @@ export default function AboutPage() {
               <p>But even picking a decant took 7 to 8 days of research. YouTube, Reddit, fragrance forums. And after all that, I still was not sure if it would work for me. There was no personalised source, no data, just guessing.</p>
               <p>I believe in layering. It creates a scent that is entirely yours. But there was no way to know which combinations would actually work without just trying them.</p>
             </div>
-            <p className="mt-4 text-xs text-[#8A8279]">Shashank Kandimalla, Founder</p>
+            <p className="mt-4 text-xs text-[#8A8279]">Shashank Kandimalla</p>
           </div>
 
           <div className="rounded-2xl border border-[#D4A574]/40 bg-[#FDF6F3] p-6">
@@ -64,7 +62,7 @@ export default function AboutPage() {
 
       </section>
 
-      {/* Founders */}
+      {/* Team */}
       <section className="border-t border-[#E0D8CC] px-5 py-12 sm:px-6">
         <div className="mx-auto max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#B85A3A] text-center mb-8">The Team</p>
@@ -78,7 +76,6 @@ export default function AboutPage() {
                 />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-[#14120F]">{f.name}</p>
-                  <p className="text-xs text-[#6B645C]">{f.role}</p>
                   <p className="mt-1.5 text-xs text-[#5F5C57] leading-relaxed">{f.bio}</p>
                   <div className="mt-2 flex flex-wrap gap-3">
                     <a

@@ -5,6 +5,7 @@ import { WAITLIST_SESSION_COOKIE } from "@/lib/waitlist/sessionJwt";
 
 const GATED_PREFIXES = [
   "/quiz",
+  "/gift",
   "/layering-lab",
   "/catalog",
   "/product",
@@ -19,7 +20,7 @@ function isGatedPath(pathname: string): boolean {
 
 /**
  * When true, preview app routes require a valid waitlist session cookie (redirect
- * to ``/?locked=1`` otherwise). When false/unset, anyone can open Quiz, Layering
+ * to ``/?locked=1#waitlist-form`` otherwise). When false/unset, anyone can open Quiz, Layering
  * Lab, etc.; APIs still require a session for persistence (submit, layering, survey).
  */
 function isPreviewRouteGateEnabled(): boolean {
@@ -41,20 +42,18 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get(WAITLIST_SESSION_COOKIE)?.value;
   const secret = process.env.WAITLIST_PREVIEW_JWT_SECRET?.trim();
   if (!token || !secret) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    url.searchParams.set("locked", "1");
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(
+      new URL("/?locked=1#waitlist-form", request.url),
+    );
   }
 
   try {
     await jwtVerify(token, new TextEncoder().encode(secret));
     return NextResponse.next();
   } catch {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    url.searchParams.set("locked", "1");
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(
+      new URL("/?locked=1#waitlist-form", request.url),
+    );
   }
 }
 
@@ -62,6 +61,8 @@ export const config = {
   matcher: [
     "/quiz",
     "/quiz/:path*",
+    "/gift",
+    "/gift/:path*",
     "/layering-lab",
     "/layering-lab/:path*",
     "/catalog",

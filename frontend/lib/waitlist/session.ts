@@ -39,7 +39,10 @@ export async function getEmailFromWaitlistSessionCookie(
 }
 
 /**
- * Read waitlist session email from a Request (cookie header).
+ * Read waitlist session email from a Request (cookie, then Bearer fallback).
+ *
+ * Cookie is preferred so a stale JWT in ``sessionStorage`` (sent as Bearer) cannot
+ * override the current httpOnly session after refresh or re-signup.
  *
  * Args:
  *   req: Incoming request.
@@ -50,6 +53,16 @@ export async function getEmailFromWaitlistSessionCookie(
 export async function getWaitlistEmailFromRequest(
   req: Request,
 ): Promise<string | null> {
+  const rawCookie = req.headers.get("cookie") ?? "";
+  const match = rawCookie.match(
+    new RegExp(`(?:^|;\\s*)${WAITLIST_SESSION_COOKIE}=([^;]+)`),
+  );
+  const cookieValue = match?.[1] ? decodeURIComponent(match[1]) : undefined;
+  const fromCookie = await getEmailFromWaitlistSessionCookie(cookieValue);
+  if (fromCookie) {
+    return fromCookie;
+  }
+
   const auth = req.headers.get("authorization");
   if (auth?.toLowerCase().startsWith("bearer ")) {
     const token = auth.slice(7).trim();
@@ -61,14 +74,7 @@ export async function getWaitlistEmailFromRequest(
     }
   }
 
-  const raw = req.headers.get("cookie") ?? "";
-  const match = raw.match(
-    new RegExp(
-      `(?:^|;\\s*)${WAITLIST_SESSION_COOKIE}=([^;]+)`,
-    ),
-  );
-  const value = match?.[1] ? decodeURIComponent(match[1]) : undefined;
-  return getEmailFromWaitlistSessionCookie(value);
+  return null;
 }
 
 /**

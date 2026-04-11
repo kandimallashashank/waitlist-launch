@@ -110,7 +110,7 @@ export default function CategoryPillsNav({ activeCategory }: CategoryPillsNavPro
   const [personalizedBuyEligible, setPersonalizedBuyEligible] = useState(false);
 
   useEffect(() => {
-    // Quiz status check not needed in waitlist — "For You" pill is not shown
+    // Quiz status check not needed in waitlist - "For You" pill is not shown
     setPersonalizedBuyEligible(false);
   }, [user]);
 

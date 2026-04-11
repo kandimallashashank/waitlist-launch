@@ -1,6 +1,6 @@
 /**
  * GET /api/fragrances/list-count
- * Filtered total from Supabase — no FastAPI dependency.
+ * Filtered total from Supabase - no FastAPI dependency.
  */
 import { NextResponse } from 'next/server';
 import { responseNoStoreHeaders } from '@/lib/waitlist/httpNoStore';

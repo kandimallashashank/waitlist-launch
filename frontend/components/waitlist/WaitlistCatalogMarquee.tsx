@@ -114,7 +114,7 @@ export default function WaitlistCatalogMarquee(
                     )}
                   </div>
                   <div className="p-3">
-                    <p className="text-[10px] uppercase tracking-wide text-[#5C5A52]">{p.brand_name}</p>
+                    <p className="text-[10px] uppercase tracking-wide text-[#454238]">{p.brand_name}</p>
                     <p className="font-display text-sm text-[#1A1A1A] line-clamp-2">{p.name}</p>
                     <p className="mt-1 text-xs text-[#B85A3A]">
                       Blind-buy score {p.blind_buy_score.toFixed(1)}
@@ -162,7 +162,7 @@ export default function WaitlistCatalogMarquee(
                       )}
                     </div>
                     <div className="p-3">
-                      <p className="text-[10px] uppercase tracking-wide text-[#5C5A52]">
+                      <p className="text-[10px] uppercase tracking-wide text-[#454238]">
                         {p.brand_name}
                       </p>
                       <p className="font-display text-sm text-[#1A1A1A] line-clamp-2">{p.name}</p>
@@ -195,7 +195,7 @@ export default function WaitlistCatalogMarquee(
           </div>
         )}
 
-        <p className="mt-6 text-center text-xs text-white/50">
+        <p className="mt-6 text-center text-xs text-[#D4CFC8]">
           A living slice of our inventory; recommendations use the same signals you see here.
         </p>
       </div>

@@ -32,6 +32,10 @@ interface QuizLoadingScreenProps {
   progress: number;
   isSlow?: boolean;
   title?: string;
+  /** Shown under the progress bar (e.g. first 60s expectation). */
+  expectationNote?: string;
+  /** Shown when ``isSlow`` (e.g. second minute / cold start). */
+  slowExpectationNote?: string;
 }
 
 function subtitleForProgress(progress: number): string {
@@ -46,6 +50,8 @@ export function QuizLoadingScreen({
   progress,
   isSlow = false,
   title = "Analyzing your preferences",
+  expectationNote,
+  slowExpectationNote,
 }: QuizLoadingScreenProps) {
   const [imageIndex, setImageIndex] = useState(0);
 
@@ -145,11 +151,19 @@ export function QuizLoadingScreen({
                 transition={{ duration: 0.45, ease: "easeOut" }}
               />
             </div>
-            <p className="text-sm leading-relaxed text-[#8A6A5D]">
-              {isSlow
-                ? "Taking a little longer building a sharper shortlist…"
-                : "Finding the best matches for your profile."}
-            </p>
+            <div className="space-y-2 text-sm leading-relaxed text-[#8A6A5D]">
+              {expectationNote ? (
+                <p>{expectationNote}</p>
+              ) : (
+                <p>Finding the best matches for your profile.</p>
+              )}
+              {isSlow ? (
+                <p className="text-[13px] text-[#6B6560]">
+                  {slowExpectationNote ??
+                    "Taking a little longer building a sharper shortlist…"}
+                </p>
+              ) : null}
+            </div>
           </div>
         </section>
 

@@ -15,8 +15,8 @@ export interface QuizOption {
   icon?: React.ReactNode;
 }
 
-/** Fallback gradient + icon per category value */
-const CATEGORY_FALLBACKS: Record<string, { gradient: string; icon: React.ReactNode }> = {
+/** Fallback gradient and optional center icon when ``imageUrl`` is omitted. */
+const CATEGORY_FALLBACKS: Record<string, { gradient: string; icon?: React.ReactNode }> = {
   men: { gradient: "from-slate-800 via-slate-700 to-slate-900", icon: <Wind className="w-10 h-10 text-white/60" /> },
   women: { gradient: "from-rose-300 via-pink-200 to-rose-400", icon: <Sparkles className="w-10 h-10 text-white/70" /> },
   unisex: { gradient: "from-amber-700 via-amber-600 to-amber-800", icon: <Droplets className="w-10 h-10 text-white/60" /> },
@@ -32,8 +32,20 @@ const CATEGORY_FALLBACKS: Record<string, { gradient: string; icon: React.ReactNo
   confident: { gradient: "from-zinc-800 via-zinc-700 to-zinc-900", icon: <Zap className="w-10 h-10 text-white/60" /> },
   romantic: { gradient: "from-rose-700 via-pink-600 to-rose-800", icon: <Sparkles className="w-10 h-10 text-white/70" /> },
   fresh_clean: { gradient: "from-sky-500 via-cyan-400 to-sky-600", icon: <Wind className="w-10 h-10 text-white/70" /> },
+  sweet_gourmand: { gradient: "from-amber-800 via-orange-700 to-amber-900", icon: <Coffee className="w-10 h-10 text-white/60" /> },
+  woody_spicy: { gradient: "from-stone-800 via-amber-900 to-stone-950", icon: <Leaf className="w-10 h-10 text-white/60" /> },
+  unsure: { gradient: "from-slate-500 via-slate-400 to-slate-600", icon: <Sparkles className="w-10 h-10 text-white/70" /> },
+  humid: { gradient: "from-teal-600 via-cyan-500 to-emerald-700", icon: <Droplets className="w-10 h-10 text-white/70" /> },
+  dry_cold: { gradient: "from-slate-400 via-sky-300 to-slate-500", icon: <Wind className="w-10 h-10 text-white/80" /> },
+  ac_indoor: { gradient: "from-slate-600 via-zinc-500 to-slate-700", icon: <Coffee className="w-10 h-10 text-white/60" /> },
   energetic: { gradient: "from-orange-500 via-amber-400 to-orange-600", icon: <Zap className="w-10 h-10 text-white/70" /> },
   mysterious: { gradient: "from-violet-950 via-purple-900 to-violet-950", icon: <Moon className="w-10 h-10 text-white/60" /> },
+  /** Gift flow: age band tiles use gradient only (no stock photos). */
+  under_18: { gradient: "from-sky-800 via-cyan-900 to-slate-950" },
+  age_18_24: { gradient: "from-orange-800 via-amber-900 to-stone-950" },
+  age_25_34: { gradient: "from-emerald-900 via-teal-950 to-slate-950" },
+  age_35_44: { gradient: "from-violet-950 via-purple-950 to-stone-950" },
+  age_45_plus: { gradient: "from-stone-800 via-neutral-900 to-stone-950" },
 };
 
 function getFallback(value: string) {
@@ -53,14 +65,16 @@ interface TypeAProps {
 }
 export function TypeA({ options, selected, onSelect }: TypeAProps) {
   const cols =
-    options.length >= 3
-      ? "grid-cols-1 sm:grid-cols-3"
-      : options.length === 2
-        ? "grid-cols-2"
-        : "grid-cols-1";
+    options.length === 4
+      ? "grid-cols-2 sm:grid-cols-2"
+      : options.length >= 3
+        ? "grid-cols-3 sm:grid-cols-3"
+        : options.length === 2
+          ? "grid-cols-2"
+          : "grid-cols-1";
 
   return (
-    <div className={`grid ${cols} gap-3 sm:gap-4 w-full max-w-3xl mx-auto`}>
+    <div className={`grid ${cols} w-full max-w-3xl mx-auto gap-2 sm:gap-4`}>
       {options.map((opt, optIndex) => {
         const active = selected === opt.value;
         const fallback = getFallback(opt.value);
@@ -70,10 +84,10 @@ export function TypeA({ options, selected, onSelect }: TypeAProps) {
             key={opt.value}
             type="button"
             onClick={() => onSelect(opt.value)}
-            className={`group relative w-full overflow-hidden rounded-2xl transition-colors duration-200 aspect-[5/6] max-sm:max-h-[min(70vw,22rem)] sm:aspect-auto sm:h-64 sm:max-h-none ${
+            className={`group relative w-full overflow-hidden rounded-xl transition-transform duration-200 sm:rounded-2xl max-sm:h-[min(30svh,168px)] max-sm:min-h-0 sm:aspect-auto sm:h-64 ${
               active
                 ? "ring-[3px] ring-[#B85A3A] shadow-[0_12px_40px_rgba(184,90,58,0.35)]"
-                : "ring-1 ring-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.18)] hover:shadow-[0_12px_36px_rgba(0,0,0,0.28)]"
+                : "ring-1 ring-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.18)] active:scale-[0.98] sm:hover:shadow-[0_12px_36px_rgba(0,0,0,0.28)]"
             }`}
           >
             {opt.imageUrl ? (
@@ -87,9 +101,11 @@ export function TypeA({ options, selected, onSelect }: TypeAProps) {
               />
             ) : (
               <div className={`absolute inset-0 bg-gradient-to-br ${fallback.gradient}`}>
-                <div className="absolute inset-0 flex items-center justify-center opacity-30">
-                  {fallback.icon}
-                </div>
+                {fallback.icon != null ? (
+                  <div className="absolute inset-0 flex items-center justify-center opacity-30">
+                    {fallback.icon}
+                  </div>
+                ) : null}
               </div>
             )}
 
@@ -101,8 +117,8 @@ export function TypeA({ options, selected, onSelect }: TypeAProps) {
             {active && <div className="absolute inset-0 bg-[#B85A3A]/20" />}
 
             {/* Label */}
-            <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-              <span className="text-white font-bold uppercase tracking-[0.18em] text-sm drop-shadow-sm">
+            <div className="absolute inset-x-0 bottom-0 p-2.5 sm:p-5">
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-white drop-shadow-sm sm:text-sm sm:tracking-[0.18em]">
                 {opt.label}
               </span>
               {opt.subline && (
@@ -137,7 +153,7 @@ interface TypeBProps {
 }
 export function TypeB({ options, selected, onToggle, maxSelect, onFilledToMax }: TypeBProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 w-full max-w-5xl mx-auto">
+    <div className="mx-auto grid w-full max-w-5xl grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4">
       {options.map((opt) => {
         const isSelected = selected.includes(opt.value);
         const isDisabled = !isSelected && maxSelect !== undefined && selected.length >= maxSelect;
@@ -158,18 +174,25 @@ export function TypeB({ options, selected, onToggle, maxSelect, onFilledToMax }:
               onToggle(opt.value);
             }}
             disabled={isDisabled}
-            className={`flex flex-col overflow-hidden rounded-2xl text-left transition-colors duration-200 ${
+            className={`flex flex-col overflow-hidden rounded-xl text-left transition-transform duration-200 sm:rounded-2xl ${
               isSelected
                 ? "ring-[3px] ring-[#B85A3A] shadow-[0_10px_32px_rgba(184,90,58,0.28)]"
                 : isDisabled
                   ? "opacity-30 cursor-not-allowed"
-                  : "ring-1 ring-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.14)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.22)]"
+                  : "ring-1 ring-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.14)] active:scale-[0.99] sm:hover:shadow-[0_10px_28px_rgba(0,0,0,0.22)]"
             }`}
           >
-            {/* Image area */}
-            <div className="relative aspect-[4/3] w-full overflow-hidden">
+            {/* Image area — shorter on phones so grids do not dominate the viewport */}
+            <div className="relative h-[92px] w-full shrink-0 overflow-hidden sm:aspect-[4/3] sm:h-auto sm:min-h-0">
               {opt.imageUrl ? (
-                <img src={opt.imageUrl} alt="" className="h-full w-full object-cover" />
+                <img
+                  src={opt.imageUrl}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  decoding="async"
+                  loading="eager"
+                  referrerPolicy="no-referrer"
+                />
               ) : (
                 <div className={`h-full w-full bg-gradient-to-br ${fallback.gradient} flex items-center justify-center`}>
                   <div className="opacity-40">{fallback.icon}</div>
@@ -184,12 +207,12 @@ export function TypeB({ options, selected, onToggle, maxSelect, onFilledToMax }:
                 </div>
               )}
               {/* Label overlay on image */}
-              <div className="absolute inset-x-0 bottom-0 p-3">
-                <p className={`font-bold text-[11px] uppercase tracking-[0.12em] leading-tight text-white drop-shadow-sm`}>
+              <div className="absolute inset-x-0 bottom-0 p-2 sm:p-3">
+                <p className="text-[9px] font-bold uppercase leading-tight tracking-[0.1em] text-white drop-shadow-sm sm:text-[11px] sm:tracking-[0.12em]">
                   {opt.label}
                 </p>
                 {opt.subline && (
-                  <p className="text-white/65 text-[10px] mt-0.5 leading-snug">{opt.subline}</p>
+                  <p className="mt-0.5 text-[9px] leading-snug text-white/65 sm:text-[10px]">{opt.subline}</p>
                 )}
               </div>
             </div>
@@ -219,7 +242,7 @@ export function TypeC({ options, selected, onSelect }: TypeCProps) {
           : "grid-cols-1 sm:grid-cols-3"
         : "grid-cols-2 md:grid-cols-3";
     return (
-      <div className={`grid ${cols} w-full max-w-5xl gap-3 sm:gap-4 mx-auto`}>
+      <div className={`mx-auto grid w-full max-w-5xl gap-2 sm:gap-4 ${cols}`}>
         {options.map((opt) => {
           const active = selected === opt.value;
           const fallback = getFallback(opt.value);
@@ -228,15 +251,22 @@ export function TypeC({ options, selected, onSelect }: TypeCProps) {
               key={opt.value}
               type="button"
               onClick={() => onSelect(opt.value)}
-              className={`flex flex-col overflow-hidden rounded-2xl text-left transition-colors duration-200 ${
+              className={`flex flex-col overflow-hidden rounded-xl text-left transition-transform duration-200 sm:rounded-2xl ${
                 active
                   ? "ring-[3px] ring-[#B85A3A] shadow-[0_10px_32px_rgba(184,90,58,0.28)]"
-                  : "ring-1 ring-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.14)] hover:shadow-[0_10px_28px_rgba(0,0,0,0.22)]"
+                  : "ring-1 ring-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.14)] active:scale-[0.99] sm:hover:shadow-[0_10px_28px_rgba(0,0,0,0.22)]"
               }`}
             >
-              <div className="relative aspect-[3/2] w-full overflow-hidden">
+              <div className="relative h-[100px] w-full shrink-0 overflow-hidden sm:aspect-[3/2] sm:h-auto">
                 {opt.imageUrl ? (
-                  <img src={opt.imageUrl} alt="" className="h-full w-full object-cover" />
+                  <img
+                    src={opt.imageUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    decoding="async"
+                    loading="eager"
+                    referrerPolicy="no-referrer"
+                  />
                 ) : (
                   <div className={`h-full w-full bg-gradient-to-br ${fallback.gradient} flex items-center justify-center`}>
                     <div className="opacity-40">{fallback.icon}</div>
@@ -252,12 +282,12 @@ export function TypeC({ options, selected, onSelect }: TypeCProps) {
                   </div>
                 )}
                 {/* Label on image */}
-                <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
-                  <p className="font-bold text-[11px] sm:text-xs uppercase tracking-[0.12em] leading-tight text-white drop-shadow-sm">
+                <div className="absolute inset-x-0 bottom-0 p-2 sm:p-4">
+                  <p className="text-[9px] font-bold uppercase leading-tight tracking-[0.1em] text-white drop-shadow-sm sm:text-xs sm:tracking-[0.12em]">
                     {opt.label}
                   </p>
                   {opt.subline && (
-                    <p className="text-white/65 text-[9px] sm:text-[10px] mt-0.5 leading-snug">{opt.subline}</p>
+                    <p className="mt-0.5 text-[8px] leading-snug text-white/65 sm:text-[10px]">{opt.subline}</p>
                   )}
                 </div>
               </div>
@@ -343,11 +373,11 @@ interface TypeDProps {
 }
 export function TypeD({ options, selected, onToggle, maxSelect, hint, onFilledToMax }: TypeDProps) {
   return (
-    <div className="w-full max-w-3xl sm:max-w-4xl mx-auto px-1">
+    <div className="mx-auto w-full max-w-3xl px-0.5 sm:max-w-4xl sm:px-1">
       {hint && (
-        <p className="text-center text-sm text-[#8A6A5D] mb-5 leading-relaxed">{hint}</p>
+        <p className="mb-3 text-center text-xs leading-relaxed text-[#8A6A5D] sm:mb-5 sm:text-sm">{hint}</p>
       )}
-      <div className="flex flex-wrap gap-2 justify-center">
+      <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
         {options.map((opt) => {
           const isSelected = selected.includes(opt.value);
           const isDisabled = !isSelected && maxSelect !== undefined && selected.length >= maxSelect;
@@ -367,7 +397,7 @@ export function TypeD({ options, selected, onToggle, maxSelect, hint, onFilledTo
                 onToggle(opt.value);
               }}
               disabled={isDisabled}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors duration-200 sm:px-4 sm:py-2 sm:text-sm ${
                 isSelected
                   ? "bg-[#1A1A1A] text-white shadow-[0_4px_14px_rgba(26,26,26,0.22)]"
                   : isDisabled
@@ -416,40 +446,51 @@ export function TypeF({ options, selected, onSelect, showLevelBar = true }: Type
               active ? "bg-[#B85A3A]" : "bg-[#EDE0D8]"
             }`} />
 
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <p className={`font-semibold text-[15px] leading-snug transition-colors ${
-                  active ? "text-[#B85A3A]" : "text-[#1A1A1A]"
-                }`}>
-                  {opt.label}
-                </p>
-                {opt.subline && (
-                  <p className="text-[13px] text-[#8A6A5D] mt-0.5 leading-snug">{opt.subline}</p>
-                )}
-                {showLevelBar && (
-                  <div className="flex gap-1 mt-2.5">
-                    {Array.from({ length: total }).map((_, j) => (
-                      <div
-                        key={j}
-                        className={`h-1 rounded-full ${
-                          j < level
-                            ? active
-                              ? "w-5 bg-[#B85A3A]"
-                              : "w-5 bg-[#C8956E]"
-                            : active
-                              ? "w-3.5 bg-white/30"
-                              : "w-3.5 bg-[#E8D4C4]"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                )}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 flex-1 items-start gap-3">
+                {opt.imageUrl ? (
+                  <img
+                    src={opt.imageUrl}
+                    alt=""
+                    className="mt-0.5 h-14 w-14 shrink-0 rounded-xl object-cover ring-1 ring-[#E8D4C4]/80"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                ) : null}
+                <div className="min-w-0 flex-1">
+                  <p className={`font-semibold text-[15px] leading-snug transition-colors ${
+                    active ? "text-[#B85A3A]" : "text-[#1A1A1A]"
+                  }`}>
+                    {opt.label}
+                  </p>
+                  {opt.subline && (
+                    <p className="text-[13px] text-[#8A6A5D] mt-0.5 leading-snug">{opt.subline}</p>
+                  )}
+                  {showLevelBar && (
+                    <div className="flex gap-1 mt-2.5">
+                      {Array.from({ length: total }).map((_, j) => (
+                        <div
+                          key={j}
+                          className={`h-1 rounded-full ${
+                            j < level
+                              ? active
+                                ? "w-5 bg-[#B85A3A]"
+                                : "w-5 bg-[#C8956E]"
+                              : active
+                                ? "w-3.5 bg-white/30"
+                                : "w-3.5 bg-[#E8D4C4]"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+              <div className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                 active ? "border-[#B85A3A] bg-[#B85A3A]" : "border-[#D0CBC6]"
               }`}>
-                {active && <div className="w-2 h-2 rounded-full bg-white" />}
+                {active && <div className="h-2 w-2 rounded-full bg-white" />}
               </div>
             </div>
           </button>

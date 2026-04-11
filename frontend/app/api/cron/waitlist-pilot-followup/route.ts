@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 import { buildPilotFollowupEmail } from "@/lib/email/waitlistPilotFollowup";
+import { buildScentDnaCardData } from "@/lib/waitlist/scentDnaCardData";
 import {
   getSupabaseAdmin,
   sendViaResend,
@@ -78,24 +79,69 @@ export async function GET(req: Request) {
       email.split("@")[0] ||
       "there";
 
-    const { data: prefRows } = await supabase
+    const { data: quizPrefRows } = await supabase
       .from("waitlist_quiz_preferences")
-      .select("recommendation_snapshot")
+      .select("recommendation_snapshot, preference_analytics, answers")
       .eq("email", email)
+      .order("updated_at", { ascending: false })
       .limit(1);
-    const prefs = prefRows?.[0];
-
-    const snap = prefs?.recommendation_snapshot as
-      | Array<{ name?: string; brand?: string; image_url?: string | null; primary_image_url?: string | null }>
+    const quizPref = quizPrefRows?.[0] as
+      | {
+          recommendation_snapshot?: unknown;
+          preference_analytics?: unknown;
+          answers?: unknown;
+        }
       | undefined;
+
+    const { data: giftPrefRows } = await supabase
+      .from("waitlist_gift_preferences")
+      .select("recommendation_snapshot, preference_analytics, derived_quiz_answers")
+      .eq("email", email)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+    const giftPref = giftPrefRows?.[0] as
+      | {
+          recommendation_snapshot?: unknown;
+          preference_analytics?: unknown;
+          derived_quiz_answers?: unknown;
+        }
+      | undefined;
+
+    const quizSnap = quizPref?.recommendation_snapshot;
+    const giftSnap = giftPref?.recommendation_snapshot;
+    const snap =
+      Array.isArray(quizSnap) && quizSnap.length > 0
+        ? quizSnap
+        : Array.isArray(giftSnap)
+          ? giftSnap
+          : [];
+
     const quizPicks = Array.isArray(snap)
-      ? snap.slice(0, 3).map((p) => ({
-          name: typeof p.name === "string" ? p.name : "",
-          brand: typeof p.brand === "string" ? p.brand : "",
-          image_url: (typeof p.image_url === "string" ? p.image_url : null) ||
-                     (typeof p.primary_image_url === "string" ? p.primary_image_url : null),
-        }))
+      ? snap.slice(0, 3).map(
+          (p: {
+            name?: string;
+            brand?: string;
+            image_url?: string | null;
+            primary_image_url?: string | null;
+          }) => ({
+            name: typeof p.name === "string" ? p.name : "",
+            brand: typeof p.brand === "string" ? p.brand : "",
+            image_url:
+              (typeof p.image_url === "string" ? p.image_url : null) ||
+              (typeof p.primary_image_url === "string" ? p.primary_image_url : null),
+          }),
+        )
       : [];
+
+    const preferenceAnalytics =
+      (quizPref?.preference_analytics ??
+        giftPref?.preference_analytics ??
+        null) as Record<string, unknown> | null;
+    const answersPayload =
+      (quizPref?.answers ?? giftPref?.derived_quiz_answers ?? null) as
+        | Record<string, unknown>
+        | null;
+    const scentDna = buildScentDnaCardData(preferenceAnalytics, answersPayload);
 
     const { data: layerRows } = await supabase
       .from("waitlist_layering_events")
@@ -115,9 +161,14 @@ export async function GET(req: Request) {
         }
       | undefined;
 
+    const scentDnaVariant: "quiz" | "gift" =
+      quizPref?.answers != null ? "quiz" : "gift";
+
     const { subject, html, text } = buildPilotFollowupEmail({
       displayName: display,
       quizPicks,
+      scentDna,
+      scentDnaVariant,
       layeringSummary: lastLayer?.summary_snippet ?? null,
       layeringScore:
         typeof lastLayer?.harmony_score === "number"

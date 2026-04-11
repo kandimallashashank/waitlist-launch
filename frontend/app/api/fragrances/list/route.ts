@@ -1,6 +1,6 @@
 /**
  * GET /api/fragrances/list
- * Catalog listing from Supabase — no FastAPI dependency.
+ * Catalog listing from Supabase - no FastAPI dependency.
  */
 import { NextResponse } from 'next/server';
 import { responseNoStoreHeaders } from '@/lib/waitlist/httpNoStore';

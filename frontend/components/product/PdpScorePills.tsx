@@ -29,7 +29,7 @@ export default function PdpScorePills({ fragranceId }: { fragranceId: string }) 
   const [complimentFactor, setComplimentFactor] = useState<number | null>(null);
 
   useEffect(() => {
-    // pdp-scores endpoint requires FastAPI — not available in waitlist
+    // pdp-scores endpoint requires FastAPI - not available in waitlist
   }, [fragranceId]);
 
   if (complimentFactor == null) return null;

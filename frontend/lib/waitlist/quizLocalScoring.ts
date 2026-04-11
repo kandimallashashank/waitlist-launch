@@ -3,6 +3,7 @@
  */
 
 import type { QuizAnswersPayload, QuizRecommendation } from "@/lib/waitlist/quizPipeline";
+import { buildQuizMatchReasons } from "@/lib/waitlist/quizMatchReasons";
 
 export interface RawFragranceRow {
   id: string;
@@ -149,6 +150,13 @@ export function scoreFragranceRowsForQuiz(
         name: typeof f.name === "string" ? f.name : "Fragrance",
         image_url: typeof img === "string" ? img : null,
         match_score,
+        match_reasons: buildQuizMatchReasons(answers, {
+          notes_top: f.notes_top,
+          notes_middle: f.notes_middle,
+          notes_base: f.notes_base,
+          main_accords: f.main_accords,
+          scent_family: f.scent_family ?? null,
+        }),
       };
     });
 

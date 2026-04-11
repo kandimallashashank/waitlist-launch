@@ -220,7 +220,7 @@ const LIVE_FIELDS_FETCH_CONCURRENCY = 4;
  *     Map of id → live row; empty map on failure.
  */
 export async function fetchFragranceLiveFields(_ids: string[]): Promise<Map<string, FragranceLiveFieldsRow>> {
-  // Live fields are served via Supabase through /api/fragrances/[id]/live — no FastAPI needed.
+  // Live fields are served via Supabase through /api/fragrances/[id]/live - no FastAPI needed.
   return new Map();
 }
 
@@ -531,7 +531,7 @@ async function fetchPerfumesFromApi(params?: PerfumeQueryParams): Promise<Perfum
 
   try {
     const query = buildPerfumeQuery(params);
-    // Always use the Next.js proxy route — never FastAPI directly
+    // Always use the Next.js proxy route - never FastAPI directly
     const url = `/api/fragrances/list?${query || 'limit=500'}`;
     const response = await fetch(url, {
       signal: controller.signal,

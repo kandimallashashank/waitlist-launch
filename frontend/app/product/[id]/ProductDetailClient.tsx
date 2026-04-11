@@ -36,7 +36,9 @@ const ReviewSection = (_p: {
 const YouMayAlsoLike = dynamic(() => import('@/components/product/YouMayAlsoLike'), {
   loading: () => <div className="h-48 animate-pulse rounded-xl bg-neutral-50" />,
 });
-const BlindBuySection = (_p: Record<string, unknown>): null => null;
+const BlindBuySection = dynamic(() => import('@/components/product/BlindBuySection'), {
+  loading: () => <div className="h-32 animate-pulse rounded-xl bg-neutral-50" />,
+});
 const HandFilledSection = (): null => null;
 const ProductFAQ = (): null => null;
 const FragranceDNA = dynamic(() => import('@/components/product/FragranceDNA'), {
@@ -366,6 +368,7 @@ function ProductDetailPageContent() {
     try {
       let product: Fragrance | null = null;
       let apiFailed = false;
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
       try {
         const [staticRes, liveRes] = await Promise.allSettled([
@@ -427,13 +430,9 @@ function ProductDetailPageContent() {
         viewSource
       );
 
-      // Global decant-case rows (Next.js API — no FastAPI)
+      // Fetch global decant inventory (shared pool across all perfumes)
       try {
-        const invRes = await fetch('/api/decant-inventory/global', {
-          headers: { Accept: 'application/json' },
-          signal: AbortSignal.timeout(8000),
-          cache: 'no-store',
-        });
+        const invRes = await fetch(`${API_URL}/api/v1/decant-inventory/global`);
         if (invRes.ok) setDecantInventory(await invRes.json());
       } catch {}
     } catch (error: unknown) {
@@ -838,7 +837,7 @@ function ProductDetailPageContent() {
                 <>
                   {/* Main Image */}
                   <div
-                    className="relative group isolate flex aspect-[4/5] max-h-[440px] sm:aspect-[16/11] sm:max-h-none flex-col items-center justify-end overflow-hidden rounded-3xl border border-[#E4D9D2]/90 pb-5 shadow-[0_24px_56px_-24px_rgba(24,16,12,0.22),inset_0_1px_0_rgba(255,255,255,0.55)]"
+                    className="relative group isolate mx-auto flex w-full max-w-[min(260px,82vw)] flex-col items-center justify-end overflow-hidden rounded-3xl border border-[#E4D9D2]/90 pb-4 shadow-[0_24px_56px_-24px_rgba(24,16,12,0.22),inset_0_1px_0_rgba(255,255,255,0.55)] aspect-square max-sm:pb-3 sm:mx-0 sm:aspect-[16/11] sm:max-h-none sm:max-w-none sm:pb-5"
                   >
                     {/*
                       Studio cyclorama. Catalog shots use /api/proxy-image?mat=1 (knockout) when
@@ -895,7 +894,7 @@ function ProductDetailPageContent() {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                          className="relative flex h-full min-h-0 w-full flex-1 flex-col items-center justify-end pb-0 pt-10 sm:pt-12"
+                          className="relative flex h-full min-h-0 w-full flex-1 flex-col items-center justify-end pb-0 pt-6 max-sm:pt-5 sm:pt-12"
                         >
                           {/*
                             Mat knockout: same single contact shadow as PLP / carousel cards (no
@@ -904,19 +903,19 @@ function ProductDetailPageContent() {
                           */}
                           <div
                             ref={heroImageStageRef}
-                            className="relative flex min-h-0 w-full flex-1 items-end justify-center px-4 sm:px-8"
+                            className="relative flex min-h-0 w-full flex-1 items-end justify-center px-3 max-sm:px-2 sm:px-8"
                           >
                             <Image
                               src={heroSrc}
                               alt={fragrance.name}
                               width={520}
                               height={520}
-                              className="h-full w-full max-h-[min(82vw,420px)] sm:max-h-[min(62vw,500px)] object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                              className="h-full w-full max-h-[min(100%,200px)] object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03] sm:max-h-[min(62vw,500px)]"
                               priority
                               fetchPriority="high"
                               loading="eager"
                               unoptimized={isProxied(heroSrc)}
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 520px"
+                              sizes="(max-width: 640px) 280px, (max-width: 1200px) 50vw, 520px"
                               style={heroUsesMatKnockout ? undefined : { mixBlendMode: 'multiply' }}
                               onError={(e) => {
                                 const img = e.currentTarget;

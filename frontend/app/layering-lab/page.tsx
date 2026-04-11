@@ -464,7 +464,7 @@ function ConcentrationBadge({ concentration }: { concentration?: string }) {
   );
 }
 
-/** Compact horizontal card for mobile — tap to add, shows image + name + remove. */
+/** Compact horizontal card for mobile - tap to add, shows image + name + remove. */
 function MobileFragranceSlot({
   index,
   fragrance,

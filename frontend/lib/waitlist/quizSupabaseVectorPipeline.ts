@@ -18,6 +18,7 @@ import type {
   QuizRecommendation,
   QuizRecommendationSnapshotRow,
 } from "@/lib/waitlist/quizPipeline";
+import { buildQuizMatchReasons } from "@/lib/waitlist/quizMatchReasons";
 import { buildPilotDnaCardFromAnswers } from "@/lib/waitlist/quizResultMappers";
 
 interface SearchFragranceRow {
@@ -28,6 +29,8 @@ interface SearchFragranceRow {
   scent_family: string | null;
   primary_image_url: string | null;
   similarity_score: number;
+  /** Catalog numeric sillage (~1–10); used for soft post-filter vs ``preferred_sillage``. */
+  sillage?: number | null;
   notes_top: unknown;
   notes_middle: unknown;
   notes_base: unknown;
@@ -134,6 +137,41 @@ function passesSeasons(rowSeasons: unknown, preferred: string[]): boolean {
   });
 }
 
+/**
+ * Soft match on catalog ``sillage`` (RPC returns ~1–10). Missing values pass so sparse data
+ * does not empty the list; embeddings still do most of the work.
+ *
+ * Args:
+ *   rowSillage: Numeric sillage from ``search_fragrances_full``.
+ *   preferred: Quiz ``preferred_sillage`` (intimate / moderate / strong / beast).
+ *
+ * Returns:
+ *   Whether the row fits the preferred band.
+ */
+function passesPreferredSillage(
+  rowSillage: unknown,
+  preferred: string | null | undefined,
+): boolean {
+  const p = (preferred ?? "").toLowerCase().trim().replace(/\s+/g, "_");
+  if (!p || p === "moderate") {
+    return true;
+  }
+  if (p !== "intimate" && p !== "strong" && p !== "beast") {
+    return true;
+  }
+  const s = typeof rowSillage === "number" ? rowSillage : Number(rowSillage);
+  if (!Number.isFinite(s)) {
+    return true;
+  }
+  if (p === "intimate") {
+    return s <= 6.5;
+  }
+  if (p === "strong") {
+    return s >= 4;
+  }
+  return s >= 6.5;
+}
+
 async function fetchSlugMap(
   supabase: SupabaseClient,
   ids: string[],
@@ -166,6 +204,7 @@ function recommendationRowsToSnapshot(
     slug: r.slug ?? null,
     image_url: r.image_url ?? null,
     match_score: r.match_score,
+    match_reasons: r.match_reasons,
   }));
 }
 
@@ -292,7 +331,7 @@ export async function runWaitlistQuizSupabasePipeline(
   const families = answers.scent_families ?? [];
   const seasons = answers.preferred_seasons ?? [];
 
-  const filterRows = (relaxFamilies: boolean): SearchFragranceRow[] =>
+  const filterRows = (relaxFamilies: boolean, relaxSillage: boolean): SearchFragranceRow[] =>
     rawRows.filter((row) => {
       const blob = rowNotesBlob(row);
       if (!passesDislikedNotes(blob, disliked)) {
@@ -304,12 +343,21 @@ export async function runWaitlistQuizSupabasePipeline(
       if (!passesSeasons(row.seasons, seasons)) {
         return false;
       }
+      if (
+        !relaxSillage &&
+        !passesPreferredSillage(row.sillage, answers.preferred_sillage)
+      ) {
+        return false;
+      }
       return true;
     });
 
-  let filtered = filterRows(false);
+  let filtered = filterRows(false, false);
   if (filtered.length < 6 && families.length) {
-    filtered = filterRows(true);
+    filtered = filterRows(true, false);
+  }
+  if (filtered.length < 6) {
+    filtered = filterRows(true, true);
   }
   if (!filtered.length) {
     filtered = [...rawRows].sort(
@@ -335,6 +383,13 @@ export async function runWaitlistQuizSupabasePipeline(
       Math.round(
         Math.max(0, Math.min(1, r.similarity_score ?? 0)) * 1000,
       ) / 10,
+    match_reasons: buildQuizMatchReasons(answers, {
+      notes_top: jsonToStringArr(r.notes_top),
+      notes_middle: jsonToStringArr(r.notes_middle),
+      notes_base: jsonToStringArr(r.notes_base),
+      main_accords: jsonToStringArr(r.main_accords),
+      scent_family: r.scent_family,
+    }),
   }));
 
   const recommendations = await enrichQuizRecommendationsWithImages(

@@ -1,7 +1,7 @@
 /**
  * GET /api/waitlist-preview/fragrances/[id]/similar
  *
- * "Smells Similar To" — reads the `similar_perfumes` UUID array from the
+ * "Smells Similar To" - reads the `similar_perfumes` UUID array from the
  * perfumes table, then fetches card rows from v_perfumes_card.
  * Falls back to scent_family + gender match when the array is empty.
  *

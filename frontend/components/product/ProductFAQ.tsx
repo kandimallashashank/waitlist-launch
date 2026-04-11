@@ -27,7 +27,7 @@ const faqs = [
   },
   {
     q: 'What is the Blind Buy Score?',
-    a: 'It\'s our proprietary rating (0-5) that predicts how likely you are to love a fragrance without smelling it first. It factors in longevity, sillage, versatility, community sentiment from 100k+ data points, and climate suitability for Indian weather.',
+    a: 'It is a 0–5 readout for buying unsniffed: we combine what people say (e.g. Reddit, Facebook, the open web) with hard perfume metrics in one weighted pipeline, tuned for Indian heat and humidity. It is not a quality grade. A low score often means the scent is divisive or not for everyone, so buy with care; a high score means signals line up better for purchasing without smelling first.',
   },
   {
     q: 'How are decants filled and stored?',

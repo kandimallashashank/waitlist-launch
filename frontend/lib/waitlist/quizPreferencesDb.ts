@@ -1,15 +1,17 @@
 /**
- * Persist waitlist quiz preferences (no unique on plain email in DB use select + update/insert).
+ * Persist waitlist quiz preferences via Supabase upsert on ``email`` (unique).
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { normalizeWaitlistEmail } from "@/lib/waitlist/emailValidation";
 
 /**
  * Save quiz answers and recommendation snapshot for a waitlist email.
  *
  * Args:
  *   supabase: Service client.
- *   email: Normalized email.
+ *   email: Waitlist email (normalized to lowercase).
  *   answers: Quiz answers JSON.
  *   recommendationSnapshot: Serializable recommendation list.
  *   options: Optional ``scent_profile`` / ``preference_analytics`` JSON (columns added via migration).
@@ -24,19 +26,8 @@ export async function saveWaitlistQuizPreferences(
     preference_analytics?: unknown;
   },
 ): Promise<void> {
+  const normalized = normalizeWaitlistEmail(email);
   const now = new Date().toISOString();
-  const { data: existing, error: selErr } = await supabase
-    .from("waitlist_quiz_preferences")
-    .select("id")
-    .eq("email", email)
-    .order("updated_at", { ascending: false })
-    .limit(1);
-
-  if (selErr) {
-    throw new Error(selErr.message);
-  }
-
-  const row = existing?.[0] as { id?: string } | undefined;
 
   const profilePatch =
     options?.scent_profile !== undefined
@@ -47,34 +38,19 @@ export async function saveWaitlistQuizPreferences(
       ? { preference_analytics: options.preference_analytics }
       : {};
 
-  if (row?.id) {
-    const { error } = await supabase
-      .from("waitlist_quiz_preferences")
-      .update({
-        answers,
-        recommendation_snapshot: recommendationSnapshot,
-        quiz_completed_at: now,
-        updated_at: now,
-        ...profilePatch,
-        ...analyticsPatch,
-      })
-      .eq("id", row.id);
-    if (error) {
-      throw new Error(error.message);
-    }
-    return;
-  }
+  const { error } = await supabase.from("waitlist_quiz_preferences").upsert(
+    {
+      email: normalized,
+      answers,
+      recommendation_snapshot: recommendationSnapshot,
+      quiz_completed_at: now,
+      updated_at: now,
+      ...profilePatch,
+      ...analyticsPatch,
+    },
+    { onConflict: "email" },
+  );
 
-  const { error } = await supabase.from("waitlist_quiz_preferences").insert({
-    email,
-    answers,
-    recommendation_snapshot: recommendationSnapshot,
-    quiz_completed_at: now,
-    created_at: now,
-    updated_at: now,
-    ...profilePatch,
-    ...analyticsPatch,
-  });
   if (error) {
     throw new Error(error.message);
   }
@@ -94,10 +70,11 @@ export async function getWaitlistQuizAnswersJson(
   supabase: SupabaseClient,
   email: string,
 ): Promise<unknown | null> {
+  const normalized = normalizeWaitlistEmail(email);
   const { data, error } = await supabase
     .from("waitlist_quiz_preferences")
     .select("answers")
-    .eq("email", email)
+    .eq("email", normalized)
     .order("updated_at", { ascending: false })
     .limit(1);
 
@@ -105,4 +82,57 @@ export async function getWaitlistQuizAnswersJson(
     return null;
   }
   return (data[0] as { answers?: unknown }).answers ?? null;
+}
+
+/**
+ * Save gift finder answers and snapshot (separate from ``waitlist_quiz_preferences``).
+ *
+ * Args:
+ *   supabase: Service client.
+ *   email: Normalized email.
+ *   giftAnswers: Raw gift wizard payload (recipient, avoids, presets, anchors, …).
+ *   derivedQuizAnswers: Pipeline ``QuizAnswersPayload`` used for search (audit / results UI).
+ *   recommendationSnapshot: Serializable recommendation list (same shape as quiz snapshot).
+ *   options: Optional ``scent_profile`` / ``preference_analytics`` JSON.
+ */
+export async function saveWaitlistGiftPreferences(
+  supabase: SupabaseClient,
+  email: string,
+  giftAnswers: unknown,
+  derivedQuizAnswers: unknown,
+  recommendationSnapshot: unknown,
+  options?: {
+    scent_profile?: unknown;
+    preference_analytics?: unknown;
+  },
+): Promise<void> {
+  const normalized = normalizeWaitlistEmail(email);
+  const now = new Date().toISOString();
+
+  const profilePatch =
+    options?.scent_profile !== undefined
+      ? { scent_profile: options.scent_profile }
+      : {};
+  const analyticsPatch =
+    options?.preference_analytics !== undefined
+      ? { preference_analytics: options.preference_analytics }
+      : {};
+
+  const { error } = await supabase.from("waitlist_gift_preferences").upsert(
+    {
+      email: normalized,
+      gift_answers: giftAnswers,
+      derived_quiz_answers: derivedQuizAnswers,
+      recommendation_snapshot: recommendationSnapshot,
+      gift_completed_at: now,
+      updated_at: now,
+      ...profilePatch,
+      ...analyticsPatch,
+    },
+    { onConflict: "email" },
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
