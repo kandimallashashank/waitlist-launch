@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useHydrationSafeReducedMotion } from '@/hooks/useHydrationSafeReducedMotion';
 import { Sparkles } from 'lucide-react';
@@ -15,8 +16,12 @@ import { storeUrl } from '@/lib/storeUrl';
  */
 const CATALOG_IMAGE_AREA_CLASS =
   'relative w-full aspect-[4/3] overflow-hidden flex flex-col items-center justify-end bg-gradient-to-br from-[#FDF6F3] to-[#E8E0D8]/80 pb-2 pt-2';
+/** Display ~176px wide on a 260px card; request 2× for retina via next/image. */
+const MARQUEE_IMG_WIDTH = 352;
+const MARQUEE_IMG_HEIGHT = 264;
+
 const CATALOG_BOTTLE_IMG_CLASS =
-  'w-[68%] max-h-[88%] min-h-0 object-contain object-bottom scale-110 origin-bottom [@media(prefers-reduced-motion:reduce)]:scale-100';
+  'w-[68%] max-h-[88%] min-h-0 !h-auto object-contain object-bottom scale-110 origin-bottom [@media(prefers-reduced-motion:reduce)]:scale-100';
 
 function pickShowcase<T extends { primary_image_url?: string }>(all: T[], n: number): T[] {
   const withImg = all.filter((p) => (p.primary_image_url ?? '').trim().length > 0);
@@ -63,7 +68,10 @@ export default function WaitlistCatalogMarquee(
   const loop = useMemo(() => [...products, ...products], [products]);
 
   return (
-    <section className="relative overflow-hidden bg-[#141210] py-12 md:py-16">
+    <section
+      id="catalog-marquee"
+      className="relative scroll-mt-20 overflow-hidden bg-[#141210] py-12 md:py-16"
+    >
       <div className="pointer-events-none absolute inset-0 opacity-[0.07]">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_0%,rgba(212,165,116,0.5),transparent_50%)]" />
       </div>
@@ -100,12 +108,17 @@ export default function WaitlistCatalogMarquee(
                 <div className="w-[260px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white shadow-xl">
                   <div className={CATALOG_IMAGE_AREA_CLASS}>
                     {p.primary_image_url ? (
-                      <img
-                        src={getProxiedImageUrl(p.primary_image_url) || p.primary_image_url}
+                      <Image
+                        src={
+                          getProxiedImageUrl(p.primary_image_url) || p.primary_image_url
+                        }
                         alt={p.name}
+                        width={MARQUEE_IMG_WIDTH}
+                        height={MARQUEE_IMG_HEIGHT}
+                        sizes="176px"
+                        quality={72}
                         loading={imgIndex < 4 ? 'eager' : 'lazy'}
-                        fetchPriority={imgIndex < 4 ? 'high' : undefined}
-                        decoding="async"
+                        priority={imgIndex < 2}
                         className={CATALOG_BOTTLE_IMG_CLASS}
                         style={{ mixBlendMode: 'multiply' }}
                       />
@@ -148,12 +161,17 @@ export default function WaitlistCatalogMarquee(
                   <div className="waitlist-catalog-card w-[260px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white shadow-xl">
                     <div className={CATALOG_IMAGE_AREA_CLASS}>
                       {p.primary_image_url ? (
-                        <img
-                          src={getProxiedImageUrl(p.primary_image_url) || p.primary_image_url}
+                        <Image
+                          src={
+                            getProxiedImageUrl(p.primary_image_url) || p.primary_image_url
+                          }
                           alt={p.name}
+                          width={MARQUEE_IMG_WIDTH}
+                          height={MARQUEE_IMG_HEIGHT}
+                          sizes="176px"
+                          quality={72}
                           loading={eagerAboveFold ? 'eager' : 'lazy'}
-                          fetchPriority={eagerAboveFold ? 'high' : undefined}
-                          decoding="async"
+                          priority={index < 2}
                           className={CATALOG_BOTTLE_IMG_CLASS}
                           style={{ mixBlendMode: 'multiply' }}
                         />

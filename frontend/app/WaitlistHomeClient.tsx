@@ -45,6 +45,7 @@ const WaitlistWhatWeOffer = dynamic(() => import('@/components/waitlist/Waitlist
 const WaitlistBlindBuyPipeline = dynamic(() => import('@/components/waitlist/WaitlistBlindBuyPipeline'), { ssr: false });
 const WaitlistProblemsAndFixes = dynamic(() => import('@/components/waitlist/WaitlistProblemsAndFixes'), { ssr: false });
 const WaitlistFeedbackSection = dynamic(() => import('@/components/waitlist/WaitlistFeedbackSection'), { ssr: false });
+const FragDbStatsDashboard = dynamic(() => import('@/components/waitlist/FragDbStatsDashboard'), { ssr: false });
 
 const sizes = [
   {
@@ -97,7 +98,7 @@ const BADGE_LINES = [
 const HERO_EXPLORE_LINKS = [
   {
     name: 'Scent quiz',
-    t: 'Find your scent match',
+    t: 'Your scent match',
     a: 'Escape "I smell… fine?" in under three minutes',
     href: '/quiz',
     Icon: Wand2,
@@ -497,7 +498,7 @@ export default function WaitlistHomeClient() {
 
       <WaitlistValueTicker />
 
-      <section className="relative overflow-hidden border-b border-[#E0D8CC]/90 bg-gradient-to-b from-[#FAF8F4] via-[#F4F0E8] to-[#F0EBE3] pb-14 pt-10 md:pb-24 md:pt-16 lg:pb-24 lg:pt-20">
+      <section className="relative overflow-x-clip overflow-y-visible border-b border-[#E0D8CC]/90 bg-gradient-to-b from-[#FAF8F4] via-[#F4F0E8] to-[#F0EBE3] pb-[max(3.5rem,calc(2rem+env(safe-area-inset-bottom,0px)))] pt-4 sm:pt-5 md:pb-24 md:pt-10 lg:pb-24 lg:pt-12">
         {/* warm radial glow */}
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-[28rem] opacity-70"
@@ -534,11 +535,23 @@ export default function WaitlistHomeClient() {
                   </span>
                 </h1>
               </div>
+            </div>
 
-              {/* Waitlist form - right under the headline so it's the first CTA people see */}
+            {/* Full-width carousel (not constrained by headline column) */}
+            <div className="mt-8 w-full min-w-0 sm:mt-10">
+              <HomeExploreShowcase />
+            </div>
+
+            <div className="min-w-0 w-full max-w-2xl">
+              {/* Brand logos: full column width + min-w-0 so marquee cannot widen layout on mobile */}
+              <div data-hero className="mx-auto mt-8 w-full min-w-0 max-w-full sm:mt-10">
+                <BrandLogosSection variant="inline" eyebrow="Brands on ScentRev" />
+              </div>
+
+              {/* Waitlist email - extra top space so it reads as its own block below brands */}
               <div
                 data-hero
-                className="mt-6 w-full scroll-mt-20 sm:scroll-mt-24"
+                className="mt-12 w-full scroll-mt-20 sm:mt-14 md:mt-16 sm:scroll-mt-24"
                 id="waitlist-form"
               >
             {submitted ? (
@@ -649,10 +662,9 @@ export default function WaitlistHomeClient() {
 
               <nav
                 data-hero
-                className="mx-auto mt-6 max-w-2xl"
+                className="mx-auto mt-8 max-w-2xl sm:mt-10"
                 aria-label="Explore: scent quiz, gift finder, layering lab, catalog, and subscription"
               >
-                {/* Mobile: one quiet panel, full-width rows (less visual noise, clearer tap targets) */}
                 <div className="overflow-hidden rounded-2xl border border-[#D9D0C4]/85 bg-white/90 shadow-sm sm:hidden">
                   <ul className="divide-y divide-[#EDE8E0]">
                     {HERO_EXPLORE_LINKS.map((chip) => (
@@ -689,7 +701,6 @@ export default function WaitlistHomeClient() {
                   </ul>
                 </div>
 
-                {/* sm+: compact card grid */}
                 <div className="hidden grid-cols-5 gap-2 sm:grid">
                   {HERO_EXPLORE_LINKS.map((chip) => (
                     <Link
@@ -712,21 +723,12 @@ export default function WaitlistHomeClient() {
                 </div>
               </nav>
 
-              {/* Brand logos */}
-              <div data-hero className="mx-auto mt-8 max-w-xl">
-                <BrandLogosSection variant="inline" eyebrow="Brands on ScentRev" />
-              </div>
-
-              {/* Euromonitor stat - glassy */}
-              <div data-hero className="mx-auto mt-6 max-w-xl">
+              <div data-hero className="mx-auto mt-8 max-w-xl sm:mt-10">
                 <div className="relative overflow-hidden rounded-2xl border border-[#E8DDD6]/80 bg-gradient-to-br from-white/80 via-[#FFF7F3]/70 to-[#FDF0E8]/60 px-5 py-5 text-left shadow-[0_8px_32px_rgba(184,90,58,0.13),0_1px_0_rgba(255,255,255,0.9)_inset] backdrop-blur-xl">
-                  {/* top shimmer line */}
                   <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/90 to-transparent" aria-hidden />
-                  {/* subtle radial glow */}
                   <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(184,90,58,0.12),transparent_70%)]" aria-hidden />
 
                   <div className="relative flex items-center gap-4">
-                    {/* Icon pill */}
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#B85A3A]/15 to-[#D4A574]/10 ring-1 ring-[#B85A3A]/20">
                       <TrendingUp className="h-5 w-5 text-[#B85A3A]" aria-hidden />
                     </div>
@@ -744,13 +746,12 @@ export default function WaitlistHomeClient() {
                 </div>
               </div>
 
-
               <a
-                href="#explore-scentrev-heading"
+                href="#catalog-marquee"
                 data-hero
-                className="mt-7 inline-flex items-center justify-center gap-2 text-sm font-medium text-[#B85A3A] transition-colors hover:text-[#A04D2F]"
+                className="mt-7 inline-flex items-center justify-center gap-2 text-sm font-medium text-[#B85A3A] transition-colors hover:text-[#A04D2F] sm:mt-8"
               >
-                <span>Explore quiz, catalog &amp; more</span>
+                <span>See bottles from the catalog</span>
                 <ChevronDown
                   className="h-4 w-4 text-[#B85A3A] motion-safe:animate-[hero-chevron-nudge_2.2s_ease-in-out_infinite]"
                   aria-hidden
@@ -762,9 +763,9 @@ export default function WaitlistHomeClient() {
         </div>
       </section>
 
-      <HomeExploreShowcase />
-
       <WaitlistCatalogMarquee sharedCatalog={marqueePicks} />
+
+      <FragDbStatsDashboard />
 
       <WaitlistProblemsAndFixes />
 

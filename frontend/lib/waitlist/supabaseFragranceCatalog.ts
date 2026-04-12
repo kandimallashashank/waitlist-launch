@@ -58,6 +58,9 @@ export async function fetchFragranceDetailFromSupabase(
   } as Record<string, unknown>;
 }
 
+/** Max rows returned for Layering Lab picker (full pilot catalog in one response). */
+export const LAYERING_SEARCH_MAX_LIMIT = 200;
+
 /**
  * Search card view rows for layering slot picker (mirrors FastAPI ``/layering/search``).
  *
@@ -75,12 +78,16 @@ export async function searchFragrancesForLayering(
   supabase: SupabaseClient,
   params: { q: string; limit: number; family: string },
 ): Promise<Record<string, unknown>[]> {
-  const limit = Math.min(Math.max(params.limit, 1), 60);
+  const limit = Math.min(
+    Math.max(params.limit, 1),
+    LAYERING_SEARCH_MAX_LIMIT,
+  );
   let query = supabase
     .from("v_perfumes_card")
     .select(
       "id, name, brand_name, primary_image_url, price_3ml, price_8ml, price_12ml, scent_family, concentration",
     )
+    .order("name", { ascending: true })
     .limit(limit);
 
   const q = params.q.trim();

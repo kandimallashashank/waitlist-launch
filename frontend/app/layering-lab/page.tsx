@@ -25,7 +25,10 @@ import {
   RadialBarChart, RadialBar, PolarAngleAxis,
   RadarChart, Radar, PolarGrid, PolarRadiusAxis,
 } from 'recharts';
-import { CuratedCombosSection } from '@/components/layering/CuratedCombosSection';
+import {
+  CuratedCombosIntro,
+  CuratedCombosSection,
+} from '@/components/layering/CuratedCombosSection';
 import { GradientFeatureAnnouncePill } from '@/components/promos/GradientFeatureAnnouncePill';
 import { PRODUCT_IMAGE_WELL_CLASS } from '@/lib/productCardVisual';
 import { getProxiedImageUrl } from '@/lib/imageProxy';
@@ -682,7 +685,9 @@ function SearchModal({
   const search = useCallback(async (q: string, fam: string) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ q, limit: '30' });
+      const browseAll = !q.trim();
+      const limit = browseAll ? '200' : '80';
+      const params = new URLSearchParams({ q, limit });
       if (fam) params.set('family', fam);
       const res = await fetch(`${LAYERING_SEARCH_URL}?${params}`, {
         credentials: IS_WAITLIST_PREVIEW ? 'include' : 'same-origin',
@@ -2194,6 +2199,8 @@ function LayeringLabPageContent() {
           </div>
         </div>
 
+        {!analysis && <CuratedCombosIntro className="mb-8" />}
+
         {/* Fragrance Slots */}
         <div className="mb-6 rounded-2xl border border-[#E8DFD8] bg-white p-4 shadow-sm md:p-6">
           {/* Mobile: vertical stack of compact horizontal cards */}
@@ -2255,7 +2262,7 @@ function LayeringLabPageContent() {
         </div>
 
         {/* Community combos hidden while viewing your analysis so results stay focused */}
-        {!analysis && <CuratedCombosSection />}
+        {!analysis && <CuratedCombosSection omitIntro />}
         {!analysis && (
           <HistorySection
             onReload={handleReload}

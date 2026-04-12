@@ -1,68 +1,138 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+
+import { useHydrationSafeReducedMotion } from '@/hooks/useHydrationSafeReducedMotion';
+
+/** Filenames contain spaces; encode so static `/public` URLs resolve in production. */
+const POMELLI_PHOTOSHOOT_0409 =
+  '/images/home/pomelli_photoshoot_image_9_16_0409%20(1).png';
+const POMELLI_CREATIVE_0409 =
+  '/images/home/pomelli_creative_image_9_16_0409%20(2).png';
 
 const EXPLORE = [
   {
-    label: 'Scent Quiz',
-    image: '/images/home/precision-decoding.png',
-  },
-  {
-    label: 'Subscribe',
+    title: 'Master the Monday stand-up.',
     image: '/images/home/monday-standup.png',
+    href: '/catalog',
+    ariaLabel: 'Browse catalog for a professional office scent',
   },
   {
-    label: 'Catalog',
-    image: '/images/home/data-led-performance.png',
+    title: 'Precision Scent Decoding',
+    image: '/images/home/precision-decoding.png',
+    href: '/quiz',
+    ariaLabel: 'Take the scent quiz for a precision scent match',
   },
   {
-    label: 'Layering Lab',
+    title: 'The ultimate party performance.',
     image: '/images/home/party-performance.png',
+    href: '/layering-lab',
+    ariaLabel: 'Open Layering Lab to build party-ready blends',
+  },
+  {
+    title: 'Data-Led Performance',
+    image: '/images/home/data-led-performance.png',
+    href: '/subscribe',
+    ariaLabel: 'Subscribe for data-led fragrance picks for India',
+  },
+  {
+    title: 'Gifts that land the first time.',
+    image: '/images/home/first-impression.png',
+    href: '/gift',
+    ariaLabel: 'Open the gift finder for presents that fit them',
+  },
+  {
+    title: 'Warm light, real life.',
+    image: '/images/home/lifestyle-copper.png',
+    href: '/about',
+    ariaLabel: 'Read our story on the About page',
+  },
+  {
+    title: 'ScentRev bottle, natural light.',
+    image: POMELLI_PHOTOSHOOT_0409,
+    href: '/catalog',
+    ariaLabel: 'Browse the catalog - ScentRev bottle lifestyle',
+  },
+  {
+    title: 'Test for weeks, not seconds.',
+    image: POMELLI_CREATIVE_0409,
+    href: '/#waitlist-form',
+    ariaLabel: 'Join the waitlist to try curated samples and experience the dry-down',
   },
 ] as const;
 
+/** Fixed card width so duplicated marquee halves match for translate3d(-50%) loop. */
+const MARQUEE_CARD_CLASS =
+  'w-[min(42vw,200px)] shrink-0 sm:w-[min(32vw,220px)] md:w-[min(20vw,200px)]';
+
 /**
- * Discovery tiles for the home page: quiz, subscribe, catalog, layering lab.
- * Image-only cards (no overlay copy); destination is exposed via ``aria-label``.
+ * Infinite horizontal marquee of home explore images (same CSS pattern as catalog
+ * marquee: duplicated row + ``waitlist-marquee-track`` in globals.css).
  */
-export default function HomeExploreShowcase() {
+export default function HomeExploreShowcase(): React.ReactElement {
+  const reduceMotion = useHydrationSafeReducedMotion();
+  const loop = useMemo(() => [...EXPLORE, ...EXPLORE], []);
+
   return (
     <section
-      aria-labelledby="explore-scentrev-heading"
-      className="border-t border-[#E0D8CC] bg-[#EDE8E0]/60 py-12 md:py-16"
+      aria-label="Explore ScentRev: catalog, quiz, layering, subscribe, gift, story, and brand photography"
+      className="w-full"
     >
-      <div className="mx-auto max-w-6xl px-5 sm:px-6">
-        <div className="mb-8 text-center md:mb-10">
-          <h2
-            id="explore-scentrev-heading"
-            className="font-display text-2xl font-semibold tracking-tight text-[#14120F] sm:text-3xl"
-          >
-            Your nose deserves options.
-          </h2>
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-[#3A342E]">
-            Quiz, subscribe, browse, or blend. Pick your path into the world of fragrance.
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {EXPLORE.map((item) => (
+      <div className="mx-auto max-w-6xl">
+        {reduceMotion ? (
+          <div className="flex flex-wrap justify-center gap-3 px-4 py-1 sm:px-6">
+            {EXPLORE.map((item, index) => (
+              <Link
+                key={`${item.href}-${item.image}-${index}`}
+                href={item.href}
+                aria-label={item.ariaLabel}
+                className={`group relative block overflow-hidden rounded-2xl border border-[#E0D8CC]/80 bg-[#1a1512] shadow-sm ${MARQUEE_CARD_CLASS}`}
+              >
+                <div className="relative aspect-[9/14] w-full">
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    fill
+                    className="object-cover object-center"
+                    sizes="(max-width: 640px) 42vw, (max-width: 768px) 32vw, 20vw"
+                    quality={72}
+                  />
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="overflow-hidden py-1">
             <div
-              key={item.label}
-              className="relative overflow-hidden rounded-2xl border border-[#D9D0C4] bg-[#1a1512] shadow-[0_8px_28px_-12px_rgba(20,18,15,0.18)]"
+              className="waitlist-marquee-track gap-3"
+              style={{ ['--waitlist-marquee-duration' as string]: '55s' }}
             >
-              <div className="relative aspect-[9/14] w-full">
-                <Image
-                  src={item.image}
-                  alt={item.label}
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                />
-              </div>
+              {loop.map((item, index) => (
+                <Link
+                  key={`${item.image}-${index}`}
+                  href={item.href}
+                  aria-label={item.ariaLabel}
+                  className={`group relative block overflow-hidden rounded-2xl border border-[#E0D8CC]/80 bg-[#1a1512] shadow-sm ${MARQUEE_CARD_CLASS}`}
+                >
+                  <div className="relative aspect-[9/14] w-full">
+                    <Image
+                      src={item.image}
+                      alt={item.title}
+                      fill
+                      className="object-cover object-center"
+                      sizes="(max-width: 640px) 42vw, (max-width: 768px) 32vw, 20vw"
+                      quality={72}
+                      loading={index < 2 ? 'eager' : 'lazy'}
+                      priority={index === 0}
+                    />
+                  </div>
+                </Link>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
     </section>
   );

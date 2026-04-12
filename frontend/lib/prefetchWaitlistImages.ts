@@ -1,18 +1,31 @@
 /**
- * Warms browser HTTP cache for proxied bottle URLs (plain + mat) used on the waitlist page.
+ * Warms browser cache for URLs the waitlist actually paints (catalog marquee = plain proxy).
  */
 
 import { getProxiedImageUrl, isProductPerfumeUrl } from '@/lib/imageProxy';
 
+export interface PrefetchWaitlistCatalogImagesOptions {
+  /**
+   * When true, also prefetch mat-knockout URLs (PDP / quiz cutouts). Off by default so the
+   * home page does not double-fetch every bottle.
+   */
+  includeMatKnockout?: boolean;
+}
+
 /**
- * Prefetches unique image URLs: standard proxy and mat knockout for catalog shots.
+ * Prefetches unique proxied image URLs used by the waitlist catalog strip.
  *
  * Args:
  *   imageUrls: Raw `primary_image_url` / `image_url` values from the catalog pool.
+ *   options: Set `includeMatKnockout` only when mat variants are shown on the same route.
  */
-export function prefetchWaitlistCatalogImages(imageUrls: string[]): void {
+export function prefetchWaitlistCatalogImages(
+  imageUrls: string[],
+  options?: PrefetchWaitlistCatalogImagesOptions,
+): void {
   if (typeof window === 'undefined') return;
 
+  const includeMat = options?.includeMatKnockout === true;
   const seen = new Set<string>();
   for (const raw of imageUrls) {
     const u = raw?.trim();
@@ -26,7 +39,7 @@ export function prefetchWaitlistCatalogImages(imageUrls: string[]): void {
       img.src = plain;
     }
 
-    if (isProductPerfumeUrl(u)) {
+    if (includeMat && isProductPerfumeUrl(u)) {
       const mat = getProxiedImageUrl(u, { knockOutWhiteMat: true });
       if (mat && mat !== plain) {
         const imgMat = new Image();

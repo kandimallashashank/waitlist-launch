@@ -353,7 +353,46 @@ function CuratedComboTeaser({
   );
 }
 
-export function CuratedCombosSection() {
+/**
+ * Editorial hero for curated layering combos (use above the grid on Layering Lab).
+ *
+ * Args:
+ *   className: Optional Tailwind classes on the wrapper.
+ *
+ * Returns:
+ *   Centered eyebrow, headline, and body copy with stable id for aria-labelledby.
+ */
+export function CuratedCombosIntro({
+  className = '',
+}: {
+  className?: string;
+}): React.ReactElement {
+  return (
+    <div
+      className={`text-center ${className}`.trim()}
+      aria-labelledby="curated-combos-heading"
+    >
+      <p className="text-[11px] font-semibold uppercase tracking-widest text-[#B85A3A]">
+        For layering combos
+      </p>
+      <h2
+        id="curated-combos-heading"
+        className="font-display mt-3 text-xl text-zinc-900 md:text-2xl"
+      >
+        One scent is a voice.
+      </h2>
+      <p className="font-display mt-1 text-lg text-zinc-800 md:text-xl">Two is a signature.</p>
+      <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-zinc-600">
+        Curated pairings we actually wear, tested on skin, not dreamed up in a lab. Tap a card for
+        the blend report and to shop decants. Mix your own in the slots below: harmony and
+        compatibility scores factor in your scent quiz preferences when you have completed the
+        quiz, just like on the main ScentRev experience.
+      </p>
+    </div>
+  );
+}
+
+export function CuratedCombosSection({ omitIntro = false }: { omitIntro?: boolean } = {}) {
   const [combos, setCombos] = useState<CuratedCombo[]>([]);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -384,7 +423,9 @@ export function CuratedCombosSection() {
   if (loading) {
     return (
       <div className="mt-14 border-t border-zinc-100 pt-10">
-        <div className="mx-auto mb-6 h-6 max-w-xs animate-pulse rounded bg-zinc-100" />
+        {!omitIntro ? (
+          <div className="mx-auto mb-6 h-6 max-w-xs animate-pulse rounded bg-zinc-100" />
+        ) : null}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="h-36 animate-pulse rounded-xl bg-zinc-50" />
@@ -401,21 +442,7 @@ export function CuratedCombosSection() {
   return (
     <>
       <section className="mt-14 border-t border-zinc-100 pt-10" aria-labelledby="curated-combos-heading">
-        <div className="mb-6 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-[#B85A3A]">
-            For layering combos
-          </p>
-          <h2 id="curated-combos-heading" className="font-display mt-3 text-xl text-zinc-900 md:text-2xl">
-            One scent is a voice.
-          </h2>
-          <p className="font-display mt-1 text-lg text-zinc-800 md:text-xl">Two is a signature.</p>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-zinc-600">
-            Layering is not an accident. It is architecture. We pair fragrances the way they were
-            meant to meet: base with base, skin with season, mood with moment. Every combo here has
-            been worn, tested, and verified on real skin, not imagined in a lab. Tap a card for the
-            full blend report and cart.
-          </p>
-        </div>
+        {!omitIntro ? <CuratedCombosIntro className="mb-6" /> : null}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {combos.map((c) => (
             <CuratedComboTeaser key={c.id} combo={c} onOpen={() => setOpenId(c.id)} />
