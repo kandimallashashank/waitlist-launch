@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
-import { Star, ShoppingCart, PackageX, ChevronLeft, ChevronRight, ChevronDown, Zap, Loader2, Clock3, Wind, Truck, RotateCcw, Mail, ShieldCheck, SlidersHorizontal, Flower2, Users, MapPin, ShieldQuestion, X, Info } from 'lucide-react';
+import { Star, ShoppingCart, PackageX, ChevronLeft, ChevronRight, ChevronDown, Zap, Loader2, Clock3, Truck, RotateCcw, Mail, ShieldCheck, SlidersHorizontal, Flower2, Users, MapPin, ShieldQuestion, X, Info } from 'lucide-react';
 import { base44, type Fragrance, type DecantInventoryItem } from '@/api/base44Client';
 import { mockFragrances } from '@/lib/mockData';
 import { toast } from 'sonner';
@@ -25,6 +25,13 @@ import { loadRazorpay, createQuickBuyOrder, verifyRazorpayPayment, abandonChecko
 import DecantCaseSelector, { type SelectedCase } from '@/components/product/DecantCaseSelector';
 import { uiListedDecantLabel } from '@/lib/fragranceCardPricing';
 import LayeringLabBanner from '@/components/layering/LayeringLabBanner';
+import {
+  AtGlanceLongevityCard,
+  AtGlanceSillageCard,
+  AtGlanceTooltipsProvider,
+  PDP_HOVER_LONGEVITY,
+  PDP_HOVER_SILLAGE,
+} from '@/components/product/AtGlancePerformanceCards';
 
 /**
  * Waitlist pilot: skip below-fold modules that pull large dependency trees; hero matches storefront.
@@ -773,14 +780,20 @@ function ProductDetailPageContent() {
             {/* Quick stat pills */}
             <div className="hidden sm:flex items-center gap-2">
               {fragrance.sillage != null && (
-                <div className="rounded-xl border border-[#E4D9D0] bg-white/70 px-3 py-1.5 backdrop-blur-sm">
-                  <p className="text-[10px] text-[#8A7A72]">Sillage</p>
+                <div
+                  className="rounded-xl border border-[#E4D9D0] bg-white/70 px-3 py-1.5 backdrop-blur-sm"
+                  title={PDP_HOVER_SILLAGE}
+                >
+                  <p className="text-[10px] text-[#8A7A72]">Sillage (projection)</p>
                   <p className="text-xs font-semibold text-[#1A1A1A]">{fragrance.sillage}/10</p>
                 </div>
               )}
               {fragrance.longevity_hours != null && (
-                <div className="rounded-xl border border-[#E4D9D0] bg-white/70 px-3 py-1.5 backdrop-blur-sm">
-                  <p className="text-[10px] text-[#8A7A72]">Longevity</p>
+                <div
+                  className="rounded-xl border border-[#E4D9D0] bg-white/70 px-3 py-1.5 backdrop-blur-sm"
+                  title={PDP_HOVER_LONGEVITY}
+                >
+                  <p className="text-[10px] text-[#8A7A72]">Longevity (wear)</p>
                   <p className="text-xs font-semibold text-[#1A1A1A]">{Math.round(fragrance.longevity_hours)}h</p>
                 </div>
               )}
@@ -1122,35 +1135,23 @@ function ProductDetailPageContent() {
                 })()}
 
                 {/* 2) Scent family, Sillage, Longevity one row */}
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                  {(fragrance as any).scent_family && (
-                    <motion.div whileHover={{ y: -1 }} className="min-w-0 rounded-lg border border-[#E9DBD2] bg-white/80 p-2.5">
-                      <div className="flex items-center justify-between gap-1">
-                        <p className="text-[10px] uppercase tracking-wide text-neutral-500">Scent family</p>
-                        <Flower2 className="h-3.5 w-3.5 shrink-0 text-neutral-500" aria-hidden />
-                      </div>
-                      <p className="mt-1 text-sm font-semibold text-neutral-800">{(fragrance as any).scent_family}</p>
-                    </motion.div>
-                  )}
-                  {fragrance.sillage != null && (
-                    <motion.div whileHover={{ y: -1 }} className="min-w-0 rounded-lg border border-[#E9DBD2] bg-white/80 p-2.5">
-                      <div className="flex items-center justify-between gap-1">
-                        <p className="text-[10px] uppercase tracking-wide text-neutral-500">Sillage</p>
-                        <Wind className="h-3.5 w-3.5 shrink-0 text-neutral-500" />
-                      </div>
-                      <p className="mt-1 text-sm font-semibold text-neutral-800">{fragrance.sillage}/10</p>
-                    </motion.div>
-                  )}
-                  {fragrance.longevity_hours != null && (
-                    <motion.div whileHover={{ y: -1 }} className="min-w-0 rounded-lg border border-[#E9DBD2] bg-white/80 p-2.5">
-                      <div className="flex items-center justify-between gap-1">
-                        <p className="text-[10px] uppercase tracking-wide text-neutral-500">Longevity</p>
-                        <Clock3 className="h-3.5 w-3.5 shrink-0 text-neutral-500" />
-                      </div>
-                      <p className="mt-1 text-sm font-semibold text-neutral-800">{Math.round(fragrance.longevity_hours)} hrs</p>
-                    </motion.div>
-                  )}
-                </div>
+                <AtGlanceTooltipsProvider>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                    {(fragrance as any).scent_family && (
+                      <motion.div whileHover={{ y: -1 }} className="min-w-0 rounded-lg border border-[#E9DBD2] bg-white/80 p-2.5">
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="text-[10px] uppercase tracking-wide text-neutral-500">Scent family</p>
+                          <Flower2 className="h-3.5 w-3.5 shrink-0 text-neutral-500" aria-hidden />
+                        </div>
+                        <p className="mt-1 text-sm font-semibold text-neutral-800">{(fragrance as any).scent_family}</p>
+                      </motion.div>
+                    )}
+                    {fragrance.sillage != null && <AtGlanceSillageCard value={fragrance.sillage} />}
+                    {fragrance.longevity_hours != null && (
+                      <AtGlanceLongevityCard hours={fragrance.longevity_hours} />
+                    )}
+                  </div>
+                </AtGlanceTooltipsProvider>
 
                 {fragrance.type && (
                   <motion.div whileHover={{ y: -1 }} className="rounded-lg border border-[#E9DBD2] bg-white/80 p-2.5">
