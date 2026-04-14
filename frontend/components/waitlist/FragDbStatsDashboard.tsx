@@ -20,52 +20,12 @@ import {
 import type { FragDbStats } from "@/lib/waitlist/fragDbStats";
 
 const nfIn = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
-const nfInOne = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 1,
-  minimumFractionDigits: 0,
-});
 
 interface LibraryRow {
   name: string;
   value: number;
   fill: string;
   hint: string;
-}
-
-interface DepthRow {
-  name: string;
-  value: number;
-  fill: string;
-  subtitle: string;
-  tooltipValue: string;
-}
-
-/**
- * Compact Indian-style headline for large totals (lakhs / crores).
- *
- * Args:
- *   n: Non-negative count.
- *
- * Returns:
- *   Short string like "7L+" or "1.1 cr+".
- */
-function formatBigCountHeadline(n: number): string {
-  if (n >= 1_00_00_000) {
-    const cr = n / 1_00_00_000;
-    const rounded = cr >= 10 ? Math.round(cr) : Math.round(cr * 10) / 10;
-    return `${rounded} cr+`;
-  }
-  if (n >= 1_00_000) {
-    const lakhs = n / 1_00_000;
-    const rounded = lakhs >= 10 ? Math.round(lakhs) : Math.round(lakhs * 10) / 10;
-    return `${rounded}L+`;
-  }
-  if (n >= 1000) {
-    const k = n / 1000;
-    const rounded = k >= 10 ? Math.round(k) : Math.round(k * 10) / 10;
-    return `${rounded}k+`;
-  }
-  return nfIn.format(n);
 }
 
 /** Short axis ticks for large integers (chart axis only). */
@@ -122,22 +82,6 @@ function LibraryTooltip({
   );
 }
 
-function DepthTooltip({
-  active,
-  payload,
-}: {
-  active?: boolean;
-  payload?: Array<{ payload: DepthRow }>;
-}) {
-  if (!active || !payload?.length) {
-    return null;
-  }
-  const row = payload[0].payload;
-  return (
-    <ChartTooltipCard title={row.name} body={row.tooltipValue} hint={row.subtitle} />
-  );
-}
-
 function buildLibraryData(stats: FragDbStats): LibraryRow[] {
   const rows: LibraryRow[] = [
     {
@@ -172,34 +116,6 @@ function buildLibraryData(stats: FragDbStats): LibraryRow[] {
     },
   ];
   return rows.sort((a, b) => b.value - a.value);
-}
-
-function buildDepthData(stats: FragDbStats): DepthRow[] {
-  const similarLakhUnits =
-    Math.round((stats.similarScentHintsTotal / 1_00_000) * 10) / 10;
-  return [
-    {
-      name: "Notes / bottle",
-      value: stats.avgMappedNotesPerFragrance,
-      fill: "#B85A3A",
-      subtitle: "Typical pyramid depth (top, heart, base) per fragrance",
-      tooltipValue: `~${nfInOne.format(stats.avgMappedNotesPerFragrance)} notes`,
-    },
-    {
-      name: "Style signals",
-      value: stats.avgAccordTraitsPerFragrance,
-      fill: "#C2785A",
-      subtitle: "How many accord strengths we score per bottle",
-      tooltipValue: `~${nfInOne.format(stats.avgAccordTraitsPerFragrance)} traits`,
-    },
-    {
-      name: "Similar ideas",
-      value: similarLakhUnits,
-      fill: "#6D7D63",
-      subtitle: "Community “smells like” paths between scents",
-      tooltipValue: `${formatBigCountHeadline(stats.similarScentHintsTotal)} (${nfIn.format(stats.similarScentHintsTotal)} pairs)`,
-    },
-  ];
 }
 
 export default function FragDbStatsDashboard() {
@@ -237,7 +153,6 @@ export default function FragDbStatsDashboard() {
   }, []);
 
   const libraryData = useMemo(() => (stats ? buildLibraryData(stats) : []), [stats]);
-  const depthData = useMemo(() => (stats ? buildDepthData(stats) : []), [stats]);
 
   return (
     <section
@@ -380,89 +295,6 @@ export default function FragDbStatsDashboard() {
               </div>
             </div>
           </div>
-
-          {stats && chartsReady ? (
-            <div className="mt-12 grid items-center gap-10 border-t border-[#EDE5DC] pt-10 md:mt-14 md:pt-12 lg:grid-cols-12 lg:gap-12">
-              <div className="order-2 lg:order-1 lg:col-span-7">
-                <div className="mb-3 flex items-baseline justify-between gap-4">
-                  <h3 className="text-sm font-semibold text-[#14120F]">Why picks feel specific</h3>
-                  <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-[#8A7E72]">
-                    Avg. depth
-                  </span>
-                </div>
-                <div className="h-[260px] w-full md:h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={depthData}
-                      margin={{ top: 8, right: 8, left: 0, bottom: 4 }}
-                      barCategoryGap={18}
-                    >
-                      <CartesianGrid
-                        strokeDasharray="4 6"
-                        vertical={false}
-                        stroke="#E8DDD6"
-                        strokeOpacity={0.85}
-                      />
-                      <XAxis
-                        dataKey="name"
-                        tick={{ fill: "#3A342E", fontSize: 11 }}
-                        axisLine={{ stroke: "#D9D0C4" }}
-                        tickLine={false}
-                        interval={0}
-                        height={48}
-                      />
-                      <YAxis
-                        tick={{ fill: "#8A7E72", fontSize: 11 }}
-                        axisLine={false}
-                        tickLine={false}
-                        width={36}
-                      />
-                      <Tooltip
-                        content={<DepthTooltip />}
-                        cursor={{ fill: "rgba(184, 90, 58, 0.06)" }}
-                      />
-                      <Bar dataKey="value" radius={[10, 10, 0, 0]} maxBarSize={48}>
-                        {depthData.map((entry) => (
-                          <Cell key={entry.name} fill={entry.fill} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-              <div className="order-1 lg:order-2 lg:col-span-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#B85A3A]">
-                  Under the hood
-                </p>
-                <p className="mt-2 font-display text-xl font-semibold leading-snug text-[#14120F] md:text-2xl">
-                  Numbers that power “similar” and smart filters
-                </p>
-                <ul className="mt-5 space-y-3 text-sm leading-relaxed text-[#4E463E]">
-                  <li className="flex gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#B85A3A]" aria-hidden />
-                    <span>
-                      <strong className="text-[#14120F]">Notes per bottle</strong>: how many
-                      ingredients we map on average so pyramids and note search stay grounded.
-                    </span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#C2785A]" aria-hidden />
-                    <span>
-                      <strong className="text-[#14120F]">Style signals</strong>: accord weights per
-                      fragrance so “woody / fresh / sweet” isn’t a guess.
-                    </span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#6D7D63]" aria-hidden />
-                    <span>
-                      <strong className="text-[#14120F]">Similar ideas</strong>: lakhs of
-                      crowd-linked pairs so discovery has paths, not dead ends.
-                    </span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          ) : null}
         </div>
       </div>
     </section>
