@@ -26,6 +26,19 @@ export function clampWaitlistDescription(text: string, maxLength: number = 160):
 }
 
 /**
+ * Builds language alternates for waitlist pages.
+ *
+ * The site currently serves a single locale, but including `x-default`
+ * keeps metadata shape stable for multi-locale expansion.
+ */
+export function waitlistHreflangLanguages(pathname: string): Record<string, string> {
+  return {
+    "en-IN": pathname,
+    "x-default": pathname,
+  };
+}
+
+/**
  * Builds metadata for a waitlist route with a self-referencing canonical path.
  */
 export function buildWaitlistRouteMetadata(

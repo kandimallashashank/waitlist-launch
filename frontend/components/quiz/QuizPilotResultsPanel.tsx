@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Check, Sparkles, ArrowRight, RotateCcw, FlaskConical, Info, X, Share2 } from 'lucide-react';
 
@@ -180,11 +181,11 @@ function QuizResultProductCardImageArea({
         /* Light well only same as PLP card. Do not stack the dark gradient under the
          * image: mix-blend-mode multiply would blend against it and hide the bottle. */
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-b from-[#F8F4F0] to-[#EFE8E0] p-3 sm:p-4">
-          <img
+          <Image
             src={resolvedSrc}
             alt={name}
-            loading="lazy"
-            decoding="async"
+            fill
+            sizes="(max-width: 640px) 50vw, 25vw"
             className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.06]"
             style={{ mixBlendMode: 'multiply' }}
             onError={() => setImageFailed(true)}

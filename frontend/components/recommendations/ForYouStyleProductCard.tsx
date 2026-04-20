@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { m } from 'framer-motion';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Check, Loader2, PackageX, ShoppingBag, Star } from 'lucide-react';
@@ -268,12 +269,13 @@ export const ForYouStyleProductCard = React.memo(function ForYouStyleProductCard
         <div className="absolute inset-0 flex items-center justify-center p-3">
           {displayImageSrc && !imageFailed ? (
             <>
-              <img
+              <Image
                 src={displayImageSrc}
                 alt={fragrance.name}
-                loading={priorityImage ? 'eager' : 'lazy'}
-                decoding="async"
-                {...(priorityImage ? { fetchPriority: 'high' as const } : {})}
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                priority={priorityImage}
+                fetchPriority={priorityImage ? 'high' : undefined}
                 className="h-full w-full object-contain transition-transform duration-400 group-hover:scale-[1.04]"
                 style={{ mixBlendMode: 'multiply' }}
                 onError={(e) => {
