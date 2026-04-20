@@ -165,6 +165,9 @@ export async function sendViaResend(
   subject: string,
   html: string,
   text: string,
+  options?: {
+    idempotencyKey?: string;
+  },
 ): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   const from = process.env.RESEND_FROM_EMAIL?.trim();
@@ -178,6 +181,9 @@ export async function sendViaResend(
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
+      ...(options?.idempotencyKey
+        ? { "Idempotency-Key": options.idempotencyKey }
+        : {}),
     },
     body: JSON.stringify({
       from,

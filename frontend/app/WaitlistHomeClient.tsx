@@ -143,6 +143,21 @@ const HERO_EXPLORE_LINKS = [
   },
 ] as const;
 
+const INDIA_SEO_LINKS = [
+  {
+    href: "/perfume-samples-india",
+    label: "Perfume samples in India",
+  },
+  {
+    href: "/summer-perfumes-india",
+    label: "Summer perfumes for Indian weather",
+  },
+  {
+    href: "/office-perfumes-india",
+    label: "Office perfumes for daily wear in India",
+  },
+] as const;
+
 function HeroBadgeCycler() {
   const [idx, setIdx] = useState(0);
 
@@ -722,6 +737,26 @@ export default function WaitlistHomeClient() {
                   ))}
                 </div>
               </nav>
+
+              <section data-hero className="mx-auto mt-6 w-full max-w-2xl sm:mt-8" aria-label="India fragrance guides">
+                <div className="rounded-2xl border border-[#E6D9CF] bg-white/90 px-4 py-4 text-left shadow-sm sm:px-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#B85A3A]">
+                    India perfume guides
+                  </p>
+                  <ul className="mt-3 space-y-1.5 text-sm">
+                    {INDIA_SEO_LINKS.map((item) => (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          className="font-medium text-[#4A4540] underline decoration-[#D4A574] underline-offset-4 transition-colors hover:text-[#B85A3A]"
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
 
               <div data-hero className="mx-auto mt-8 max-w-xl sm:mt-10">
                 <div className="relative overflow-hidden rounded-2xl border border-[#E8DDD6]/80 bg-gradient-to-br from-white/80 via-[#FFF7F3]/70 to-[#FDF0E8]/60 px-5 py-5 text-left shadow-[0_8px_32px_rgba(184,90,58,0.13),0_1px_0_rgba(255,255,255,0.9)_inset] backdrop-blur-xl">
