@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
 
 const SITE_URL = "https://scentrev.com";
+const PRODUCTION_API_URL = "https://api.scentrev.com";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ??
-  "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/$/, "") ||
+  PRODUCTION_API_URL;
 
 /** Static routes with per-route priority and changefreq. */
 const STATIC_ROUTES: {
