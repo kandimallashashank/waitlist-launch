@@ -18,18 +18,19 @@ export function getWaitlistSiteUrl(): string {
   const explicit = process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (explicit) return trimTrailingSlash(explicit);
 
-  // 2. Vercel deployment URL (e.g. for preview branches)
-  // This must come BEFORE the production fallback to ensure preview links
-  // resolve their own absolute assets (OG images, etc.) correctly.
+  // 2. Production fallback: use the custom domain
+  // We check this BEFORE the Vercel URL to ensure the production site
+  // always uses the primary domain for OG data and canonical links.
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
+    return "https://scentrev.com";
+  }
+
+  // 3. Vercel deployment URL (e.g. for preview branches)
+  // This helps preview links resolve their own absolute assets correctly.
   const vercel = process.env.VERCEL_URL?.trim();
   if (vercel) {
     const host = vercel.replace(/^https?:\/\//, "");
     return `https://${host}`;
-  }
-
-  // 3. Production fallback: use the custom domain
-  if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
-    return "https://scentrev.com";
   }
 
   // 4. Fallback to storage or default
