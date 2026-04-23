@@ -31,6 +31,24 @@ function isPreviewRouteGateEnabled(): boolean {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Allow bots (WhatsApp, Telegram, Slack, Googlebot, etc.) to bypass the
+  // gate so they can scrape metadata for link previews.
+  const ua = request.headers.get("user-agent") || "";
+  const isBot =
+    ua.includes("WhatsApp") ||
+    ua.includes("facebookexternalhit") ||
+    ua.includes("Twitterbot") ||
+    ua.includes("LinkedInBot") ||
+    ua.includes("Googlebot") ||
+    ua.includes("bingbot") ||
+    ua.includes("TelegramBot") ||
+    ua.includes("Slackbot");
+
+  if (isBot) {
+    return NextResponse.next();
+  }
+
   if (!isGatedPath(pathname)) {
     return NextResponse.next();
   }
